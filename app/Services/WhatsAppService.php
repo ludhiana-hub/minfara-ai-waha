@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BotConfig;
 use App\Models\FaqMenu;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -14,15 +15,20 @@ class WhatsAppService
 
     public function __construct()
     {
-        $this->url     = config('services.waha.url', 'http://localhost:3000');
-        $this->apiKey  = config('services.waha.api_key', '');
-        $this->session = config('services.waha.session', 'default');
+        $this->url     = BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
+        $this->apiKey  = BotConfig::get('waha_api_key') ?: config('services.waha.api_key', '');
+        $this->session = BotConfig::get('waha_session') ?: config('services.waha.session', 'default');
     }
 
     public function sendMessage(string $chatId, string $text): bool
     {
+        // WAHA WEBJS requires @c.us suffix for individual chats
+        if (!str_contains($chatId, '@')) {
+            $chatId .= '@c.us';
+        }
+
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(60)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
                 ->post("{$this->url}/api/sendText", [
                     'session' => $this->session,
@@ -55,8 +61,5 @@ class WhatsAppService
             ?? "Hallo! Ketik *1* untuk Program Kursus atau *99* untuk hubungi admin.";
     }
 
-    public function aiFooter(): string
-    {
-        return "\n─────────────────\n_MinFara AI_ 🤖 _· Deutsch Lernen mit Fara_\nKetik *0* menu utama | *99* hubungi admin";
-    }
+
 }
