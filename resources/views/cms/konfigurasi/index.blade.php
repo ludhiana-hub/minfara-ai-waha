@@ -52,12 +52,33 @@
             <div class="card">
                 <div class="card-header">Pengaturan AI</div>
                 <div class="card-body">
-                    <div class="mb-3 d-flex align-items-center gap-3">
+                    <div class="mb-3 d-flex align-items-center gap-3 flex-wrap">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="ai_enabled" id="aiEnabled" value="1"
                                 {{ ($configs['ai_enabled']->value ?? 'true') === 'true' ? 'checked' : '' }}>
                             <label class="form-check-label fw-semibold" for="aiEnabled">Aktifkan AI Fallback</label>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Provider AI</label>
+                        @php $aiProvider = $configs['ai_provider']->value ?? 'gemini'; @endphp
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ai_provider" id="providerGemini" value="gemini"
+                                    {{ $aiProvider === 'gemini' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="providerGemini">
+                                    <i class="bi bi-stars text-warning"></i> Google Gemini
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="ai_provider" id="providerGroq" value="groq"
+                                    {{ $aiProvider === 'groq' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="providerGroq">
+                                    <i class="bi bi-lightning-charge-fill text-primary"></i> Groq
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-text">Pilih provider AI yang digunakan. Pastikan API Key provider tersebut sudah diisi di tab <strong>API &amp; Kredensial</strong>.</div>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
@@ -257,6 +278,52 @@
                             @if(isset($configs['gemini_api_key']) && $configs['gemini_api_key']->value)
                                 <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
                             @elseif($envFallbacks['gemini_api_key'])
+                                <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
+                            @else
+                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groq -->
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge-fill text-primary"></i>
+                    <strong>Groq AI</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Model</label>
+                            @php $groqModel = $configs['groq_model']->value ?? $envFallbacks['groq_model']; @endphp
+                            <input type="text" name="groq_model" class="form-control font-monospace"
+                                value="{{ $groqModel }}"
+                                placeholder="llama-3.3-70b-versatile">
+                            <div class="form-text">
+                                Contoh: <code>llama-3.3-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>mixtral-8x7b-32768</code>
+                                @if(isset($configs['groq_model']) && $configs['groq_model']->value)
+                                    <span class="badge bg-success ms-1">DB</span>
+                                @elseif($envFallbacks['groq_model'])
+                                    <span class="badge bg-secondary ms-1">.env</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">API Key</label>
+                            @php $groqKey = $configs['groq_api_key']->value ?? $envFallbacks['groq_api_key']; @endphp
+                            <div class="input-group">
+                                <input type="password" name="groq_api_key" id="groqApiKey" class="form-control font-monospace"
+                                    autocomplete="new-password"
+                                    value="{{ $groqKey }}">
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-pwd" data-target="groqApiKey">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            @if(isset($configs['groq_api_key']) && $configs['groq_api_key']->value)
+                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
+                            @elseif($envFallbacks['groq_api_key'])
                                 <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
                             @else
                                 <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>

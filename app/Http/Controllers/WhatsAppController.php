@@ -6,6 +6,7 @@ use App\Models\BotConfig;
 use App\Models\FaqMenu;
 use App\Models\WhatsappLog;
 use App\Services\GeminiService;
+use App\Services\GroqService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,6 +17,7 @@ class WhatsAppController extends Controller
     public function __construct(
         private readonly WhatsAppService $whatsapp,
         private readonly GeminiService   $gemini,
+        private readonly GroqService     $groq,
     ) {}
 
     public function handle(Request $request): Response
@@ -168,9 +170,14 @@ class WhatsAppController extends Controller
 
     private function aiReply(string $chatId, string $from, string $userMessage, ?string $contactName, ?string $ipAddress): void
     {
-        $aiEnabled       = BotConfig::getBool('ai_enabled', true);
-        $effectiveApiKey = BotConfig::get('gemini_api_key') ?: config('services.gemini.key', '');
-        $aiAvailable     = $aiEnabled && !empty($effectiveApiKey);
+        $aiEnabled  = BotConfig::getBool('ai_enabled', true);
+        $provider   = BotConfig::get('ai_provider', 'gemini'); // 'gemini' or 'groq'
+
+        $effectiveApiKey = $provider === 'groq'
+            ? (BotConfig::get('groq_api_key') ?: config('services.groq.key', ''))
+            : (BotConfig::get('gemini_api_key') ?: config('services.gemini.key', ''));
+
+        $aiAvailable = $aiEnabled && !empty($effectiveApiKey);
 
         // When AI is off: redirect short noise messages to main menu instead of error spam
         if (!$aiAvailable) {
@@ -193,37 +200,66 @@ class WhatsAppController extends Controller
             $mode  = 'error';
         } else {
             $systemPrompt = BotConfig::get('ai_system_prompt', '');
-            $maxTokens    = BotConfig::getInt('ai_max_tokens', 500);
+            $maxTokens    = BotConfig::getInt('ai_max_tokens', 800);
             $temperature  = BotConfig::getFloat('ai_temperature', 0.7);
 
-            // Inject active FAQ content as knowledge base (cached 5 min)
+            // Inject FAQ as clean knowledge base — strip WhatsApp formatting
             $faqContext = Cache::remember('faq_ai_context', 300, function () {
                 return FaqMenu::active()
                     ->whereNotNull('content')
                     ->where('command', '!=', '0')
+                    ->where('command', '!=', '99')
                     ->orderBy('sort_order')
                     ->get(['title', 'content'])
-                    ->map(fn($m) => "### {$m->title}\n" . mb_substr(trim($m->content), 0, 800))
+                    ->map(function ($m) {
+                        $text = $m->content;
+                        $text = preg_replace('/Ketik \*[^*]+\*[^\n]*/iu', '', $text);
+                        $text = preg_replace('/─+/u', '', $text);
+                        $text = preg_replace('/\*([^*\n]+)\*/u', '$1', $text);
+                        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+                        return "### {$m->title}\n" . mb_substr(trim($text), 0, 600);
+                    })
                     ->implode("\n\n");
             });
 
             if ($faqContext) {
                 $systemPrompt .= "\n\n---\n"
-                    . "KONTEN FAQ & INFORMASI LAYANAN (gunakan sebagai referensi utama. "
-                    . "Jawab secara natural — JANGAN minta user mengetik perintah angka kecuali benar-benar perlu):\n\n"
+                    . "INFO LAYANAN DlmF (gunakan sebagai referensi HANYA jika pertanyaan berkaitan DlmF/kursus. "
+                    . "Untuk pertanyaan umum, abaikan konteks ini dan jawab dari pengetahuanmu sendiri. "
+                    . "JANGAN minta user mengetik angka atau perintah apapun kecuali user tanya spesifik tentang menu):\n\n"
                     . $faqContext;
             }
 
-            $result = $this->gemini->chat($userMessage, $systemPrompt, $maxTokens, $temperature);
+            // History stored in neutral format: [{role: user/assistant, content: string}]
+            $historyKey = 'chat_history_' . md5($from);
+            $history    = Cache::get($historyKey, []);
+
+            $result = $provider === 'groq'
+                ? $this->groq->chat($userMessage, $systemPrompt, $maxTokens, $temperature, $history)
+                : $this->gemini->chat($userMessage, $systemPrompt, $maxTokens, $temperature, $history);
 
             if ($result['success']) {
-                $reply  = $result['reply'] . "\n" . BotConfig::get('footer_ai', '');
+                $footer = BotConfig::get('footer_ai', '');
+                $reply  = $result['reply'] . ($footer ? "\n" . $footer : '');
                 $mode   = 'ai';
                 $tokens = $result['tokens'] ?? null;
+
+                // Save exchange to neutral history (keep last 6 turns = 3 exchanges)
+                $history[] = ['role' => 'user',      'content' => $userMessage];
+                $history[] = ['role' => 'assistant',  'content' => $result['reply']];
+                if (count($history) > 6) {
+                    $history = array_slice($history, -6);
+                }
+                Cache::put($historyKey, $history, 1800);
             } else {
-                $reply  = BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
                 $mode   = 'error';
                 $tokens = $result['tokens'] ?? null;
+
+                if (($result['error'] ?? '') === 'quota_exceeded') {
+                    $reply = "Maaf, MinFara AI sedang overload saat ini 😅\n\nCoba lagi dalam beberapa menit ya! Atau ketik *99* untuk langsung chat dengan admin kami.";
+                } else {
+                    $reply = BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
+                }
             }
         }
 

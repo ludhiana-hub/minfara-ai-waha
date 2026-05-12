@@ -49,6 +49,7 @@ PROMPT;
             ['key' => 'bot_name', 'value' => 'MinFara AI', 'type' => 'text', 'label' => 'Nama Bot', 'group' => 'general'],
             ['key' => 'bot_greeting', 'value' => 'halo,hai,hi,hello,hallo,mulai,start,menu,help', 'type' => 'text', 'label' => 'Kata Sapaan (pisah koma)', 'group' => 'general'],
             ['key' => 'ai_enabled', 'value' => 'true', 'type' => 'boolean', 'label' => 'Aktifkan AI Fallback', 'group' => 'ai'],
+            ['key' => 'ai_provider', 'value' => 'gemini', 'type' => 'text', 'label' => 'Provider AI (gemini/groq)', 'description' => 'Provider AI yang digunakan: gemini atau groq', 'group' => 'ai'],
             ['key' => 'ai_max_tokens', 'value' => '500', 'type' => 'number', 'label' => 'Maksimal Token AI', 'description' => 'Batas token output AI (100-2000)', 'group' => 'ai'],
             ['key' => 'ai_temperature', 'value' => '0.7', 'type' => 'number', 'label' => 'Temperatur AI (0.0-1.0)', 'description' => 'Semakin tinggi semakin kreatif, semakin rendah semakin konsisten', 'group' => 'ai'],
             ['key' => 'ai_system_prompt', 'value' => $systemPrompt, 'type' => 'textarea', 'label' => 'System Prompt AI', 'group' => 'ai'],
@@ -63,6 +64,8 @@ PROMPT;
             ['key' => 'waha_session', 'value' => 'default', 'type' => 'text', 'label' => 'WAHA Session Name', 'description' => 'Nama sesi WhatsApp di WAHA', 'group' => 'api'],
             ['key' => 'gemini_api_key', 'value' => '', 'type' => 'password', 'label' => 'Gemini API Key', 'description' => 'API Key Google Gemini dari Google AI Studio', 'group' => 'api'],
             ['key' => 'gemini_model', 'value' => 'gemini-2.0-flash', 'type' => 'text', 'label' => 'Gemini Model', 'description' => 'Model Gemini yang digunakan, contoh: gemini-2.0-flash', 'group' => 'api'],
+            ['key' => 'groq_api_key', 'value' => '', 'type' => 'password', 'label' => 'Groq API Key', 'description' => 'API Key Groq dari console.groq.com', 'group' => 'api'],
+            ['key' => 'groq_model', 'value' => 'llama-3.3-70b-versatile', 'type' => 'text', 'label' => 'Groq Model', 'description' => 'Model Groq yang digunakan, contoh: llama-3.3-70b-versatile', 'group' => 'api'],
         ];
 
         foreach ($configs as $config) {

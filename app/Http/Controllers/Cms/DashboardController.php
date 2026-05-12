@@ -37,10 +37,14 @@ class DashboardController extends Controller
 
     private function getWahaStatus(): array
     {
+        $wahaUrl  = BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
+        $wahaKey  = BotConfig::get('waha_api_key') ?: config('services.waha.api_key', '');
+        $session  = BotConfig::get('waha_session') ?: config('services.waha.session', 'default');
+
         try {
             $response = Http::timeout(5)
-                ->withHeaders(['X-Api-Key' => config('services.waha.api_key')])
-                ->get(config('services.waha.url') . '/api/sessions/default');
+                ->withHeaders(['X-Api-Key' => $wahaKey])
+                ->get("{$wahaUrl}/api/sessions/{$session}");
 
             if ($response->ok()) {
                 $data = $response->json();

@@ -20,35 +20,50 @@ class GeminiService
     }
 
     /**
+Ce     * @param  array<array{role: string, content: string}> $history  Neutral format [{role: user/assistant, content: string}]
      * @return array{success: bool, reply: string, tokens: int|null, error: string|null}
      */
-    public function chat(string $userMessage, string $systemPrompt, int $maxTokens = 500, float $temperature = 0.7): array
+    public function chat(string $userMessage, string $systemPrompt, int $maxTokens = 500, float $temperature = 0.7, array $history = []): array
     {
+        // Convert neutral format to Gemini format (user/assistant → user/model, content → parts)
+        $contents = array_map(fn($turn) => [
+            'role'  => $turn['role'] === 'assistant' ? 'model' : 'user',
+            'parts' => [['text' => $turn['content']]],
+        ], $history);
+
+        $contents[] = ['role' => 'user', 'parts' => [['text' => $userMessage]]];
+
+        $payload = [
+            'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+            'contents'           => $contents,
+            'generationConfig'   => [
+                'maxOutputTokens' => $maxTokens,
+                'temperature'     => $temperature,
+            ],
+        ];
+
         try {
-            $response = Http::timeout(15)
-                ->post("{$this->endpoint}?key={$this->apiKey}", [
-                    'system_instruction' => [
-                        'parts' => [['text' => $systemPrompt]],
-                    ],
-                    'contents' => [
-                        [
-                            'role'  => 'user',
-                            'parts' => [['text' => $userMessage]],
-                        ],
-                    ],
-                    'generationConfig' => [
-                        'maxOutputTokens' => $maxTokens,
-                        'temperature'     => $temperature,
-                    ],
-                ]);
+            $response = Http::timeout(20)
+                ->post("{$this->endpoint}?key={$this->apiKey}", $payload);
+
+            // Retry once after 3s on rate-limit (429) — handles per-minute quota bursts
+            if ($response->status() === 429) {
+                sleep(3);
+                $response = Http::timeout(20)
+                    ->post("{$this->endpoint}?key={$this->apiKey}", $payload);
+            }
 
             if ($response->failed()) {
-                Log::error('Gemini API failed', [
-                    'status' => $response->status(),
-                    'error'  => $response->json('error.message') ?? 'Unknown error',
-                ]);
+                $status  = $response->status();
+                $message = $response->json('error.message') ?? 'Unknown error';
 
-                return ['success' => false, 'reply' => '', 'tokens' => null, 'error' => $response->json('error.message') ?? 'Gemini API error'];
+                Log::error('Gemini API failed', ['status' => $status, 'error' => $message]);
+
+                $userFacing = $status === 429
+                    ? 'quota_exceeded'
+                    : $message;
+
+                return ['success' => false, 'reply' => '', 'tokens' => null, 'error' => $userFacing];
             }
 
             $data = $response->json();

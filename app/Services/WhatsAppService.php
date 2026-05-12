@@ -22,11 +22,24 @@ class WhatsAppService
 
     public function sendMessage(string $chatId, string $text): bool
     {
-        // WAHA WEBJS requires @c.us suffix for individual chats
         if (!str_contains($chatId, '@')) {
             $chatId .= '@c.us';
         }
 
+        $sent = $this->doSend($chatId, $text);
+
+        // @lid accounts: WAHA WEBJS sends `from` without suffix so we default to @c.us,
+        // but @lid accounts can't receive via @c.us — retry with @lid suffix.
+        if (!$sent && str_ends_with($chatId, '@c.us')) {
+            $lidId = substr($chatId, 0, -4) . '@lid';
+            $sent  = $this->doSend($lidId, $text);
+        }
+
+        return $sent;
+    }
+
+    private function doSend(string $chatId, string $text): bool
+    {
         try {
             $response = Http::timeout(60)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
@@ -60,6 +73,4 @@ class WhatsAppService
         return FaqMenu::active()->where('command', '0')->value('content')
             ?? "Hallo! Ketik *1* untuk Program Kursus atau *99* untuk hubungi admin.";
     }
-
-
 }

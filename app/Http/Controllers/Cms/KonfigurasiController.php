@@ -20,6 +20,8 @@ class KonfigurasiController extends Controller
             'waha_session'   => config('services.waha.session', 'default'),
             'gemini_api_key' => config('services.gemini.key', ''),
             'gemini_model'   => config('services.gemini.model', 'gemini-2.0-flash'),
+            'groq_api_key'   => config('services.groq.key', ''),
+            'groq_model'     => config('services.groq.model', 'llama-3.3-70b-versatile'),
         ];
 
         return view('cms.konfigurasi.index', compact('configs', 'envFallbacks'));
@@ -29,14 +31,14 @@ class KonfigurasiController extends Controller
     {
         $keys = [
             'bot_name', 'bot_greeting',
-            'ai_enabled', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
+            'ai_enabled', 'ai_provider', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
             'footer_faq', 'footer_ai', 'fallback_message',
             'admin_wa', 'admin_wa_label', 'office_hours',
-            'waha_url', 'waha_session', 'gemini_model',
+            'waha_url', 'waha_session', 'gemini_model', 'groq_model',
         ];
 
         // API key fields: only save if not empty (empty = keep existing value)
-        $sensitiveKeys = ['waha_api_key', 'gemini_api_key'];
+        $sensitiveKeys = ['waha_api_key', 'gemini_api_key', 'groq_api_key'];
 
         foreach ($keys as $key) {
             if ($request->has($key)) {
