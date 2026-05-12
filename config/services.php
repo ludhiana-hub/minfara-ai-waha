@@ -42,13 +42,18 @@ return [
     ],
 
     'gemini' => [
-        'key'   => env('GEMINI_API_KEY'),
+        'key'   => env('GEMINI_API_KEY', ''),
         'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
     ],
 
     'groq' => [
-        'key'   => env('GROQ_API_KEY'),
+        'key'   => env('GROQ_API_KEY', ''),
         'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+    ],
+
+    'openrouter' => [
+        'key'   => env('OPENROUTER_API_KEY', ''),
+        'model' => env('OPENROUTER_MODEL', 'deepseek/deepseek-chat-v3-0324:free'),
     ],
 
 ];

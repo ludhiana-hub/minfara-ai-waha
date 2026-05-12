@@ -15,13 +15,15 @@ class KonfigurasiController extends Controller
 
         // Env fallbacks for API credentials — shown in the form when DB value is empty
         $envFallbacks = [
-            'waha_url'       => config('services.waha.url', ''),
-            'waha_api_key'   => config('services.waha.api_key', ''),
-            'waha_session'   => config('services.waha.session', 'default'),
-            'gemini_api_key' => config('services.gemini.key', ''),
-            'gemini_model'   => config('services.gemini.model', 'gemini-2.0-flash'),
-            'groq_api_key'   => config('services.groq.key', ''),
-            'groq_model'     => config('services.groq.model', 'llama-3.3-70b-versatile'),
+            'waha_url'            => config('services.waha.url', ''),
+            'waha_api_key'        => config('services.waha.api_key', ''),
+            'waha_session'        => config('services.waha.session', 'default'),
+            'gemini_api_key'      => config('services.gemini.key', ''),
+            'gemini_model'        => config('services.gemini.model', 'gemini-2.0-flash'),
+            'groq_api_key'        => config('services.groq.key', ''),
+            'groq_model'          => config('services.groq.model', 'llama-3.3-70b-versatile'),
+            'openrouter_api_key'  => config('services.openrouter.key', ''),
+            'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
         ];
 
         return view('cms.konfigurasi.index', compact('configs', 'envFallbacks'));
@@ -31,14 +33,14 @@ class KonfigurasiController extends Controller
     {
         $keys = [
             'bot_name', 'bot_greeting',
-            'ai_enabled', 'ai_provider', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
+            'ai_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
             'footer_faq', 'footer_ai', 'fallback_message',
             'admin_wa', 'admin_wa_label', 'office_hours',
-            'waha_url', 'waha_session', 'gemini_model', 'groq_model',
+            'waha_url', 'waha_session', 'gemini_model', 'groq_model', 'openrouter_model',
         ];
 
         // API key fields: only save if not empty (empty = keep existing value)
-        $sensitiveKeys = ['waha_api_key', 'gemini_api_key', 'groq_api_key'];
+        $sensitiveKeys = ['waha_api_key', 'gemini_api_key', 'groq_api_key', 'openrouter_api_key'];
 
         foreach ($keys as $key) {
             if ($request->has($key)) {

@@ -60,25 +60,11 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Provider AI</label>
-                        @php $aiProvider = $configs['ai_provider']->value ?? 'gemini'; @endphp
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ai_provider" id="providerGemini" value="gemini"
-                                    {{ $aiProvider === 'gemini' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="providerGemini">
-                                    <i class="bi bi-stars text-warning"></i> Google Gemini
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="ai_provider" id="providerGroq" value="groq"
-                                    {{ $aiProvider === 'groq' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="providerGroq">
-                                    <i class="bi bi-lightning-charge-fill text-primary"></i> Groq
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-text">Pilih provider AI yang digunakan. Pastikan API Key provider tersebut sudah diisi di tab <strong>API &amp; Kredensial</strong>.</div>
+                        <label class="form-label fw-semibold">Urutan Provider AI</label>
+                        <input type="text" name="ai_provider_order" class="form-control font-monospace"
+                            value="{{ $configs['ai_provider_order']->value ?? 'groq,gemini,openrouter' }}"
+                            placeholder="groq,gemini,openrouter">
+                        <div class="form-text">Urutan prioritas fallback, pisah koma. Bot mencoba provider pertama, lalu beralih ke berikutnya jika kuota habis. Pastikan API Key setiap provider sudah diisi di tab <strong>API &amp; Kredensial</strong>.</div>
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
@@ -324,6 +310,69 @@
                             @if(isset($configs['groq_api_key']) && $configs['groq_api_key']->value)
                                 <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
                             @elseif($envFallbacks['groq_api_key'])
+                                <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
+                            @else
+                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- OpenRouter -->
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-diagram-3-fill text-success"></i>
+                    <strong>OpenRouter AI</strong>
+                    <span class="badge bg-success ms-auto">Free Models Available</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Model</label>
+                            @php $orModel = $configs['openrouter_model']->value ?? $envFallbacks['openrouter_model']; @endphp
+                            <input type="text" name="openrouter_model" list="orModelList" class="form-control font-monospace"
+                                value="{{ $orModel }}"
+                                placeholder="qwen/qwen3-14b:free">
+                            <datalist id="orModelList">
+                                {{-- ===== GRATIS (wajib pakai :free di akhir nama model) ===== --}}
+                                <option value="qwen/qwen3-14b:free">✅ GRATIS | Qwen3 14B — Cepat, multilingual ID+DE ⭐ Direkomendasikan</option>
+                                <option value="qwen/qwen3-30b-a3b:free">✅ GRATIS | Qwen3 30B — Lebih pintar, sedikit lebih lambat</option>
+                                <option value="qwen/qwen3-8b:free">✅ GRATIS | Qwen3 8B — Super cepat, ringan</option>
+                                <option value="qwen/qwen3-235b-a22b:free">✅ GRATIS | Qwen3 235B (MoE) — Paling powerful, bisa lambat</option>
+                                <option value="deepseek/deepseek-chat-v3-0324:free">✅ GRATIS | DeepSeek Chat V3 — Sangat baik, multilingual</option>
+                                <option value="deepseek/deepseek-r1:free">✅ GRATIS | DeepSeek R1 — Reasoning, lebih lambat</option>
+                                <option value="meta-llama/llama-3.3-70b-instruct:free">✅ GRATIS | Llama 3.3 70B — Meta, capable</option>
+                                <option value="meta-llama/llama-3.1-8b-instruct:free">✅ GRATIS | Llama 3.1 8B — Meta, super cepat</option>
+                                <option value="google/gemma-3-27b-it:free">✅ GRATIS | Gemma 3 27B — Google</option>
+                                <option value="google/gemma-3-12b-it:free">✅ GRATIS | Gemma 3 12B — Google, cepat</option>
+                                <option value="mistralai/mistral-7b-instruct:free">✅ GRATIS | Mistral 7B — Cepat</option>
+                                <option value="microsoft/phi-3-mini-128k-instruct:free">✅ GRATIS | Phi-3 Mini 128K — Konteks panjang</option>
+                            </datalist>
+                            <div class="form-text text-danger fw-semibold">
+                                ⚠️ WAJIB ada <code>:free</code> di akhir nama model — tanpa itu OpenRouter mengenakan biaya/kredit!</div>
+                            <div class="form-text">
+                                Semua model di atas bertanda <code>:free</code> = GRATIS, hanya ada batas request per hari.
+                                @if(isset($configs['openrouter_model']) && $configs['openrouter_model']->value)
+                                    <span class="badge bg-success ms-1">DB</span>
+                                @elseif($envFallbacks['openrouter_model'])
+                                    <span class="badge bg-secondary ms-1">.env</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">API Key</label>
+                            @php $orKey = $configs['openrouter_api_key']->value ?? $envFallbacks['openrouter_api_key']; @endphp
+                            <div class="input-group">
+                                <input type="password" name="openrouter_api_key" id="openrouterApiKey" class="form-control font-monospace"
+                                    autocomplete="new-password"
+                                    value="{{ $orKey }}">
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-pwd" data-target="openrouterApiKey">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            @if(isset($configs['openrouter_api_key']) && $configs['openrouter_api_key']->value)
+                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
+                            @elseif($envFallbacks['openrouter_api_key'])
                                 <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
                             @else
                                 <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>

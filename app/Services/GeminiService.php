@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Models\BotConfig;
+use App\Services\Contracts\AiServiceInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class GeminiService
+class GeminiService implements AiServiceInterface
 {
     private string $apiKey;
     private string $model;
@@ -14,18 +15,14 @@ class GeminiService
 
     public function __construct()
     {
-        $this->apiKey   = BotConfig::get('gemini_api_key') ?: config('services.gemini.key', '');
-        $this->model    = BotConfig::get('gemini_model')   ?: config('services.gemini.model', 'gemini-2.0-flash');
+        $this->apiKey   = BotConfig::get('gemini_api_key') ?: (config('services.gemini.key') ?? '');
+        $this->model    = BotConfig::get('gemini_model')   ?: (config('services.gemini.model') ?? 'gemini-2.0-flash');
         $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
     }
 
-    /**
-Ce     * @param  array<array{role: string, content: string}> $history  Neutral format [{role: user/assistant, content: string}]
-     * @return array{success: bool, reply: string, tokens: int|null, error: string|null}
-     */
     public function chat(string $userMessage, string $systemPrompt, int $maxTokens = 500, float $temperature = 0.7, array $history = []): array
     {
-        // Convert neutral format to Gemini format (user/assistant → user/model, content → parts)
+        // Convert neutral format [{role: user/assistant, content}] to Gemini format [{role: user/model, parts}]
         $contents = array_map(fn($turn) => [
             'role'  => $turn['role'] === 'assistant' ? 'model' : 'user',
             'parts' => [['text' => $turn['content']]],
@@ -46,7 +43,7 @@ Ce     * @param  array<array{role: string, content: string}> $history  Neutral f
             $response = Http::timeout(20)
                 ->post("{$this->endpoint}?key={$this->apiKey}", $payload);
 
-            // Retry once after 3s on rate-limit (429) — handles per-minute quota bursts
+            // Retry once on rate-limit — handles per-minute quota bursts
             if ($response->status() === 429) {
                 sleep(3);
                 $response = Http::timeout(20)
@@ -59,11 +56,8 @@ Ce     * @param  array<array{role: string, content: string}> $history  Neutral f
 
                 Log::error('Gemini API failed', ['status' => $status, 'error' => $message]);
 
-                $userFacing = $status === 429
-                    ? 'quota_exceeded'
-                    : $message;
-
-                return ['success' => false, 'reply' => '', 'tokens' => null, 'error' => $userFacing];
+                return ['success' => false, 'reply' => '', 'tokens' => null,
+                        'error'   => $status === 429 ? 'quota_exceeded' : $message];
             }
 
             $data = $response->json();
