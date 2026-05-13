@@ -38,6 +38,28 @@ class WhatsAppService
         return $sent;
     }
 
+    public function startTyping(string $chatId): void
+    {
+        $this->doPresence($chatId, 'startTyping');
+    }
+
+    public function stopTyping(string $chatId): void
+    {
+        $this->doPresence($chatId, 'stopTyping');
+    }
+
+    private function doPresence(string $chatId, string $action): void
+    {
+        try {
+            Http::timeout(3)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->post("{$this->url}/api/{$action}", [
+                    'session' => $this->session,
+                    'chatId'  => $chatId,
+                ]);
+        } catch (\Exception) {}
+    }
+
     private function doSend(string $chatId, string $text): bool
     {
         try {

@@ -63,7 +63,7 @@ class ProcessAiReply implements ShouldQueue
             Cache::put($cooldownKey, true, 5);
 
             $systemPrompt = BotConfig::get('ai_system_prompt', '');
-            $maxTokens    = BotConfig::getInt('ai_max_tokens', 400);
+            $maxTokens    = BotConfig::getInt('ai_max_tokens', 1024);
             $temperature  = BotConfig::getFloat('ai_temperature', 0.7);
 
             $aiInput = mb_substr($this->userMessage, 0, 600);
@@ -178,6 +178,9 @@ class ProcessAiReply implements ShouldQueue
                     $mode   = 'error';
                     $tokens = is_array($result) ? ($result['tokens'] ?? null) : null;
 
+                    // Perpanjang cooldown ke 60 detik agar fallback tidak spam
+                    Cache::put($cooldownKey, true, 60);
+
                     $allQuotaExceeded = !empty($failedErrors)
                         && count(array_filter($failedErrors, fn($e) => $e !== 'quota_exceeded')) === 0;
 
@@ -189,6 +192,7 @@ class ProcessAiReply implements ShouldQueue
         }
 
         if (empty($reply)) {
+            $whatsapp->stopTyping($this->chatId);
             return;
         }
 
@@ -199,24 +203,29 @@ class ProcessAiReply implements ShouldQueue
             ->exists();
 
         if ($recentDuplicate) {
+            $whatsapp->stopTyping($this->chatId);
             return;
         }
 
-        if ($whatsapp->sendMessage($this->chatId, $reply)) {
-            try {
-                WhatsappLog::create([
-                    'from_number'    => $this->from,
-                    'contact_name'   => $this->contactName,
-                    'ip_address'     => $this->ipAddress,
-                    'message_in'     => substr($this->userMessage, 0, 1000),
-                    'message_out'    => $reply,
-                    'mode'           => $mode,
-                    'ai_tokens_used' => $tokens ?? null,
-                    'responded_at'   => now(),
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
+        try {
+            if ($whatsapp->sendMessage($this->chatId, $reply)) {
+                try {
+                    WhatsappLog::create([
+                        'from_number'    => $this->from,
+                        'contact_name'   => $this->contactName,
+                        'ip_address'     => $this->ipAddress,
+                        'message_in'     => substr($this->userMessage, 0, 1000),
+                        'message_out'    => $reply,
+                        'mode'           => $mode,
+                        'ai_tokens_used' => $tokens ?? null,
+                        'responded_at'   => now(),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
+                }
             }
+        } finally {
+            $whatsapp->stopTyping($this->chatId);
         }
     }
 

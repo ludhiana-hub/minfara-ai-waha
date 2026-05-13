@@ -97,6 +97,8 @@ class WhatsAppController extends Controller
 
         $menu = FaqMenu::active()->where('command', $command)->first();
 
+        $this->whatsapp->startTyping($chatId);
+
         if ($menu) {
             $this->faqReply($chatId, $from, $menu, $rawInput, $contactName, $ipAddress);
         } else {
@@ -128,7 +130,9 @@ class WhatsAppController extends Controller
             . "Jam: $officeHours\n\n"
             . "Ketik *0* untuk kembali ke menu utama.";
 
+        $this->whatsapp->startTyping($chatId);
         if ($this->whatsapp->sendMessage($chatId, $reply)) {
+            $this->whatsapp->stopTyping($chatId);
             try {
                 WhatsappLog::create([
                     'from_number'  => $from,
@@ -160,6 +164,7 @@ class WhatsAppController extends Controller
         }
 
         if ($this->whatsapp->sendMessage($chatId, $content)) {
+            $this->whatsapp->stopTyping($chatId);
             try {
                 WhatsappLog::create([
                     'from_number'  => $from,

@@ -18,7 +18,8 @@ FORMAT WA (WAJIB):
 • *bold* untuk info penting | _italic_ untuk kata/kalimat Jerman | • atau - untuk daftar
 • Pisahkan paragraf dengan baris kosong
 • DILARANG: # heading, tabel, HTML, **double asterisk**
-• Emoji secukupnya | Jawaban pendek untuk pertanyaan singkat, detail untuk pertanyaan teknis
+• Emoji secukupnya | Jawaban singkat untuk sapaan, *komprehensif dan tuntas* untuk pertanyaan teknis/detail
+• WAJIB: Selesaikan setiap jawaban — JANGAN pernah memotong di tengah kalimat atau daftar
 
 CARA MENJAWAB:
 1. Fokus pada Bahasa Jerman & program DlmF
@@ -42,7 +43,7 @@ PROMPT;
             ['key' => 'bot_greeting',         'value' => 'halo,hai,hi,hello,hallo,mulai,start,menu,help',  'type' => 'text',     'label' => 'Kata Sapaan (pisah koma)',         'group' => 'general'],
             ['key' => 'ai_enabled',           'value' => 'true',                                           'type' => 'boolean',  'label' => 'Aktifkan AI Fallback',             'group' => 'ai'],
             ['key' => 'ai_provider_order',    'value' => 'groq,gemini,openrouter',                         'type' => 'text',     'label' => 'Urutan Provider AI',               'description' => 'Urutan prioritas provider, dipisah koma. Contoh: groq,gemini,openrouter', 'group' => 'ai'],
-            ['key' => 'ai_max_tokens',        'value' => '400',                                            'type' => 'number',   'label' => 'Maksimal Token AI',                'description' => 'Batas token output AI (100-2000)', 'group' => 'ai'],
+            ['key' => 'ai_max_tokens',        'value' => '1024',                                            'type' => 'number',   'label' => 'Maksimal Token AI',                'description' => 'Batas token output AI (100-2000)', 'group' => 'ai'],
             ['key' => 'ai_temperature',       'value' => '0.7',                                            'type' => 'number',   'label' => 'Temperatur AI (0.0-1.0)',          'description' => 'Semakin tinggi semakin kreatif, semakin rendah semakin konsisten', 'group' => 'ai'],
             ['key' => 'ai_system_prompt',     'value' => $systemPrompt,                                    'type' => 'textarea', 'label' => 'System Prompt AI',                 'group' => 'ai'],
             ['key' => 'footer_faq',           'value' => "─────────────────\nKetik *0* menu utama | *99* hubungi admin",
@@ -60,9 +61,9 @@ PROMPT;
             ['key' => 'gemini_api_key',       'value' => '',                                                'type' => 'password', 'label' => 'Gemini API Key',                   'description' => 'API Key Google Gemini dari Google AI Studio', 'group' => 'api'],
             ['key' => 'gemini_model',         'value' => 'gemini-2.0-flash',                               'type' => 'text',     'label' => 'Gemini Model',                     'description' => 'Model Gemini yang digunakan, contoh: gemini-2.0-flash', 'group' => 'api'],
             ['key' => 'groq_api_key',         'value' => '',                                                'type' => 'password', 'label' => 'Groq API Key',                     'description' => 'API Key Groq dari console.groq.com', 'group' => 'api'],
-            ['key' => 'groq_model',           'value' => 'llama-3.3-70b-versatile',                        'type' => 'text',     'label' => 'Groq Model',                       'description' => 'Model Groq yang digunakan, contoh: llama-3.3-70b-versatile', 'group' => 'api'],
+            ['key' => 'groq_model',           'value' => 'qwen/qwen3-32b',                        'type' => 'text',     'label' => 'Groq Model',                       'description' => 'Model Groq yang digunakan, contoh: llama-3.3-70b-versatile', 'group' => 'api'],
             ['key' => 'openrouter_api_key',   'value' => '',                                                'type' => 'password', 'label' => 'OpenRouter API Key',               'description' => 'API Key dari openrouter.ai', 'group' => 'api'],
-            ['key' => 'openrouter_model',     'value' => 'qwen/qwen3-14b:free',                             'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: qwen/qwen3-14b:free', 'group' => 'api'],
+            ['key' => 'openrouter_model',     'value' => 'meta-llama/llama-4-scout:free',                    'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: meta-llama/llama-4-scout:free', 'group' => 'api'],
         ];
 
         foreach ($configs as $config) {
