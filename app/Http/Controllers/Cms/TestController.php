@@ -35,7 +35,7 @@ class TestController extends Controller
         $start   = microtime(true);
 
         try {
-            $response = Http::timeout(60)
+            $response = Http::timeout(15)
                 ->withHeaders(['X-Api-Key' => $wahaKey])
                 ->post("{$wahaUrl}/api/sendText", [
                     'session' => $session,

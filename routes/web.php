@@ -11,7 +11,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('cms-minfara')->name('cms.')->group(function () {
+Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(function () {
     Route::get('/',                     [DashboardController::class, 'index'])->name('dashboard');
     Route::get('faq',                   [FaqController::class, 'index'])->name('faq.index');
     Route::get('faq/create',            [FaqController::class, 'create'])->name('faq.create');
@@ -45,7 +45,7 @@ Route::prefix('cms-minfara')->name('cms.')->group(function () {
                     'status'    => $data['status'] ?? 'UNKNOWN',
                 ]);
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception) {}
         return response()->json(['connected' => false, 'status' => 'DISCONNECTED']);
     })->name('api.waha-status');
 });

@@ -13,6 +13,7 @@ abstract class OpenAiCompatibleService implements AiServiceInterface
     protected string $model;
     protected string $endpoint;
     protected string $providerName;
+    protected array  $extraPayload = [];
 
     protected function httpClient(): PendingRequest
     {
@@ -33,20 +34,18 @@ abstract class OpenAiCompatibleService implements AiServiceInterface
 
         $messages[] = ['role' => 'user', 'content' => $userMessage];
 
-        $payload = [
+        $payload = array_merge([
             'model'       => $this->model,
             'messages'    => $messages,
             'max_tokens'  => $maxTokens,
             'temperature' => $temperature,
-        ];
+        ], $this->extraPayload);
 
         try {
             $response = $this->httpClient()->post($this->endpoint, $payload);
 
-            // Retry once on rate-limit — handles per-minute quota bursts
             if ($response->status() === 429) {
-                sleep(3);
-                $response = $this->httpClient()->post($this->endpoint, $payload);
+                return ['success' => false, 'reply' => '', 'tokens' => null, 'error' => 'quota_exceeded'];
             }
 
             if ($response->failed()) {
@@ -67,6 +66,8 @@ abstract class OpenAiCompatibleService implements AiServiceInterface
             }
 
             $text   = trim($data['choices'][0]['message']['content']);
+            // Strip <think>...</think> blocks (Qwen3 and other reasoning models)
+            $text   = trim(preg_replace('/<think>.*?<\/think>/si', '', $text));
             $tokens = $data['usage']['total_tokens'] ?? null;
 
             if (empty($text)) {

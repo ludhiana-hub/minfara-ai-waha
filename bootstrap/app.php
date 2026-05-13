@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/whatsapp/webhook',
         ]);
+        $middleware->alias([
+            'localhost' => \App\Http\Middleware\LocalhostOnly::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

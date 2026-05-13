@@ -41,7 +41,7 @@ class WhatsAppService
     private function doSend(string $chatId, string $text): bool
     {
         try {
-            $response = Http::timeout(60)
+            $response = Http::timeout(15)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
                 ->post("{$this->url}/api/sendText", [
                     'session' => $this->session,

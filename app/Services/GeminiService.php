@@ -43,11 +43,8 @@ class GeminiService implements AiServiceInterface
             $response = Http::timeout(20)
                 ->post("{$this->endpoint}?key={$this->apiKey}", $payload);
 
-            // Retry once on rate-limit — handles per-minute quota bursts
             if ($response->status() === 429) {
-                sleep(3);
-                $response = Http::timeout(20)
-                    ->post("{$this->endpoint}?key={$this->apiKey}", $payload);
+                return ['success' => false, 'reply' => '', 'tokens' => null, 'error' => 'quota_exceeded'];
             }
 
             if ($response->failed()) {
