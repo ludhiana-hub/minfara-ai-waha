@@ -50,6 +50,8 @@ class ProcessAiReply implements ShouldQueue
                 } else {
                     $whatsapp->sendMessage($this->chatId, "Hallo! 👋 Ketik *0* untuk melihat menu atau *99* untuk hubungi admin.");
                 }
+
+                $whatsapp->stopTyping($this->chatId);
                 return;
             }
             $reply  = BotConfig::get('fallback_message', "Hallo! 👋 Perintah tidak dikenali.\n\nKetik *0* untuk melihat menu lengkap atau *99* untuk chat dengan admin.");
@@ -58,6 +60,7 @@ class ProcessAiReply implements ShouldQueue
         } else {
             $cooldownKey = 'ai_cooldown_' . md5($this->from);
             if (Cache::has($cooldownKey)) {
+                $whatsapp->stopTyping($this->chatId);
                 return;
             }
             Cache::put($cooldownKey, true, 5);

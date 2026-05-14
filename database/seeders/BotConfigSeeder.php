@@ -63,7 +63,7 @@ PROMPT;
             ['key' => 'groq_api_key',         'value' => '',                                                'type' => 'password', 'label' => 'Groq API Key',                     'description' => 'API Key Groq dari console.groq.com', 'group' => 'api'],
             ['key' => 'groq_model',           'value' => 'qwen/qwen3-32b',                        'type' => 'text',     'label' => 'Groq Model',                       'description' => 'Model Groq yang digunakan, contoh: llama-3.3-70b-versatile', 'group' => 'api'],
             ['key' => 'openrouter_api_key',   'value' => '',                                                'type' => 'password', 'label' => 'OpenRouter API Key',               'description' => 'API Key dari openrouter.ai', 'group' => 'api'],
-            ['key' => 'openrouter_model',     'value' => 'meta-llama/llama-4-scout:free',                    'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: meta-llama/llama-4-scout:free', 'group' => 'api'],
+            ['key' => 'openrouter_model',     'value' => 'deepseek/deepseek-v4-flash:free',                  'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: deepseek/deepseek-v4-flash:free', 'group' => 'api'],
         ];
 
         foreach ($configs as $config) {
