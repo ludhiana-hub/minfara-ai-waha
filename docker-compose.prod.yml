@@ -1,6 +1,6 @@
 # Production — Coolify + Traefik
 # Repo root = minfara-bot/, semua path relative ke sini
-# 
+
 x-php-env: &php-env
   APP_NAME: "${APP_NAME:-Deutsch Lernen mit Fara}"
   APP_ENV: production
@@ -53,16 +53,16 @@ services:
         condition: service_healthy
     networks:
       - minfara-net
+    labels:
+      - "traefik.enable=false"
 
   nginx:
-    # context diset ke docker/nginx/ → Dockerfile dibaca dari sana
-    # COPY di dalam Dockerfile nginx cukup: COPY default.conf /etc/nginx/conf.d/default.conf
     build:
-      context: docker/nginx
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
-    volumes:
-      - app_public:/var/www/public:ro
+    expose:
+      - "80"
     depends_on:
       - app
     networks:
@@ -88,6 +88,8 @@ services:
       start_period: 30s
     networks:
       - minfara-net
+    labels:
+      - "traefik.enable=false"
 
   queue:
     build:
@@ -108,6 +110,8 @@ services:
         condition: service_started
     networks:
       - minfara-net
+    labels:
+      - "traefik.enable=false"
 
   scheduler:
     build:
@@ -127,10 +131,14 @@ services:
         condition: service_started
     networks:
       - minfara-net
+    labels:
+      - "traefik.enable=false"
 
   waha:
     image: devlikeapro/waha
     restart: unless-stopped
+    expose:
+      - "3000"
     environment:
       WAHA_API_KEY: "${WAHA_API_KEY}"
       WAHA_DASHBOARD_USERNAME: "${WAHA_DASHBOARD_USERNAME}"
@@ -141,13 +149,14 @@ services:
       - waha_data:/app/.sessions
     networks:
       - minfara-net
+    labels:
+      - "traefik.enable=true"
 
 volumes:
   mysql_data:
   waha_data:
   app_storage:
   app_logs:
-  app_public:
 
 networks:
   minfara-net:

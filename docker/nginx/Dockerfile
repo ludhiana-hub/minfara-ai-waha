@@ -1,11 +1,18 @@
-# docker/nginx/Dockerfile
-# context = docker/nginx/ → jadi COPY cukup pakai nama file langsung 
+# Stage 1: Build Vite assets
+FROM node:20-alpine AS assets
+WORKDIR /app
+COPY package.json .
+RUN npm install --no-audit --no-fund
+COPY . .
+RUN npm run build
 
+# Stage 2: Nginx
 FROM nginx:1.25-alpine
 
-# Karena context = docker/nginx/, cukup COPY default.conf (tanpa path panjang)
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-RUN mkdir -p /var/www/public
+# Static files from source + compiled Vite assets
+COPY public /var/www/public
+COPY --from=assets /app/public/build /var/www/public/build
 
 EXPOSE 80
