@@ -151,6 +151,10 @@ services:
       - minfara-net
     labels:
       - "traefik.enable=true"
+      # Port eksplisit agar Traefik tidak salah detect
+      - "traefik.http.services.waha.loadbalancer.server.port=3000"
+      # SSE fix: flush response langsung tanpa buffer — wajib untuk WAHA dashboard
+      - "traefik.http.services.waha.loadbalancer.responseforwarding.flushinterval=-1ms"
 
 volumes:
   mysql_data:
