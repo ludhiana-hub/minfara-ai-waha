@@ -9,15 +9,11 @@ RUN npm run build
 # Stage 2: PHP-FPM — app, queue, scheduler
 FROM php:8.3-fpm-alpine
 
-RUN apk add --no-cache \
-    git curl zip unzip \
-    libpng-dev oniguruma-dev libxml2-dev \
-    freetype-dev libjpeg-turbo-dev libzip-dev \
-    icu-dev linux-headers
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j2 \
-    pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache
+# install-php-extensions: gunakan binary pre-compiled, tidak perlu compile dari source
+# jauh lebih hemat RAM dan cepat vs docker-php-ext-install
+ADD https://github.com/mlocati/php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions \
+    && install-php-extensions pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
