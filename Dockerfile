@@ -11,8 +11,10 @@ FROM php:8.3-fpm-alpine
 
 # install-php-extensions: gunakan binary pre-compiled, tidak perlu compile dari source
 # jauh lebih hemat RAM dan cepat vs docker-php-ext-install
-ADD https://github.com/mlocati/php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions \
+RUN apk add --no-cache curl \
+    && curl -sSLf https://github.com/mlocati/php-extension-installer/releases/latest/download/install-php-extensions \
+       -o /usr/local/bin/install-php-extensions \
+    && chmod +x /usr/local/bin/install-php-extensions \
     && install-php-extensions pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
