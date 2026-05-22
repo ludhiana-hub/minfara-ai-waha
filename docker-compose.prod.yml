@@ -1,5 +1,12 @@
 # Production — Coolify + Traefik
 # Repo root = minfara-bot/, semua path relative ke sini
+#
+# PERUBAHAN vs versi lama:
+#   1. Nginx config di-COPY ke dalam image (bukan bind mount) → fix OCI mount error
+#   2. Hapus bind mount .:/var/www → ganti COPY di Dockerfile saat build
+#   3. Hapus container_name hardcoded → biarkan Coolify yang assign
+#   4. Hapus expose port 8080 langsung → routing lewat Coolify/Traefik proxy
+#   5. Tambah labels Traefik untuk routing HTTP
 
 x-php-env: &php-env
   APP_NAME: "${APP_NAME:-Deutsch Lernen mit Fara}"
@@ -41,13 +48,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: minfara-app
     restart: unless-stopped
     working_dir: /var/www
     environment:
       <<: *php-env
     volumes:
-      - .:/var/www
       - app_storage:/var/www/storage/app
       - app_logs:/var/www/storage/logs
     depends_on:
@@ -57,24 +62,25 @@ services:
       - minfara-net
 
   nginx:
-    image: nginx:1.25-alpine
-    container_name: minfara-nginx
+    # Build image nginx custom yang sudah INCLUDE config di dalamnya
+    # → tidak perlu bind mount file dari host, tidak akan error di Coolify
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
-    expose:
-      - "80"
-    ports:
-      - "127.0.0.1:8080:8080"
     volumes:
-      - .:/var/www:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # Hanya mount public assets (read-only), bukan seluruh repo
+      - app_public:/var/www/public:ro
     depends_on:
       - app
     networks:
       - minfara-net
+    labels:
+      # Coolify / Traefik akan otomatis handle routing via label ini
+      - "traefik.enable=true"
 
   mysql:
     image: mysql:8.0
-    container_name: minfara-mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: minfara_bot
@@ -96,14 +102,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: minfara-queue
     restart: unless-stopped
     working_dir: /var/www
     command: php artisan queue:work --queue=default --sleep=1 --tries=3 --timeout=120 --max-jobs=500
     environment:
       <<: *php-env
     volumes:
-      - .:/var/www
       - app_storage:/var/www/storage/app
       - app_logs:/var/www/storage/logs
     depends_on:
@@ -118,14 +122,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: minfara-scheduler
     restart: unless-stopped
     working_dir: /var/www
     command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
     environment:
       <<: *php-env
     volumes:
-      - .:/var/www
       - app_storage:/var/www/storage/app
     depends_on:
       mysql:
@@ -137,10 +139,7 @@ services:
 
   waha:
     image: devlikeapro/waha
-    container_name: waha
     restart: unless-stopped
-    expose:
-      - "3000"
     environment:
       WAHA_API_KEY: "${WAHA_API_KEY}"
       WAHA_DASHBOARD_USERNAME: "${WAHA_DASHBOARD_USERNAME}"
@@ -157,6 +156,7 @@ volumes:
   waha_data:
   app_storage:
   app_logs:
+  app_public:
 
 networks:
   minfara-net:
