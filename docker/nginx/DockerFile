@@ -1,5 +1,5 @@
 # docker/nginx/Dockerfile
-# context = docker/nginx/ → jadi COPY cukup pakai nama file langsung
+# context = docker/nginx/ → jadi COPY cukup pakai nama file langsung 
 
 FROM nginx:1.25-alpine
 

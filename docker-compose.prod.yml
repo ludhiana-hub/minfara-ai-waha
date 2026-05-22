@@ -1,6 +1,6 @@
 # Production — Coolify + Traefik
 # Repo root = minfara-bot/, semua path relative ke sini
-
+# 
 x-php-env: &php-env
   APP_NAME: "${APP_NAME:-Deutsch Lernen mit Fara}"
   APP_ENV: production
