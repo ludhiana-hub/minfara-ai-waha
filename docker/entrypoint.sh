@@ -24,22 +24,15 @@ if [ "$1" = "php-fpm" ]; then
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
+    echo "[entrypoint] Running migrations..."
+    php artisan migrate --force
     echo "[entrypoint] Starting php-fpm..."
 
 else
-    # queue / scheduler: tunggu app container selesai install vendor (maks 120 detik)
-    if [ ! -f "$VENDOR_AUTOLOAD" ]; then
-        echo "[entrypoint] Waiting for vendor (max 120s)..."
-        i=0
-        while [ ! -f "$VENDOR_AUTOLOAD" ] && [ $i -lt 60 ]; do
-            sleep 2
-            i=$((i + 1))
-        done
-        if [ ! -f "$VENDOR_AUTOLOAD" ]; then
-            echo "[entrypoint] ERROR: vendor not found after 120s, exiting."
-            exit 1
-        fi
-    fi
+    # queue / scheduler: vendor sudah ada di image (COPY . . + composer install)
+    # Jalankan migrate juga agar tidak crash jika app belum selesai migrasi
+    echo "[entrypoint] Running migrations (queue/scheduler)..."
+    cd /var/www && php artisan migrate --force 2>/dev/null || true
 fi
 
 exec "$@"
