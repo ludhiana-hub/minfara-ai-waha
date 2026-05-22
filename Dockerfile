@@ -1,4 +1,4 @@
-# Stage 1: Build Vite assets
+
 FROM node:20-alpine AS assets
 WORKDIR /app
 COPY package.json .
@@ -6,7 +6,7 @@ RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
-# Stage 2: PHP-FPM — app, queue, scheduler
+
 FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
