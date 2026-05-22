@@ -13,7 +13,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '0',
                 'title'          => 'Menu Utama',
-                'content'        => "Hallo! Selamat datang di *Deutsch Lernen mit Fara (DlmF)* 🇩🇪\n\nPlatform kursus Bahasa Jerman online & offline terpercaya di Bandung.\nSudah dipercaya *5.000+ alumni* sejak berdiri!\n\nPilih menu di bawah ini:\n\n*1* - Program Kursus\n*2* - Harga & Paket\n*3* - Kelas Online vs Offline\n*4* - Program Au Pair\n*5* - Tentang DlmF & Tutor\n*6* - Cara Daftar & Pembayaran\n*7* - FAQ Umum\n*8* - Kontak & Lokasi\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu 24/7! 🤖\n\n🌐 mitfara.com",
+                'content'        => "Hallo! Selamat datang di *Deutsch Lernen mit Fara (DlmF)* 🇩🇪\n\nPlatform kursus Bahasa Jerman online & offline terpercaya di Bandung.\nSudah dipercaya *5.000+ alumni* di seluruh Indonesia!\n\nPilih menu di bawah ini:\n\n*1* - Program Kursus\n*2* - Harga & Paket\n*3* - Kelas Online vs Offline\n*4* - Program Au Pair\n*5* - Tentang DlmF & Tutor\n*6* - Cara Daftar & Pembayaran\n*7* - FAQ Umum\n*8* - Kontak & Lokasi\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu 24/7! 🤖\n\n🌐 mitfara.com",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 0,
@@ -77,7 +77,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '1.7',
                 'title'          => 'Program Au Pair',
-                'content'        => "✈️ *Program Au Pair Jerman*\n\nAu Pair adalah program pertukaran budaya internasional.\nKamu tinggal bersama keluarga angkat di Jerman, membantu menjaga anak,\nsambil belajar bahasa & budaya Jerman secara langsung!\n\n*Keuntungan Au Pair:*\n✅ Pengalaman tinggal di Jerman\n✅ Dapat uang saku bulanan\n✅ Belajar bahasa Jerman secara immersive\n✅ Pengalaman internasional bernilai tinggi\n✅ Usia peserta: 18–26 tahun\n\n🔗 mitfara.com/au-pair\n─────────────────\nKetik *0* menu utama | *99* hubungi admin",
+                'content'        => "✈️ *Program Au Pair Jerman*\n\nTinggal bersama keluarga angkat di Jerman, membantu menjaga anak, sambil belajar bahasa & budaya secara langsung!\n\n*Keuntungan Au Pair:*\n- Pengalaman tinggal di Jerman\n- Uang saku bulanan dari gastfamilie\n- Belajar bahasa Jerman secara immersive\n- Usia peserta: 18–26 tahun\n\n*Layanan DlmF Au Pair:*\n- *Paket All-in:* Rp10.000.000\n  (pencarian gastfamilie + coaching alumni + motivation letter + termin kedutaan + latihan wawancara)\n- *À la carte:*\n  - Pencarian Gastfamilie: Rp6.000.000\n  - Private Coaching alumni: Rp600.000/sesi (min. 4 sesi)\n  - Pembuatan Motivation Letter: Rp1.250.000\n  - Penerjemahan Motivation Letter: Rp750.000\n  - Pembuatan Termin Kedutaan: Rp1.250.000\n  - Latihan Wawancara: Rp1.250.000\n\nKetik *99* untuk konsultasi lebih lanjut.\n\n🔗 mitfara.com/au-pair\n─────────────────\nKetik *0* menu utama | *99* hubungi admin",
                 'parent_command' => '1',
                 'is_active'      => true,
                 'sort_order'     => 7,
@@ -101,7 +101,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '4',
                 'title'          => 'Program Au Pair',
-                'content'        => "✈️ *Program Au Pair Jerman*\n\nAu Pair adalah program pertukaran budaya internasional.\nKamu tinggal bersama keluarga angkat di Jerman, membantu menjaga anak,\nsambil belajar bahasa & budaya Jerman secara langsung!\n\n*Keuntungan Au Pair:*\n✅ Pengalaman tinggal di Jerman\n✅ Dapat uang saku bulanan\n✅ Belajar bahasa Jerman secara immersive\n✅ Pengalaman internasional bernilai tinggi\n✅ Usia peserta: 18–26 tahun\n\n🔗 mitfara.com/au-pair\n─────────────────\nKetik *0* menu utama | *99* hubungi admin",
+                'content'        => "✈️ *Program Au Pair Jerman*\n\nTinggal bersama keluarga angkat di Jerman, membantu menjaga anak, sambil belajar bahasa & budaya secara langsung!\n\n*Keuntungan Au Pair:*\n- Pengalaman tinggal di Jerman\n- Uang saku bulanan dari gastfamilie\n- Belajar bahasa Jerman secara immersive\n- Usia peserta: 18–26 tahun\n\n*Layanan DlmF Au Pair:*\n- *Paket All-in:* Rp10.000.000\n  (pencarian gastfamilie + coaching alumni + motivation letter + termin kedutaan + latihan wawancara)\n- *À la carte:*\n  - Pencarian Gastfamilie: Rp6.000.000\n  - Private Coaching alumni: Rp600.000/sesi (min. 4 sesi)\n  - Pembuatan Motivation Letter: Rp1.250.000\n  - Penerjemahan Motivation Letter: Rp750.000\n  - Pembuatan Termin Kedutaan: Rp1.250.000\n  - Latihan Wawancara: Rp1.250.000\n\nKetik *99* untuk konsultasi lebih lanjut.\n\n🔗 mitfara.com/au-pair\n─────────────────\nKetik *0* menu utama | *99* hubungi admin",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 4,
@@ -125,7 +125,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '7',
                 'title'          => 'FAQ Umum',
-                'content'        => "❓ *Pertanyaan yang Sering Ditanyakan*\n\n*Apakah ada sertifikat?*\nYa! Sertifikat keikutsertaan DlmF. Untuk sertifikat resmi, ikuti ujian Goethe mandiri.\n\n*Aplikasi apa untuk kelas online?*\nMicrosoft Teams — semua kelas & grup diskusi terintegrasi.\n\n*Berapa orang per kelas reguler?*\n3–8 orang per kelas.\n\n*Apakah bisa request jadwal?*\nPrivate & FlexiLearn: bisa! Kelas reguler: ikuti jadwal batch.\n\n*Ada garansi tidak?*\nAda! Free class jika belum lulus ujian (S&K berlaku).\n\n*Level apa saja yang tersedia?*\nA1, A2, B1 (reguler). Untuk B2 hubungi admin.\n\nMasih ada pertanyaan? Ketik *99* untuk chat admin!\n\n🔗 mitfara.com/faq\n─────────────────\nKetik *0* menu utama",
+                'content'        => "❓ *Pertanyaan yang Sering Ditanyakan*\n\n*Apakah ada sertifikat?*\nYa! Sertifikat keikutsertaan DlmF. Untuk sertifikat resmi, ikuti ujian Goethe mandiri.\n\n*Aplikasi apa untuk kelas online?*\nMicrosoft Teams — semua kelas & grup diskusi terintegrasi.\n\n*Berapa orang per kelas reguler?*\n3–8 orang per kelas.\n\n*Apakah bisa request jadwal?*\nPrivate & FlexiLearn: bisa! Kelas reguler: batch baru dibuka setiap bulan — untuk info tanggal pastinya ketik *99*.\n\n*Ada garansi tidak?*\nAda! Free class jika belum lulus ujian (S&K berlaku).\n\n*Level apa saja yang tersedia?*\nA1, A2, B1 (reguler). Untuk B2 hubungi admin.\n\nMasih ada pertanyaan? Ketik *99* untuk chat admin!\n\n🔗 mitfara.com/faq\n─────────────────\nKetik *0* menu utama",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 7,
