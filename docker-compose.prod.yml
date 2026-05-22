@@ -41,6 +41,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: minfara-bot-app
     restart: unless-stopped
     working_dir: /var/www
     environment:
@@ -92,9 +93,7 @@ services:
       - "traefik.enable=false"
 
   queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: minfara-bot-app
     restart: unless-stopped
     working_dir: /var/www
     command: php artisan queue:work --queue=default --sleep=1 --tries=3 --timeout=120 --max-jobs=500
@@ -114,9 +113,7 @@ services:
       - "traefik.enable=false"
 
   scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: minfara-bot-app
     restart: unless-stopped
     working_dir: /var/www
     command: sh -c "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
