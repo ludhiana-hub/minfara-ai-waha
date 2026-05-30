@@ -1,23 +1,24 @@
-# Dokploy — IP langsung (tanpa domain, tanpa SSL)
-# Akses app  : http://187.77.116.47
-# Akses WAHA : http://187.77.116.47:3000
+# Dokploy — Akses langsung via IP + port (tanpa domain, tanpa SSL)
+#
+# Akses App  : http://187.77.116.47:8080
+# Akses WAHA : http://187.77.116.47:3001/dashboard
+#
+# Port 80   → dipakai Traefik Dokploy (jangan dipakai)
+# Port 3000 → dipakai Dokploy dashboard (jangan dipakai)
 #
 # ENV VARS wajib di Dokploy UI → tab Environment:
-#   APP_KEY                 → base64:... (generate: php artisan key:generate --show)
-#   DB_PASSWORD             → password MySQL bebas, contoh: MinFara2025!
-#   WAHA_API_KEY            → API key bebas, contoh: minfara-secret-key
-#   WAHA_DASHBOARD_USERNAME → username login dashboard WAHA
-#   WAHA_DASHBOARD_PASSWORD → password login dashboard WAHA
-#
-# ENV VARS opsional (AI providers):
-#   GROQ_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY
+#   APP_KEY                 → hasil: php artisan key:generate --show
+#   DB_PASSWORD             → bebas, contoh: MinFara2025!
+#   WAHA_API_KEY            → bebas, contoh: minfara-secret-key
+#   WAHA_DASHBOARD_USERNAME → bebas, contoh: admin
+#   WAHA_DASHBOARD_PASSWORD → bebas, contoh: MinFara2025!
 
 x-php-env: &php-env
   APP_NAME: "Deutsch Lernen mit Fara"
   APP_ENV: production
   APP_KEY: "${APP_KEY}"
   APP_DEBUG: "false"
-  APP_URL: "http://187.77.116.47"
+  APP_URL: "http://187.77.116.47:8080"
   APP_LOCALE: en
   BCRYPT_ROUNDS: "12"
   LOG_CHANNEL: stack
@@ -72,7 +73,7 @@ services:
       dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - app
     networks:
@@ -136,12 +137,12 @@ services:
     image: devlikeapro/waha
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       WAHA_API_KEY: "${WAHA_API_KEY}"
       WAHA_DASHBOARD_USERNAME: "${WAHA_DASHBOARD_USERNAME}"
       WAHA_DASHBOARD_PASSWORD: "${WAHA_DASHBOARD_PASSWORD}"
-      WHATSAPP_HOOK_URL: "http://187.77.116.47/api/whatsapp/webhook"
+      WHATSAPP_HOOK_URL: "http://187.77.116.47:8080/api/whatsapp/webhook"
       WHATSAPP_HOOK_EVENTS: "message,message.any,session.status"
     volumes:
       - waha_data:/app/.sessions
