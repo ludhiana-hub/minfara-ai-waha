@@ -26,6 +26,8 @@ if [ "$1" = "php-fpm" ]; then
     php artisan view:cache
     echo "[entrypoint] Running migrations..."
     php artisan migrate --force
+    echo "[entrypoint] Seeding database..."
+    php artisan db:seed --force
     echo "[entrypoint] Starting php-fpm..."
 
 else
