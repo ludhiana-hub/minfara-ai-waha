@@ -1,25 +1,23 @@
-# Dokploy + Traefik — Production
+# Dokploy — IP langsung (tanpa domain, tanpa SSL)
+# Akses app  : http://187.77.116.47
+# Akses WAHA : http://187.77.116.47:3000
 #
-# ENV VARS yang wajib di-set di Dokploy UI:
-#   APP_DOMAIN              → domain Laravel,  contoh: app.example.com
-#   WAHA_DOMAIN             → domain WAHA,     contoh: waha.example.com
-#   APP_URL                 → https://app.example.com
-#   APP_KEY                 → base64:... (php artisan key:generate --show)
-#   DB_PASSWORD             → password MySQL
-#   WAHA_API_KEY            → API key untuk WAHA
-#   WAHA_DASHBOARD_USERNAME → username dashboard WAHA
-#   WAHA_DASHBOARD_PASSWORD → password dashboard WAHA
+# ENV VARS wajib di Dokploy UI → tab Environment:
+#   APP_KEY                 → base64:... (generate: php artisan key:generate --show)
+#   DB_PASSWORD             → password MySQL bebas, contoh: MinFara2025!
+#   WAHA_API_KEY            → API key bebas, contoh: minfara-secret-key
+#   WAHA_DASHBOARD_USERNAME → username login dashboard WAHA
+#   WAHA_DASHBOARD_PASSWORD → password login dashboard WAHA
 #
-# ENV VARS opsional:
-#   GROQ_API_KEY, GROQ_MODEL, OPENROUTER_API_KEY, OPENROUTER_MODEL
-#   GEMINI_API_KEY, GEMINI_MODEL
+# ENV VARS opsional (AI providers):
+#   GROQ_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY
 
 x-php-env: &php-env
-  APP_NAME: "${APP_NAME:-Deutsch Lernen mit Fara}"
+  APP_NAME: "Deutsch Lernen mit Fara"
   APP_ENV: production
   APP_KEY: "${APP_KEY}"
   APP_DEBUG: "false"
-  APP_URL: "${APP_URL}"
+  APP_URL: "http://187.77.116.47"
   APP_LOCALE: en
   BCRYPT_ROUNDS: "12"
   LOG_CHANNEL: stack
@@ -73,24 +71,12 @@ services:
       context: .
       dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
+    ports:
+      - "80:80"
     depends_on:
       - app
     networks:
       - minfara-net
-      - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      # HTTPS
-      - "traefik.http.routers.minfara-nginx.rule=Host(`${APP_DOMAIN}`)"
-      - "traefik.http.routers.minfara-nginx.entrypoints=websecure"
-      - "traefik.http.routers.minfara-nginx.tls.certresolver=letsencrypt"
-      - "traefik.http.services.minfara-nginx.loadbalancer.server.port=80"
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.minfara-nginx-http.rule=Host(`${APP_DOMAIN}`)"
-      - "traefik.http.routers.minfara-nginx-http.entrypoints=web"
-      - "traefik.http.routers.minfara-nginx-http.middlewares=minfara-https-redirect@docker"
-      - "traefik.http.middlewares.minfara-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.minfara-https-redirect.redirectscheme.permanent=true"
 
   mysql:
     image: mysql:8.0
@@ -149,30 +135,18 @@ services:
   waha:
     image: devlikeapro/waha
     restart: unless-stopped
+    ports:
+      - "3000:3000"
     environment:
       WAHA_API_KEY: "${WAHA_API_KEY}"
       WAHA_DASHBOARD_USERNAME: "${WAHA_DASHBOARD_USERNAME}"
       WAHA_DASHBOARD_PASSWORD: "${WAHA_DASHBOARD_PASSWORD}"
-      WHATSAPP_HOOK_URL: "${APP_URL}/api/whatsapp/webhook"
+      WHATSAPP_HOOK_URL: "http://187.77.116.47/api/whatsapp/webhook"
       WHATSAPP_HOOK_EVENTS: "message,message.any,session.status"
     volumes:
       - waha_data:/app/.sessions
     networks:
       - minfara-net
-      - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      # HTTPS
-      - "traefik.http.routers.minfara-waha.rule=Host(`${WAHA_DOMAIN}`)"
-      - "traefik.http.routers.minfara-waha.entrypoints=websecure"
-      - "traefik.http.routers.minfara-waha.tls.certresolver=letsencrypt"
-      - "traefik.http.services.minfara-waha.loadbalancer.server.port=3000"
-      # SSE fix: wajib untuk WAHA dashboard real-time update
-      - "traefik.http.services.minfara-waha.loadbalancer.responseforwarding.flushinterval=-1ms"
-      # HTTP → HTTPS redirect
-      - "traefik.http.routers.minfara-waha-http.rule=Host(`${WAHA_DOMAIN}`)"
-      - "traefik.http.routers.minfara-waha-http.entrypoints=web"
-      - "traefik.http.routers.minfara-waha-http.middlewares=minfara-https-redirect@docker"
 
 volumes:
   mysql_data:
@@ -183,5 +157,3 @@ volumes:
 networks:
   minfara-net:
     driver: bridge
-  dokploy-network:
-    external: true
