@@ -8,14 +8,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LocalhostOnly
 {
-    private const ALLOWED_IPS = ['127.0.0.1', '::1'];
-
     public function handle(Request $request, Closure $next): Response
     {
+        $allowed = env('CMS_ALLOWED_IPS', '127.0.0.1,::1');
+
+        // Wildcard '*' = izinkan semua IP
+        if (trim($allowed) === '*') {
+            return $next($request);
+        }
+
+        $allowedList = array_map('trim', explode(',', $allowed));
         $ip = $request->server('REMOTE_ADDR');
 
-        if (!in_array($ip, self::ALLOWED_IPS, strict: true)) {
-            abort(403, 'Akses hanya dari localhost.');
+        if (!in_array($ip, $allowedList, strict: true)) {
+            abort(403, 'Akses tidak diizinkan.');
         }
 
         return $next($request);
