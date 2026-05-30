@@ -141,7 +141,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '99',
                 'title'          => 'Hubungi Admin',
-                'content'        => "👋 *Terhubung dengan MinFara!*\n\nKlik link di bawah untuk langsung chat dengan admin kami:\nhttps://wa.me/6289647897616\n\n_Tim kami siap membantu kamu memilih program yang paling sesuai._\n_Jam operasional: Senin–Sabtu, 08.00–20.00 WIB_\n\n🌐 mitfara.com\n─────────────────\nKetik *0* untuk kembali ke menu utama",
+                'content'        => "👋 *Chat Langsung dengan Admin DlmF!*\n\n💬 Tap link di bawah untuk langsung buka chat WhatsApp:\n\n➡️ https://wa.me/6289647897616\n\n_Tim MinFara siap bantu kamu memilih program yang paling sesuai, konsultasi gratis!_\n\n⏰ _Jam operasional: Senin–Sabtu, 08.00–20.00 WIB_\n🌐 mitfara.com\n─────────────────\nKetik *0* untuk kembali ke menu utama",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 99,
