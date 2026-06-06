@@ -18,7 +18,8 @@ class ProcessAiReply implements ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 1;
+    public int $tries   = 2;
+    public int $backoff = 10;
     public int $timeout = 120;
 
     public function __construct(
@@ -35,6 +36,8 @@ class ProcessAiReply implements ShouldQueue
         GroqService       $groq,
         OpenRouterService $openrouter,
     ): void {
+        $whatsapp->startTyping($this->chatId);
+
         $aiEnabled     = BotConfig::getBool('ai_enabled', true);
         $orderStr      = BotConfig::get('ai_provider_order', 'groq,gemini,openrouter');
         $providerOrder = array_filter(array_map('trim', explode(',', $orderStr)));
@@ -59,11 +62,10 @@ class ProcessAiReply implements ShouldQueue
             $tokens = null;
         } else {
             $cooldownKey = 'ai_cooldown_' . md5($this->from);
-            if (Cache::has($cooldownKey)) {
+            if (!Cache::add($cooldownKey, true, 5)) {
                 $whatsapp->stopTyping($this->chatId);
                 return;
             }
-            Cache::put($cooldownKey, true, 5);
 
             $systemPrompt = BotConfig::get('ai_system_prompt', '');
             $maxTokens    = BotConfig::getInt('ai_max_tokens', 1024);
@@ -230,6 +232,22 @@ class ProcessAiReply implements ShouldQueue
         } finally {
             $whatsapp->stopTyping($this->chatId);
         }
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('ProcessAiReply failed permanently', [
+            'chatId'  => $this->chatId,
+            'from'    => $this->from,
+            'message' => $exception->getMessage(),
+        ]);
+
+        try {
+            $whatsapp = app(WhatsAppService::class);
+            $fallback = BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
+            $whatsapp->sendMessage($this->chatId, $fallback);
+            $whatsapp->stopTyping($this->chatId);
+        } catch (\Exception) {}
     }
 
     private function providerHasKey(string $provider): bool

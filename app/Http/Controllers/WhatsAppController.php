@@ -97,9 +97,8 @@ class WhatsAppController extends Controller
 
         $menu = FaqMenu::active()->where('command', $command)->first();
 
-        $this->whatsapp->startTyping($chatId);
-
         if ($menu) {
+            $this->whatsapp->startTyping($chatId);
             $this->faqReply($chatId, $from, $menu, $rawInput, $contactName, $ipAddress);
         } else {
             ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress);
