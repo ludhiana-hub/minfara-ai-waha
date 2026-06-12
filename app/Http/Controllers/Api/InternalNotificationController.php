@@ -28,20 +28,68 @@ class InternalNotificationController extends Controller
             content: new OA\JsonContent(
                 required: ['trigger_key', 'data'],
                 properties: [
-                    new OA\Property(property: 'trigger_key', type: 'string', example: 'transaction.created',
-                        description: 'Kunci template notifikasi yang aktif'),
+                    new OA\Property(
+                        property: 'trigger_key',
+                        type: 'string',
+                        example: 'transaction.created',
+                        enum: [
+                            'transaction.created',
+                            'transaction.paid',
+                            'transaction.cancelled',
+                            'payment.reminder',
+                            'enrollment.confirmed',
+                            'enrollment.expired',
+                        ],
+                        description: <<<'DESC'
+Kunci template notifikasi yang aktif. Sistem akan mencari template dengan trigger_key ini dan mengirim pesan ke semua target aktif.
+
+**Daftar trigger key yang tersedia:**
+
+| trigger_key | Keterangan | Kapan digunakan |
+|---|---|---|
+| `transaction.created` | Transaksi Baru | Saat pembeli menyelesaikan checkout / transaksi baru masuk |
+| `transaction.paid` | Pembayaran Dikonfirmasi | Saat pembayaran diverifikasi dan dikonfirmasi oleh admin |
+| `transaction.cancelled` | Transaksi Dibatalkan | Saat transaksi dibatalkan oleh admin atau otomatis expired |
+| `payment.reminder` | Pengingat Pembayaran | Pengingat otomatis untuk transaksi yang belum dibayar |
+| `enrollment.confirmed` | Pendaftaran Dikonfirmasi | Saat akses LMS siswa diaktifkan setelah pembayaran lunas |
+| `enrollment.expired` | Masa Belajar Habis | Saat masa akses LMS siswa telah berakhir |
+DESC
+                    ),
                     new OA\Property(
                         property: 'data',
                         type: 'object',
-                        description: 'Data dinamis untuk mengisi variabel template',
+                        description: <<<'DESC'
+Data dinamis untuk mengisi variabel dalam template pesan. Variabel yang tidak dikirim akan dibiarkan kosong (tidak diganti).
+
+**Variabel yang tersedia dalam template:**
+
+| Variabel | Keterangan | Contoh |
+|---|---|---|
+| `{{customer_name}}` | Nama lengkap pelanggan | Budi Santoso |
+| `{{program_name}}` | Nama program / kelas | Kelas B1 Online |
+| `{{amount}}` | Nominal transaksi | Rp 1.499.000 |
+| `{{transaction_id}}` | ID transaksi unik | TRX-2026-00123 |
+| `{{status}}` | Status transaksi / pembayaran | Lunas |
+| `{{date}}` | Tanggal & waktu kejadian | 12 Jun 2026, 22:00 |
+| `{{cms_url}}` | URL halaman CMS terkait | http://187.77.116.47:8080/cms-minfara/... |
+DESC
+                        ,
                         properties: [
-                            new OA\Property(property: 'customer_name', type: 'string', example: 'Budi Santoso'),
-                            new OA\Property(property: 'program_name', type: 'string', example: 'Program Reguler'),
-                            new OA\Property(property: 'amount', type: 'number', example: 1499000),
-                            new OA\Property(property: 'transaction_id', type: 'string', example: 'TRX-2026-00123'),
-                            new OA\Property(property: 'status', type: 'string', example: 'Lunas'),
+                            new OA\Property(property: 'customer_name', type: 'string', example: 'Budi Santoso',
+                                description: 'Nama lengkap pelanggan'),
+                            new OA\Property(property: 'program_name', type: 'string', example: 'Kelas B1 Online',
+                                description: 'Nama program atau kelas yang dibeli'),
+                            new OA\Property(property: 'amount', type: 'string', example: 'Rp 1.499.000',
+                                description: 'Nominal transaksi (string terformat, bukan angka)'),
+                            new OA\Property(property: 'transaction_id', type: 'string', example: 'TRX-2026-00123',
+                                description: 'ID unik transaksi dari sistem LMS'),
+                            new OA\Property(property: 'status', type: 'string', example: 'Lunas',
+                                description: 'Status transaksi atau pembayaran'),
+                            new OA\Property(property: 'date', type: 'string', example: '12 Jun 2026, 22:00',
+                                description: 'Tanggal dan waktu kejadian (format bebas)'),
                             new OA\Property(property: 'cms_url', type: 'string',
-                                example: 'http://187.77.116.47:8080/cms-minfara'),
+                                example: 'http://187.77.116.47:8080/cms-minfara/admin/transactions/123',
+                                description: 'URL halaman CMS yang relevan (opsional)'),
                         ]
                     ),
                 ]
