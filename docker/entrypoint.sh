@@ -21,13 +21,13 @@ if [ "$1" = "php-fpm" ]; then
     echo "[entrypoint] Optimizing Laravel..."
     cd /var/www
     php artisan storage:link --force 2>/dev/null || true
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
+    php artisan config:cache  || true
+    php artisan route:cache   || true
+    php artisan view:cache    || true
     echo "[entrypoint] Running migrations..."
-    php artisan migrate --force
+    php artisan migrate --force || true
     echo "[entrypoint] Seeding database..."
-    php artisan db:seed --force
+    php artisan db:seed --force || true
     echo "[entrypoint] Publishing Swagger UI assets..."
     php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force 2>/dev/null || true
     echo "[entrypoint] Generating Swagger docs..."
