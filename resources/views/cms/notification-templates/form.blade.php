@@ -57,9 +57,26 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Trigger Key <span class="text-danger">*</span></label>
-                            <input type="text" name="trigger_key" class="form-control font-monospace @error('trigger_key') is-invalid @enderror"
-                                value="{{ old('trigger_key', $template->trigger_key ?? '') }}"
-                                placeholder="Contoh: transaction.created" required>
+                            @php
+                                $currentKey = old('trigger_key', $template->trigger_key ?? '');
+                                $isCustom   = $currentKey !== '' && !array_key_exists($currentKey, $triggerKeys);
+                            @endphp
+                            <select id="triggerKeySelect" class="form-select mb-2 @error('trigger_key') is-invalid @enderror"
+                                onchange="onTriggerKeyChange(this.value)">
+                                <option value="">-- Pilih Trigger Key --</option>
+                                @foreach($triggerKeys as $key => $label)
+                                    <option value="{{ $key }}" {{ (!$isCustom && $currentKey === $key) ? 'selected' : '' }}>
+                                        {{ $label }} — {{ $key }}
+                                    </option>
+                                @endforeach
+                                <option value="__custom__" {{ $isCustom ? 'selected' : '' }}>Custom (isi manual)...</option>
+                            </select>
+                            <input type="text" name="trigger_key" id="triggerKeyInput"
+                                class="form-control font-monospace @error('trigger_key') is-invalid @enderror"
+                                value="{{ $currentKey }}"
+                                placeholder="Contoh: transaction.created"
+                                style="{{ $isCustom ? '' : 'display:none' }}"
+                                {{ $isCustom ? 'required' : '' }}>
                             <div class="form-text">Unik, digunakan saat memanggil API internal.</div>
                             @error('trigger_key')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -129,6 +146,30 @@
 
 @push('scripts')
 <script>
+function onTriggerKeyChange(val) {
+    const input  = document.getElementById('triggerKeyInput');
+    const select = document.getElementById('triggerKeySelect');
+    if (val === '__custom__') {
+        input.style.display = '';
+        input.required = true;
+        input.value = '';
+        input.focus();
+    } else {
+        input.style.display = 'none';
+        input.required = false;
+        input.value = val;
+    }
+}
+
+// Init: sync hidden input on page load for non-custom selections
+(function() {
+    const select = document.getElementById('triggerKeySelect');
+    if (select && select.value !== '__custom__' && select.value !== '') {
+        const input = document.getElementById('triggerKeyInput');
+        if (!input.value) input.value = select.value;
+    }
+})();
+
 const textarea = document.getElementById('messageBody');
 const preview  = document.getElementById('waPreview');
 

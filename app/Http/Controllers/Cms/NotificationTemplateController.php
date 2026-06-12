@@ -34,7 +34,8 @@ class NotificationTemplateController extends Controller
 
     public function create()
     {
-        return view('cms.notification-templates.form');
+        $triggerKeys = NotificationTemplate::TRIGGER_KEYS;
+        return view('cms.notification-templates.form', compact('triggerKeys'));
     }
 
     public function store(StoreNotificationTemplateRequest $request)
@@ -53,7 +54,8 @@ class NotificationTemplateController extends Controller
     public function edit(NotificationTemplate $notificationTemplate)
     {
         return view('cms.notification-templates.form', [
-            'template' => $notificationTemplate,
+            'template'    => $notificationTemplate,
+            'triggerKeys' => NotificationTemplate::TRIGGER_KEYS,
         ]);
     }
 

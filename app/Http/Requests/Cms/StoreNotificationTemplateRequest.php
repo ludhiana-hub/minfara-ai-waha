@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Cms;
 
+use App\Models\NotificationTemplate;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
