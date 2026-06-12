@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 class WhatsAppController extends Controller
 {
@@ -18,6 +19,40 @@ class WhatsAppController extends Controller
         private readonly WhatsAppService $whatsapp,
     ) {}
 
+    #[OA\Post(
+        path: '/api/whatsapp/webhook',
+        operationId: 'wahaWebhook',
+        summary: 'Terima webhook dari WAHA',
+        description: 'Endpoint publik yang dipanggil oleh WAHA saat ada pesan masuk WhatsApp. Pesan diproses dan dijawab oleh bot AI atau FAQ. Tidak memerlukan autentikasi.',
+        tags: ['Webhook'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['event', 'payload'],
+                properties: [
+                    new OA\Property(property: 'event', type: 'string', example: 'message'),
+                    new OA\Property(property: 'payload', type: 'object', properties: [
+                        new OA\Property(property: 'from', type: 'string', example: '628123456789@c.us'),
+                        new OA\Property(property: 'body', type: 'string', example: 'Halo, info pendaftaran dong'),
+                        new OA\Property(property: 'fromMe', type: 'boolean', example: false),
+                        new OA\Property(property: 'id', type: 'string', example: 'ABCDEF123456'),
+                        new OA\Property(property: 'timestamp', type: 'integer', example: 1718000000),
+                        new OA\Property(property: 'notifyName', type: 'string', example: 'Budi', nullable: true),
+                    ]),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Webhook diterima',
+                content: new OA\MediaType(
+                    mediaType: 'text/plain',
+                    schema: new OA\Schema(type: 'string', example: 'OK')
+                )
+            ),
+        ]
+    )]
     public function handle(Request $request): Response
     {
         $event   = $request->input('event');

@@ -90,6 +90,19 @@ class WhatsAppService
         }
     }
 
+    public function isSessionWorking(): bool
+    {
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->get("{$this->url}/api/sessions/{$this->session}");
+
+            return $response->ok() && ($response->json('status') === 'WORKING');
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
     public function buildMainMenu(): string
     {
         return FaqMenu::active()->where('command', '0')->value('content')

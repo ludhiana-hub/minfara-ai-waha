@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(FaqMenuSeeder::class);
         $this->call(BotConfigSeeder::class);
+        $this->call(NotificationTemplateSeeder::class);
     }
 }

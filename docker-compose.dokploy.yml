@@ -12,6 +12,7 @@
 #   WAHA_API_KEY            → bebas, contoh: minfara-secret-key
 #   WAHA_DASHBOARD_USERNAME → bebas, contoh: admin
 #   WAHA_DASHBOARD_PASSWORD → bebas, contoh: MinFara2025!
+#   INTERNAL_API_KEY        → random string ≥32 karakter (untuk auth notifikasi dari CMS)
 
 x-php-env: &php-env
   APP_NAME: "Deutsch Lernen mit Fara"
@@ -41,6 +42,8 @@ x-php-env: &php-env
   WAHA_URL: "http://waha:3000"
   WAHA_SESSION: "default"
   WAHA_API_KEY: "${WAHA_API_KEY}"
+  INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
+  CMS_BASE_URL: "http://187.77.116.47:8080/cms-minfara"
   GROQ_API_KEY: "${GROQ_API_KEY:-}"
   GROQ_MODEL: "${GROQ_MODEL:-qwen/qwen3-32b}"
   OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"

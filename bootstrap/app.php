@@ -12,11 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // CORS — baca dari config/cors.php
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+
         $middleware->validateCsrfTokens(except: [
-            'api/whatsapp/webhook',
+            'api/*',  // semua API routes tidak butuh CSRF (pakai XSRF-TOKEN header)
         ]);
         $middleware->alias([
-            'localhost' => \App\Http\Middleware\LocalhostOnly::class,
+            'localhost'    => \App\Http\Middleware\LocalhostOnly::class,
+            'auth.internal' => \App\Http\Middleware\InternalApiAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

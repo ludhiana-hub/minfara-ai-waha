@@ -96,6 +96,16 @@
             <a href="{{ route('cms.test.index') }}" class="nav-link {{ request()->routeIs('cms.test.*') ? 'active' : '' }}">
                 <i class="bi bi-send"></i> Test Kirim Pesan
             </a>
+            <div style="padding: 8px 20px 4px; font-size:.7rem; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.05em">Notifikasi WA</div>
+            <a href="{{ route('cms.notification-templates.index') }}" class="nav-link {{ request()->routeIs('cms.notification-templates.*') ? 'active' : '' }}">
+                <i class="bi bi-file-text"></i> Template Notif
+            </a>
+            <a href="{{ route('cms.notification-targets.index') }}" class="nav-link {{ request()->routeIs('cms.notification-targets.*') ? 'active' : '' }}">
+                <i class="bi bi-people"></i> Target Notif
+            </a>
+            <a href="{{ route('cms.notification-logs.index') }}" class="nav-link {{ request()->routeIs('cms.notification-logs.*') ? 'active' : '' }}">
+                <i class="bi bi-bell"></i> Log Notifikasi
+            </a>
         </div>
     </nav>
     <div class="sidebar-footer">

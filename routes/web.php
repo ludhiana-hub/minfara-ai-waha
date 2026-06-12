@@ -4,6 +4,9 @@ use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\KonfigurasiController;
 use App\Http\Controllers\Cms\LogController;
+use App\Http\Controllers\Cms\NotificationLogController;
+use App\Http\Controllers\Cms\NotificationTargetController;
+use App\Http\Controllers\Cms\NotificationTemplateController;
 use App\Http\Controllers\Cms\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +31,16 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
     Route::delete('log/clear',          [LogController::class, 'clear'])->name('log.clear');
     Route::get('test',                  [TestController::class, 'index'])->name('test.index');
     Route::post('test',                 [TestController::class, 'send'])->name('test.send');
+
+    // ── Notification System ───────────────────────────────────────────────────
+    Route::resource('notification-templates', NotificationTemplateController::class)
+         ->except(['show']);
+    Route::resource('notification-targets', NotificationTargetController::class)
+         ->except(['show']);
+    Route::patch('notification-targets/{notificationTarget}/toggle', [NotificationTargetController::class, 'toggle'])
+         ->name('notification-targets.toggle');
+    Route::get('notification-logs', [NotificationLogController::class, 'index'])
+         ->name('notification-logs.index');
 
     // WAHA status AJAX endpoint
     Route::get('api/waha-status', function () {
