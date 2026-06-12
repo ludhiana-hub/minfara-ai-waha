@@ -82,9 +82,13 @@
                     <div class="mb-2">
                         <small class="text-muted d-block mb-1">Klik variabel untuk menyisipkan ke pesan:</small>
                         <div class="d-flex flex-wrap gap-1">
-                            @foreach(['{{customer_name}}','{{program_name}}','{{amount}}','{{transaction_id}}','{{status}}','{{date}}','{{cms_url}}'] as $var)
-                                <span class="badge bg-primary var-badge" onclick="insertVar('{{ $var }}')">{{ $var }}</span>
-                            @endforeach
+                                <span class="badge bg-primary var-badge" onclick="insertVar('@{{customer_name}}')">@{{customer_name}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{program_name}}')">@{{program_name}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{amount}}')">@{{amount}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{transaction_id}}')">@{{transaction_id}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{status}}')">@{{status}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{date}}')">@{{date}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{cms_url}}')">@{{cms_url}}</span>
                         </div>
                     </div>
                     <textarea name="message_body" id="messageBody" rows="12"
