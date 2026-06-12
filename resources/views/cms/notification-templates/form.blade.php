@@ -130,13 +130,13 @@ const preview  = document.getElementById('waPreview');
 
 // Dummy data for live preview
 const dummyData = {
-    '{{customer_name}}':  'Budi Santoso',
-    '{{program_name}}':   'Kelas B1 Online',
-    '{{amount}}':         'Rp 1.499.000',
-    '{{transaction_id}}': 'TRX-20240601-001',
-    '{{status}}':         'paid',
-    '{{date}}':           '{{ now()->format("d M Y, H:i") }}',
-    '{{cms_url}}':        '{{ config("whatsapp.cms_base_url") }}/admin/transactions/1',
+    '@{{customer_name}}':  'Budi Santoso',
+    '@{{program_name}}':   'Kelas B1 Online',
+    '@{{amount}}':         'Rp 1.499.000',
+    '@{{transaction_id}}': 'TRX-20240601-001',
+    '@{{status}}':         'paid',
+    '@{{date}}':           '{{ now()->format("d M Y, H:i") }}',
+    '@{{cms_url}}':        '{{ config("whatsapp.cms_base_url") }}/admin/transactions/1',
 };
 
 function renderPreview(text) {
