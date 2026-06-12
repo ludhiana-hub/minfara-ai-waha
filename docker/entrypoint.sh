@@ -4,15 +4,13 @@ set -e
 VENDOR_AUTOLOAD="/var/www/vendor/autoload.php"
 
 if [ "$1" = "php-fpm" ]; then
-    # php-fpm (app container): install dependencies jika belum ada
-    if [ ! -f "$VENDOR_AUTOLOAD" ]; then
-        echo "[entrypoint] Running composer install..."
-        cd /var/www && composer install \
-            --no-interaction \
-            --prefer-dist \
-            --optimize-autoloader \
-            --no-dev
-    fi
+    # php-fpm (app container): install/update dependencies
+    echo "[entrypoint] Running composer install..."
+    cd /var/www && composer install \
+        --no-interaction \
+        --prefer-dist \
+        --optimize-autoloader \
+        --no-dev 2>/dev/null || true
 
     # Fix permissions
     chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
