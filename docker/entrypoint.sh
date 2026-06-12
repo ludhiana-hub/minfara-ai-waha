@@ -21,15 +21,14 @@ if [ "$1" = "php-fpm" ]; then
     php artisan storage:link --force 2>/dev/null || true
     php artisan config:cache  || true
     php artisan route:cache   || true
+    php artisan view:clear    2>/dev/null || true
     php artisan view:cache    || true
     echo "[entrypoint] Running migrations..."
     php artisan migrate --force || true
     echo "[entrypoint] Seeding database..."
     php artisan db:seed --force || true
-    echo "[entrypoint] Publishing Swagger UI assets..."
-    php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force 2>/dev/null || true
     echo "[entrypoint] Generating Swagger docs..."
-    php artisan l5-swagger:generate 2>/dev/null || true
+    php artisan l5-swagger:generate || true
     echo "[entrypoint] Starting php-fpm..."
 
 else
