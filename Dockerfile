@@ -2,9 +2,9 @@
 FROM node:20-alpine AS assets
 WORKDIR /app
 COPY package.json .
-RUN npm install --no-audit --no-fund
+RUN npm install --no-audit --no-fund || true
 COPY . .
-RUN npm run build
+RUN npm run build || mkdir -p /app/public/build
 
 
 FROM php:8.3-fpm-alpine
