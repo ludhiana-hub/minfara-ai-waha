@@ -28,6 +28,8 @@ if [ "$1" = "php-fpm" ]; then
     php artisan migrate --force
     echo "[entrypoint] Seeding database..."
     php artisan db:seed --force
+    echo "[entrypoint] Generating Swagger docs..."
+    php artisan l5-swagger:generate 2>/dev/null || true
     echo "[entrypoint] Starting php-fpm..."
 
 else
