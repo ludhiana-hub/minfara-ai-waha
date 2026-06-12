@@ -43,22 +43,5 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
          ->name('notification-logs.index');
 
     // WAHA status AJAX endpoint
-    Route::get('api/waha-status', function () {
-        try {
-            $wahaUrl  = \App\Models\BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
-            $wahaKey  = \App\Models\BotConfig::get('waha_api_key') ?: config('services.waha.api_key', '');
-            $session  = \App\Models\BotConfig::get('waha_session') ?: config('services.waha.session', 'default');
-            $response = \Illuminate\Support\Facades\Http::timeout(5)
-                ->withHeaders(['X-Api-Key' => $wahaKey])
-                ->get("{$wahaUrl}/api/sessions/{$session}");
-            if ($response->ok()) {
-                $data = $response->json();
-                return response()->json([
-                    'connected' => $data['status'] === 'WORKING',
-                    'status'    => $data['status'] ?? 'UNKNOWN',
-                ]);
-            }
-        } catch (\Exception) {}
-        return response()->json(['connected' => false, 'status' => 'DISCONNECTED']);
-    })->name('api.waha-status');
+    Route::get('api/waha-status', [DashboardController::class, 'wahaStatus'])->name('api.waha-status');
 });

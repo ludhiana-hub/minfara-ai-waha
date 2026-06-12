@@ -35,6 +35,11 @@ class DashboardController extends Controller
         ));
     }
 
+    public function wahaStatus(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->getWahaStatus());
+    }
+
     private function getWahaStatus(): array
     {
         $wahaUrl  = BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
