@@ -66,7 +66,10 @@ PROMPT;
         ];
 
         foreach ($providers as $provider) {
-            $result = $provider->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
+            // Nemotron (reasoning model) needs ~400 tokens to think before outputting JSON;
+            // other providers (Groq/Gemini/OpenRouter) work fine at 600.
+            $maxTokens = $provider instanceof NvidiaService ? 1500 : 600;
+            $result = $provider->chat($prompt, self::SYSTEM_PROMPT, $maxTokens, 0.3);
 
             if (!$result['success']) {
                 continue;
