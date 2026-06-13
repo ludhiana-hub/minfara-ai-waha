@@ -29,6 +29,8 @@ if [ "$1" = "php-fpm" ]; then
     php artisan db:seed --force || true
     echo "[entrypoint] Generating Swagger docs..."
     php artisan l5-swagger:generate || true
+    echo "[entrypoint] Running customer analytics in background (last 7 days)..."
+    php artisan analytics:analyse --days=7 >> /var/www/storage/logs/laravel.log 2>&1 &
     echo "[entrypoint] Starting php-fpm..."
 
 else
