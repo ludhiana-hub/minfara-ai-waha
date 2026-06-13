@@ -7,8 +7,6 @@ use App\Models\WhatsappLog;
 use App\Services\ConversationAnalysisService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-
 class AnalyseConversations extends Command
 {
     protected $signature = 'analytics:analyse

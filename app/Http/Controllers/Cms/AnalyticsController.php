@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
-use App\Models\AnalyticsDailySummary;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
 use Illuminate\Http\Request;
@@ -13,7 +12,7 @@ class AnalyticsController extends Controller
 {
     public function index(Request $request)
     {
-        $period = $request->get('period', '7');
+        $period = $request->input('period', '7');
         $from   = Carbon::today()->subDays((int) $period - 1)->toDateString();
         $to     = Carbon::today()->toDateString();
 
@@ -69,11 +68,13 @@ class AnalyticsController extends Controller
             ->map(fn($i) => Carbon::today()->subDays($i)->toDateString())
             ->reverse()->values();
 
-        $trendSessions  = $trendDays->map(fn($d) => $analyses->where('session_date', $d)->count());
-        $trendPositive  = $trendDays->map(fn($d) => $analyses->where('session_date', $d)->where('sentiment', 'positive')->count());
-        $trendNegative  = $trendDays->map(fn($d) => $analyses->where('session_date', $d)->where('sentiment', 'negative')->count());
+        // session_date is cast to Carbon — compare via toDateString() for correct string match
+        $trendSessions  = $trendDays->map(fn($d) => $analyses->filter(fn($a) => $a->session_date->toDateString() === $d)->count());
+        $trendPositive  = $trendDays->map(fn($d) => $analyses->filter(fn($a) => $a->session_date->toDateString() === $d && $a->sentiment === 'positive')->count());
+        $trendNegative  = $trendDays->map(fn($d) => $analyses->filter(fn($a) => $a->session_date->toDateString() === $d && $a->sentiment === 'negative')->count());
         $trendIntent    = $trendDays->map(fn($d) => round(
-            $analyses->where('session_date', $d)->whereNotNull('purchase_intent_score')->avg('purchase_intent_score') ?? 0, 1
+            $analyses->filter(fn($a) => $a->session_date->toDateString() === $d && $a->purchase_intent_score !== null)
+                     ->avg('purchase_intent_score') ?? 0, 1
         ));
 
         // Recent analyses (last 20)

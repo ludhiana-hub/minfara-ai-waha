@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\AnalyticsDailySummary;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -25,12 +24,6 @@ Definisi segment:
 - churner_signal: kecewa, tanya refund, cancel, atau tidak responsif
 - unknown: tidak cukup informasi
 PROMPT;
-
-    public function __construct(
-        private readonly GroqService        $groq,
-        private readonly GeminiService      $gemini,
-        private readonly OpenRouterService  $openRouter,
-    ) {}
 
     public function analyseSession(Collection $logs): ?array
     {
@@ -62,7 +55,15 @@ Kembalikan JSON dengan format persis ini:
 purchase_intent_score: angka 0-10 (0=tidak ada niat beli, 10=hampir pasti beli)
 PROMPT;
 
-        foreach ([$this->groq, $this->gemini, $this->openRouter] as $provider) {
+        // Lazy-resolve AI providers here (NOT in constructor) to avoid DB queries during
+        // Laravel boot/command-discovery when package:discover runs without a database.
+        $providers = [
+            app(GroqService::class),
+            app(GeminiService::class),
+            app(OpenRouterService::class),
+        ];
+
+        foreach ($providers as $provider) {
             $result = $provider->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
 
             if (!$result['success']) {
