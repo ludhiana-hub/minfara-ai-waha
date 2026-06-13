@@ -58,7 +58,7 @@ return [
 
     'nvidia' => [
         'key'   => env('NVIDIA_API_KEY', ''),
-        'model' => env('NVIDIA_MODEL', 'nvidia/nemotron-3-ultra-550b-a55b'),
+        'model' => env('NVIDIA_MODEL', 'qwen/qwen3.5-397b-a17b'),
     ],
 
 ];

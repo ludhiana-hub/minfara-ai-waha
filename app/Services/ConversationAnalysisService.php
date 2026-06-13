@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ConversationAnalysisService
 {
     private const SYSTEM_PROMPT = <<<'PROMPT'
-Kamu adalah analis perilaku customer untuk bisnis pendidikan online Indonesia.
+Kamu adalah seorang analis level dunia yang sangat professional dalam menganalisis perilaku customer untuk bisnis pendidikan online Indonesia.
 Tugasmu menganalisis percakapan WhatsApp antara customer dengan AI bot.
 
 PENTING: Kembalikan HANYA JSON valid, tanpa teks lain, tanpa markdown code block (```).
@@ -66,9 +66,9 @@ PROMPT;
         ];
 
         foreach ($providers as $provider) {
-            // Nemotron (reasoning model) needs ~400 tokens to think before outputting JSON;
-            // other providers (Groq/Gemini/OpenRouter) work fine at 600.
-            $maxTokens = $provider instanceof NvidiaService ? 1500 : 600;
+            // Reasoning models (nemotron-ultra) need more tokens for internal thinking;
+            // standard instruction models (qwen/gpt-oss) work fine at 600.
+            $maxTokens = 600;
             $result = $provider->chat($prompt, self::SYSTEM_PROMPT, $maxTokens, 0.3);
 
             if (!$result['success']) {

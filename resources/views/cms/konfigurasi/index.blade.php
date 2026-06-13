@@ -370,8 +370,76 @@
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
-                
-                            
+                            @if(isset($configs['openrouter_api_key']) && $configs['openrouter_api_key']->value)
+                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
+                            @elseif($envFallbacks['openrouter_api_key'])
+                                <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
+                            @else
+                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NVIDIA NIM — Analytics AI -->
+            <div class="card mb-4" style="border-left: 4px solid #76b900">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#76b900"><path d="M8.974 0v1.66c3.107.2 5.56 1.34 6.693 3.12L8.974 9.107V5.573l-1.387.84V18.52c.453.08.92.12 1.387.12 5.307 0 9.613-4.307 9.613-9.613C18.587 3.72 14.28 0 8.974 0zm-3.2 6.8L.8 9.613v4.774l1.387-.84V10.12l3.587-2.147V6.8zm0 4.747v1.173l1.387-.84v-1.173L5.774 11.547z"/></svg>
+                    <strong>NVIDIA NIM</strong>
+                    <span class="badge ms-auto" style="background:#76b900">Analytics AI — Primary</span>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success py-2 mb-3" style="font-size:.82rem">
+                        <i class="bi bi-bar-chart-line me-1"></i>
+                        Provider <strong>utama</strong> untuk fitur <strong>Customer Analytics</strong>.
+                        Fallback ke Groq → Gemini → OpenRouter jika NVIDIA gagal.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">Model</label>
+                            @php $nvidiaModel = $configs['nvidia_model']->value ?? $envFallbacks['nvidia_model']; @endphp
+                            <input type="text" name="nvidia_model" class="form-control font-monospace"
+                                value="{{ $nvidiaModel }}"
+                                placeholder="qwen/qwen3.5-397b-a17b">
+                            <div class="form-text">
+                                Default: <code>qwen/qwen3.5-397b-a17b</code> (4s, terbaik untuk analytics) ·
+                                Alternatif: <code>openai/gpt-oss-120b</code> (5s) ·
+                                <code>nvidia/nemotron-3-ultra-550b-a55b</code> (lambat, akurasi max)
+                                @if(isset($configs['nvidia_model']) && $configs['nvidia_model']->value)
+                                    <span class="badge bg-success ms-1">DB</span>
+                                @elseif($envFallbacks['nvidia_model'])
+                                    <span class="badge bg-secondary ms-1">.env</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">API Key</label>
+                            <div class="form-text text-muted mb-1" style="font-size:.78rem">
+                                Dapatkan API key di <strong>build.nvidia.com</strong> → API Key
+                            </div>
+                            @php $nvidiaKey = $configs['nvidia_api_key']->value ?? $envFallbacks['nvidia_api_key']; @endphp
+                            <div class="input-group">
+                                <input type="password" name="nvidia_api_key" id="nvidiaApiKey" class="form-control font-monospace"
+                                    autocomplete="new-password"
+                                    value="{{ $nvidiaKey }}">
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-pwd" data-target="nvidiaApiKey">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            @if(isset($configs['nvidia_api_key']) && $configs['nvidia_api_key']->value)
+                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
+                            @elseif($envFallbacks['nvidia_api_key'])
+                                <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
+                            @else
+                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset — analytics fallback ke Groq/Gemini/OpenRouter.</div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="mt-4">
         <button type="submit" class="btn btn-primary">
