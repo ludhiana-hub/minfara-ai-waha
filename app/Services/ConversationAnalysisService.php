@@ -57,7 +57,9 @@ PROMPT;
 
         // Lazy-resolve AI providers here (NOT in constructor) to avoid DB queries during
         // Laravel boot/command-discovery when package:discover runs without a database.
+        // NvidiaService (Nemotron) is primary — best reasoning for structured JSON analytics.
         $providers = [
+            app(NvidiaService::class),
             app(GroqService::class),
             app(GeminiService::class),
             app(OpenRouterService::class),

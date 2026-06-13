@@ -24,6 +24,8 @@ class KonfigurasiController extends Controller
             'groq_model'          => config('services.groq.model', 'llama-3.3-70b-versatile'),
             'openrouter_api_key'  => config('services.openrouter.key', ''),
             'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
+            'nvidia_api_key'      => config('services.nvidia.key', ''),
+            'nvidia_model'        => config('services.nvidia.model', 'nvidia/nemotron-3-ultra-550b-a55b'),
         ];
 
         return view('cms.konfigurasi.index', compact('configs', 'envFallbacks'));
@@ -36,11 +38,11 @@ class KonfigurasiController extends Controller
             'ai_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
             'footer_faq', 'footer_ai', 'fallback_message',
             'admin_wa', 'admin_wa_label', 'office_hours',
-            'waha_url', 'waha_session', 'gemini_model', 'groq_model', 'openrouter_model',
+            'waha_url', 'waha_session', 'gemini_model', 'groq_model', 'openrouter_model', 'nvidia_model',
         ];
 
         // API key fields: only save if not empty (empty = keep existing value)
-        $sensitiveKeys = ['waha_api_key', 'gemini_api_key', 'groq_api_key', 'openrouter_api_key'];
+        $sensitiveKeys = ['waha_api_key', 'gemini_api_key', 'groq_api_key', 'openrouter_api_key', 'nvidia_api_key'];
 
         foreach ($keys as $key) {
             if ($request->has($key)) {

@@ -56,4 +56,9 @@ return [
         'model' => env('OPENROUTER_MODEL', 'deepseek/deepseek-chat-v3-0324:free'),
     ],
 
+    'nvidia' => [
+        'key'   => env('NVIDIA_API_KEY', ''),
+        'model' => env('NVIDIA_MODEL', 'nvidia/nemotron-3-ultra-550b-a55b'),
+    ],
+
 ];

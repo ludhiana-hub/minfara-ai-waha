@@ -370,19 +370,8 @@
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
-                            @if(isset($configs['openrouter_api_key']) && $configs['openrouter_api_key']->value)
-                                <div class="form-text text-success"><i class="bi bi-check-circle me-1"></i>Tersimpan di database. Kosongkan jika tidak ingin mengubah.</div>
-                            @elseif($envFallbacks['openrouter_api_key'])
-                                <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
-                            @else
-                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset di database maupun <code>.env</code>.</div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                
+                            
 
     <div class="mt-4">
         <button type="submit" class="btn btn-primary">
