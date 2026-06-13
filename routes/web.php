@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Cms\AnalyticsController;
 use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\KonfigurasiController;
@@ -41,6 +42,9 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
          ->name('notification-targets.toggle');
     Route::get('notification-logs', [NotificationLogController::class, 'index'])
          ->name('notification-logs.index');
+
+    // ── Analytics ─────────────────────────────────────────────────────────────
+    Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
     // WAHA status AJAX endpoint
     Route::get('api/waha-status', [DashboardController::class, 'wahaStatus'])->name('api.waha-status');
