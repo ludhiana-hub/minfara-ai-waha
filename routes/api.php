@@ -44,6 +44,6 @@ Route::prefix('waha')->group(function () {
 Route::get('/config',  [ConfigController::class, 'index']);
 Route::put('/config',  [ConfigController::class, 'update']);
 
-// ── Internal Notification (CMS → Bot, auth via X-Internal-Key header) ────────
-Route::post('/internal/notify', [InternalNotificationController::class, 'handle'])
+// ── Notification API (auth via X-Internal-Key header) ────────────────────────
+Route::post('/notification/notify', [InternalNotificationController::class, 'handle'])
      ->middleware('auth.internal');

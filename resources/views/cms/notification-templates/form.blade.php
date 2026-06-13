@@ -77,7 +77,7 @@
                                 placeholder="Contoh: transaction.created"
                                 style="{{ $isCustom ? '' : 'display:none' }}"
                                 {{ $isCustom ? 'required' : '' }}>
-                            <div class="form-text">Unik, digunakan saat memanggil API internal.</div>
+                            <div class="form-text">Unik, digunakan saat memanggil Notification API.</div>
                             @error('trigger_key')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-12">

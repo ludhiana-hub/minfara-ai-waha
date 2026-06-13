@@ -17,12 +17,12 @@ class InternalNotificationController extends Controller
     public function __construct(private readonly NotificationTemplateService $templateService) {}
 
     #[OA\Post(
-        path: '/api/internal/notify',
-        operationId: 'internalNotify',
+        path: '/api/notification/notify',
+        operationId: 'notificationNotify',
         summary: 'Kirim notifikasi WhatsApp ke semua target aktif',
-        description: 'Endpoint internal untuk mengirim notifikasi WhatsApp berdasarkan template trigger key. Pesan di-render dengan data dinamis lalu didispatch ke queue. Setiap target aktif mendapat satu NotificationLog dan satu job antrian. Membutuhkan header X-Internal-Key yang valid.',
+        description: 'Notification API untuk mengirim notifikasi WhatsApp berdasarkan template trigger key. Pesan di-render dengan data dinamis lalu didispatch ke queue. Setiap target aktif mendapat satu NotificationLog dan satu job antrian. Membutuhkan header X-Internal-Key yang valid.',
         security: [['InternalApiKey' => []]],
-        tags: ['Internal'],
+        tags: ['Notification'],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
