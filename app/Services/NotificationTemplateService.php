@@ -9,7 +9,7 @@ class NotificationTemplateService
         $map = [
             '{{customer_name}}'  => $data['customer_name']  ?? '-',
             '{{program_name}}'   => $data['program_name']   ?? '-',
-            '{{amount}}'         => 'Rp ' . number_format((float) ($data['amount'] ?? 0), 0, ',', '.'),
+            '{{amount}}'         => $data['amount']         ?? '-',
             '{{transaction_id}}' => $data['transaction_id'] ?? '-',
             '{{status}}'         => $data['status']         ?? '-',
             '{{date}}'           => now()->format('d M Y, H:i'),
@@ -25,9 +25,9 @@ class NotificationTemplateService
         return $this->render($template, [
             'customer_name'  => 'Budi Santoso',
             'program_name'   => 'Kelas B1 Online',
-            'amount'         => 1499000,
+            'amount'         => 'Rp 1.499.000',
             'transaction_id' => 'TRX-20240601-001',
-            'status'         => 'paid',
+            'status'         => 'Lunas',
             'cms_url'        => config('whatsapp.cms_base_url') . '/admin/transactions/1',
         ]);
     }

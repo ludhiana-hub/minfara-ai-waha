@@ -68,7 +68,7 @@ class ConfigController extends Controller
         // Keys that should never be saved as empty string (keep existing value)
         $sensitiveKeys = [
             'ai_api_key', 'waha_api_key',
-            'gemini_api_key', 'groq_api_key', 'openrouter_api_key',
+            'gemini_api_key', 'groq_api_key', 'openrouter_api_key', 'nvidia_api_key',
         ];
 
         foreach ($data as $key => $value) {

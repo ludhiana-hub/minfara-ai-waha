@@ -25,7 +25,7 @@ class KonfigurasiController extends Controller
             'openrouter_api_key'  => config('services.openrouter.key', ''),
             'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
             'nvidia_api_key'      => config('services.nvidia.key', ''),
-            'nvidia_model'        => config('services.nvidia.model', 'nvidia/nemotron-3-ultra-550b-a55b'),
+            'nvidia_model'        => config('services.nvidia.model', 'qwen/qwen3.5-397b-a17b'),
         ];
 
         return view('cms.konfigurasi.index', compact('configs', 'envFallbacks'));
