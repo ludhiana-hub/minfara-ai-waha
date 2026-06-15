@@ -164,14 +164,14 @@ class AnalyticsController extends Controller
     {
         $query = ConversationAnalysis::query()->latest('session_date')->latest('id');
 
-        if ($request->from)    $query->where('session_date', '>=', $request->from);
-        if ($request->to)      $query->where('session_date', '<=', $request->to);
-        if ($request->segment) $query->where('customer_segment', $request->segment);
-        if ($request->sentiment) $query->where('sentiment', $request->sentiment);
+        if ($request->input('from'))      $query->where('session_date', '>=', $request->input('from'));
+        if ($request->input('to'))        $query->where('session_date', '<=', $request->input('to'));
+        if ($request->input('segment'))   $query->where('customer_segment', $request->input('segment'));
+        if ($request->input('sentiment')) $query->where('sentiment', $request->input('sentiment'));
         if ($request->boolean('issues'))   $query->where('issue_detected', true);
         if ($request->boolean('faq_gaps')) $query->where('is_faq_gap', true);
 
-        $perPage = min((int) ($request->per_page ?? 20), 100);
+        $perPage = min((int) $request->input('per_page', 20), 100);
 
         return response()->json($query->paginate($perPage));
     }
@@ -220,22 +220,21 @@ class AnalyticsController extends Controller
         $from   = Carbon::today()->subDays($period - 1)->toDateString();
         $to     = Carbon::today()->toDateString();
 
-        $gaps = ConversationAnalysis::forPeriod($from, $to)
+        $allGaps = ConversationAnalysis::forPeriod($from, $to)
             ->where('is_faq_gap', true)
             ->whereNotNull('faq_gap_question')
             ->get()
             ->groupBy('faq_gap_question')
             ->map(fn($g) => ['question' => $g->first()->faq_gap_question, 'count' => $g->count()])
             ->sortByDesc('count')
-            ->values()
-            ->take($limit);
+            ->values();
 
         return response()->json([
             'period' => $period,
             'from'   => $from,
             'to'     => $to,
-            'total'  => $gaps->count(),
-            'data'   => $gaps,
+            'total'  => $allGaps->count(),
+            'data'   => $allGaps->take($limit),
         ]);
     }
 
@@ -272,7 +271,7 @@ class AnalyticsController extends Controller
     )]
     public function run(Request $request): JsonResponse
     {
-        $date  = $request->input('date', Carbon::yesterday()->toDateString());
+        $date  = $request->input('date') ?: Carbon::yesterday()->toDateString();
         $force = $request->boolean('force');
 
         dispatch(new RunAnalyticsJob($date, $force));

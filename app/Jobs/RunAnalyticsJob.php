@@ -20,9 +20,12 @@ class RunAnalyticsJob implements ShouldQueue
 
     public function handle(): void
     {
-        Artisan::call('analytics:analyse', array_filter([
-            '--date'  => $this->date,
-            '--force' => $this->force ?: null,
-        ]));
+        $args = ['--date' => $this->date];
+
+        if ($this->force) {
+            $args['--force'] = true;
+        }
+
+        Artisan::call('analytics:analyse', $args);
     }
 }

@@ -74,13 +74,13 @@ class NotificationLogController extends Controller
         $query = NotificationLog::with(['template:id,trigger_key,name', 'target:id,name,phone_number'])
             ->latest();
 
-        if ($request->status)    $query->where('status', $request->status);
-        if ($request->phone)     $query->where('phone_number', 'like', '%' . $request->phone . '%');
-        if ($request->date_from) $query->where('created_at', '>=', $request->date_from . ' 00:00:00');
-        if ($request->date_to)   $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
+        if ($request->input('status'))    $query->where('status', $request->input('status'));
+        if ($request->input('phone'))     $query->where('phone_number', 'like', '%' . $request->input('phone') . '%');
+        if ($request->input('date_from')) $query->whereDate('created_at', '>=', $request->input('date_from'));
+        if ($request->input('date_to'))   $query->whereDate('created_at', '<=', $request->input('date_to'));
 
-        if ($request->trigger_key) {
-            $query->whereHas('template', fn($q) => $q->where('trigger_key', $request->trigger_key));
+        if ($request->input('trigger_key')) {
+            $query->whereHas('template', fn($q) => $q->where('trigger_key', $request->input('trigger_key')));
         }
 
         $perPage = min((int) ($request->per_page ?? 20), 100);
