@@ -36,6 +36,8 @@ x-php-env: &php-env
   OPENROUTER_MODEL: "${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash:free}"
   GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
   GEMINI_MODEL: "${GEMINI_MODEL:-gemini-2.0-flash}"
+  NVIDIA_API_KEY: "${NVIDIA_API_KEY:-}"
+  NVIDIA_MODEL: "${NVIDIA_MODEL:-qwen/qwen3.5-397b-a17b}"
 
 services:
 
