@@ -18,7 +18,7 @@ class InternalNotifyRequest extends FormRequest
             'data'               => ['required', 'array'],
             'data.customer_name' => ['nullable', 'string', 'max:255'],
             'data.program_name'  => ['nullable', 'string', 'max:255'],
-            'data.amount'        => ['nullable', 'numeric', 'min:0'],
+            'data.amount'        => ['nullable', 'string', 'max:100'],
             'data.transaction_id'=> ['nullable', 'string', 'max:100'],
             'data.status'        => ['nullable', 'string', 'max:50'],
             'data.cms_url'       => ['nullable', 'string', 'max:500'],
