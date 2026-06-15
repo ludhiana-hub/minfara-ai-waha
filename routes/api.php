@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\InternalNotificationController;
 use App\Http\Controllers\Api\LogController;
+use App\Http\Controllers\Api\NotificationLogController;
 use App\Http\Controllers\Api\WahaController;
 use App\Http\Controllers\WhatsAppController;
 use Illuminate\Support\Facades\Route;
@@ -47,3 +49,17 @@ Route::put('/config',  [ConfigController::class, 'update']);
 // ── Notification API (auth via X-Internal-Key header) ────────────────────────
 Route::post('/notification/notify', [InternalNotificationController::class, 'handle'])
      ->middleware('auth.internal');
+
+// ── Notification Logs ─────────────────────────────────────────────────────────
+Route::prefix('notification/logs')->group(function () {
+    Route::get('/',     [NotificationLogController::class, 'index']);
+    Route::get('/{id}', [NotificationLogController::class, 'show']);
+});
+
+// ── Analytics API ─────────────────────────────────────────────────────────────
+Route::prefix('analytics')->group(function () {
+    Route::get('/summary',  [AnalyticsController::class, 'summary']);
+    Route::get('/sessions', [AnalyticsController::class, 'sessions']);
+    Route::get('/faq-gaps', [AnalyticsController::class, 'faqGaps']);
+    Route::post('/run',     [AnalyticsController::class, 'run'])->middleware('auth.internal');
+});

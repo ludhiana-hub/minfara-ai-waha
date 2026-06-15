@@ -24,6 +24,8 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'WAHA', description: 'Kontrol sesi WAHA WhatsApp API')]
 #[OA\Tag(name: 'Config', description: 'Konfigurasi bot')]
 #[OA\Tag(name: 'Notification', description: 'Notification API — kirim notifikasi WhatsApp ke tim internal, autentikasi via X-Internal-Key header')]
+#[OA\Tag(name: 'Notification Log', description: 'Log pengiriman notifikasi WhatsApp — riwayat status, rendered message, dan respons WAHA')]
+#[OA\Tag(name: 'Analytics', description: 'Customer behavior analytics dari hasil analisis AI percakapan WhatsApp')]
 abstract class Controller
 {
     //
