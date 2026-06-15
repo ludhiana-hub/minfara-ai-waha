@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\InternalNotifyRequest;
+use App\Http\Requests\Api\InternalNotifyRequest;
 use App\Jobs\SendWhatsAppNotificationJob;
 use App\Models\NotificationLog;
 use App\Models\NotificationTarget;

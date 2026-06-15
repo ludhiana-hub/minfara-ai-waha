@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\InternalNotificationController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\NotificationLogController;
 use App\Http\Controllers\Api\WahaController;
-use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\Api\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
 // ── WhatsApp webhook — dipanggil oleh WAHA (public) ──────────────────────────
