@@ -56,20 +56,37 @@ purchase_intent_score: angka 0-10 (0=tidak ada niat beli, 10=hampir pasti beli)
 PROMPT;
 
         // Lazy-resolve here (NOT in constructor) to avoid DB queries during Laravel boot.
-        // Analytics exclusively uses NVIDIA NIM — model can be swapped via BotConfig/CMS.
+        // Analytics uses NVIDIA NIM only — fallback between models, never to other providers.
         $nvidia = app(NvidiaService::class);
-        $result = $nvidia->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
 
-        if ($result['success']) {
+        $models = [
+            'qwen/qwen3.5-397b-a17b',               // primary — best quality
+            'qwen/qwen3.5-122b-a10b',                // backup 1 — smaller, lebih cepat
+            'nvidia/llama-3.3-nemotron-super-49b-v1.5', // backup 2
+            'deepseek-ai/deepseek-v4-flash',         // backup 3 — paling cepat
+        ];
+
+        foreach ($models as $model) {
+            $result = $nvidia->withModel($model)->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
+
+            if (!$result['success']) {
+                Log::warning('[Analytics] NVIDIA model gagal, coba berikutnya', [
+                    'model' => $model,
+                    'error' => $result['error'] ?? 'unknown',
+                ]);
+                continue;
+            }
+
             $parsed = $this->parseJson($result['reply']);
             if ($parsed !== null) {
                 return $parsed;
             }
+
+            Log::warning('[Analytics] JSON parse gagal', ['model' => $model]);
         }
 
-        Log::warning('[Analytics] NVIDIA analytics gagal untuk sesi', [
+        Log::warning('[Analytics] Semua model NVIDIA gagal untuk sesi', [
             'messages' => $logs->count(),
-            'error'    => $result['error'] ?? 'JSON parse failed',
         ]);
 
         return null;

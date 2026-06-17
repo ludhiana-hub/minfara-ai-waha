@@ -15,6 +15,13 @@ abstract class OpenAiCompatibleService implements AiServiceInterface
     protected string $providerName;
     protected array  $extraPayload = [];
 
+    public function withModel(string $model): static
+    {
+        $clone        = clone $this;
+        $clone->model = $model;
+        return $clone;
+    }
+
     protected function httpClient(): PendingRequest
     {
         return Http::timeout(20)->withToken($this->apiKey);
