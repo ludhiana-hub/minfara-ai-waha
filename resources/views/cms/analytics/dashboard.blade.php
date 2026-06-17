@@ -16,19 +16,128 @@
 .segment-pill { font-size: .75rem; padding: 2px 8px; border-radius: 10px; }
 .period-btn { font-size: .8rem; }
 .period-btn.active { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); }
-.unanalysed-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 16px; font-size: .85rem; }
+
+/* ── Analisis Sekarang button ─────────────────────────────────── */
+.btn-analyze {
+    background: linear-gradient(135deg, #1D9E75, #0d6efd);
+    color: #fff !important;
+    border: none;
+    font-weight: 600;
+    font-size: .85rem;
+    padding: 8px 18px;
+    border-radius: 8px;
+    transition: all .25s;
+    white-space: nowrap;
+}
+.btn-analyze:hover {
+    background: linear-gradient(135deg, #178a65, #0b5ed7);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(13,110,253,.3);
+}
+.btn-analyze:active { transform: translateY(0); box-shadow: none; }
+.btn-analyze:disabled { opacity: .65; transform: none; cursor: not-allowed; }
+
+/* ── AI Loader Overlay ────────────────────────────────────────── */
+.ai-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.78);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+.ai-overlay.show { display: flex; }
+
+.ai-loader-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 44px 48px 40px;
+    text-align: center;
+    max-width: 440px;
+    width: 92%;
+    box-shadow: 0 24px 64px rgba(0,0,0,.45);
+    animation: card-pop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes card-pop {
+    from { opacity:0; transform: scale(.88); }
+    to   { opacity:1; transform: scale(1); }
+}
+
+/* Pulsing orb */
+.ai-orb {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1D9E75, #0d6efd);
+    margin: 0 auto 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #fff;
+    position: relative;
+    animation: orb-breathe 2.5s ease-in-out infinite;
+}
+.ai-orb::before, .ai-orb::after {
+    content: '';
+    position: absolute; border-radius: 50%;
+    border: 2px solid rgba(13,110,253,.35);
+    animation: ring-expand 2.5s ease-out infinite;
+}
+.ai-orb::before { width: 96px; height: 96px; animation-delay: 0s; }
+.ai-orb::after  { width: 118px; height: 118px; animation-delay: .7s; }
+@keyframes orb-breathe {
+    0%,100% { box-shadow: 0 0 0 0 rgba(13,110,253,.3); }
+    50%      { box-shadow: 0 0 22px 6px rgba(13,110,253,.18); }
+}
+@keyframes ring-expand {
+    0%   { transform: scale(.85); opacity: .9; }
+    100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* Progress bar */
+.ai-progress {
+    height: 5px; border-radius: 3px;
+    background: #e9ecef; overflow: hidden;
+    margin: 18px 0 16px;
+}
+.ai-progress-fill {
+    height: 100%; border-radius: 3px; width: 4%;
+    background: linear-gradient(90deg, #1D9E75, #0d6efd, #6f42c1, #0d6efd, #1D9E75);
+    background-size: 300% 100%;
+    transition: width .9s ease;
+    animation: shimmer 2.2s linear infinite;
+}
+@keyframes shimmer {
+    0%   { background-position: 100% center; }
+    100% { background-position: -100% center; }
+}
+
+/* Thinking dots */
+.thinking-dots { margin-top: 12px; }
+.thinking-dots span {
+    display: inline-block;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: linear-gradient(135deg, #1D9E75, #0d6efd);
+    margin: 0 4px;
+    animation: dot-bounce 1.5s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: .22s; }
+.thinking-dots span:nth-child(3) { animation-delay: .44s; }
+@keyframes dot-bounce {
+    0%,60%,100% { transform: translateY(0); opacity: .5; }
+    30%          { transform: translateY(-10px); opacity: 1; }
+}
 </style>
 @endpush
 
 @section('content')
 
 {{-- Header --}}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h4 class="mb-0 fw-bold">Customer Analytics</h4>
         <small class="text-muted">Analisis perilaku customer dari percakapan WhatsApp · {{ $from }} s/d {{ $to }}</small>
     </div>
-    <div class="d-flex gap-2 align-items-center">
+    <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
         {{-- Period selector --}}
         <div class="btn-group btn-group-sm">
             @foreach([['7','7 Hari'],['14','14 Hari'],['30','30 Hari']] as [$val,$label])
@@ -36,16 +145,22 @@
                    class="btn btn-outline-secondary period-btn {{ $period == $val ? 'active' : '' }}">{{ $label }}</a>
             @endforeach
         </div>
+        {{-- Analisis Sekarang --}}
+        <button class="btn btn-analyze" id="btnAnalyze" onclick="runAnalysis()">
+            <i class="bi bi-stars me-1"></i>Analisis Sekarang
+            @if($unanalysed > 0)
+                <span class="badge bg-white text-dark ms-1" style="font-size:.72rem">{{ $unanalysed }} baru</span>
+            @endif
+        </button>
     </div>
 </div>
 
-{{-- Unanalysed banner --}}
+{{-- Unanalysed notice (subtle) --}}
 @if($unanalysed > 0)
-<div class="unanalysed-banner mb-3">
-    <i class="bi bi-info-circle me-2"></i>
-    <strong>{{ $unanalysed }} sesi hari ini belum dianalisis.</strong>
-    Analisis berjalan otomatis tiap malam pukul 02.00, atau jalankan manual:
-    <code class="ms-1">php artisan analytics:analyse --date={{ now()->toDateString() }}</code>
+<div class="d-flex align-items-center gap-2 mb-3 px-3 py-2 rounded-3"
+     style="background:#fff8e1;border:1px solid #ffe082;font-size:.83rem">
+    <i class="bi bi-clock-history text-warning"></i>
+    <span><strong>{{ $unanalysed }} sesi hari ini</strong> belum dianalisis — klik <em>Analisis Sekarang</em> atau tunggu otomatis pukul 02.00.</span>
 </div>
 @endif
 
@@ -284,6 +399,49 @@
 </div>
 @endif
 
+{{-- ── AI Loader Overlay ──────────────────────────────────────────────────── --}}
+<div class="ai-overlay" id="aiOverlay">
+    <div class="ai-loader-card">
+
+        {{-- Orb icon --}}
+        <div class="ai-orb"><i class="bi bi-stars"></i></div>
+
+        {{-- Phase 1 — Processing --}}
+        <div id="phaseProcessing">
+            <h5 class="fw-bold mb-1">AI Sedang Menganalisis</h5>
+            <p class="text-muted mb-0" style="font-size:.83rem">Proses ini berjalan di background — bisa 1–5 menit</p>
+            <div class="ai-progress"><div class="ai-progress-fill" id="loaderBar"></div></div>
+            <p class="fw-semibold mb-2" style="color:#0d6efd;font-size:.9rem" id="loaderMsg">Memulai analisis...</p>
+            <div class="thinking-dots"><span></span><span></span><span></span></div>
+        </div>
+
+        {{-- Phase 2 — Queued success --}}
+        <div id="phaseQueued" style="display:none">
+            <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size:2.4rem"></i></div>
+            <h5 class="fw-bold mb-1">Job Berhasil Diantrekan!</h5>
+            <p class="text-muted mb-4" style="font-size:.85rem">
+                AI sedang memproses percakapan di background.<br>
+                Klik tombol di bawah setelah 1–2 menit untuk melihat hasil.
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary btn-sm px-4" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Muat Ulang
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="closeLoader()">Tutup</button>
+            </div>
+        </div>
+
+        {{-- Phase 3 — Error --}}
+        <div id="phaseError" style="display:none">
+            <div class="mb-3"><i class="bi bi-x-circle-fill text-danger" style="font-size:2.4rem"></i></div>
+            <h5 class="fw-bold mb-1">Gagal Memulai Analisis</h5>
+            <p class="text-muted mb-4" style="font-size:.85rem" id="loaderErrMsg">Terjadi kesalahan. Coba lagi.</p>
+            <button class="btn btn-outline-secondary btn-sm px-4" onclick="closeLoader()">Tutup</button>
+        </div>
+
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -294,6 +452,77 @@ const brandBlue   = '#0d6efd';
 const brandRed    = '#dc3545';
 const brandGray   = '#6c757d';
 const brandYellow = '#ffc107';
+
+// ── Analisis Sekarang ─────────────────────────────────────────────────────────
+const AI_STEPS = [
+    'Memuat percakapan hari ini...',
+    'AI membaca setiap pesan customer...',
+    'Mengklasifikasi segmen customer...',
+    'Menghitung purchase intent score...',
+    'Mendeteksi pertanyaan yang tidak terjawab...',
+    'Menganalisis sentimen percakapan...',
+    'Mendeteksi sumber channel marketing...',
+    'Menyusun laporan analitik...',
+    'Hampir selesai...',
+];
+
+function runAnalysis() {
+    const overlay  = document.getElementById('aiOverlay');
+    const bar      = document.getElementById('loaderBar');
+    const msgEl    = document.getElementById('loaderMsg');
+    const btnEl    = document.getElementById('btnAnalyze');
+
+    btnEl.disabled = true;
+    overlay.classList.add('show');
+    document.getElementById('phaseProcessing').style.display = 'block';
+    document.getElementById('phaseQueued').style.display     = 'none';
+    document.getElementById('phaseError').style.display      = 'none';
+
+    let step = 0, progress = 4;
+    msgEl.textContent = AI_STEPS[0];
+    bar.style.width   = progress + '%';
+
+    const stepInterval = setInterval(() => {
+        step = (step + 1) % AI_STEPS.length;
+        msgEl.textContent = AI_STEPS[step];
+        progress = Math.min(progress + Math.floor(Math.random() * 10 + 6), 88);
+        bar.style.width = progress + '%';
+    }, 2800);
+
+    fetch('{{ route('cms.analytics.run') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: JSON.stringify({ date: '{{ now()->toDateString() }}' }),
+    })
+    .then(r => {
+        if (!r.ok) return r.json().then(e => Promise.reject(e));
+        return r.json();
+    })
+    .then(() => {
+        clearInterval(stepInterval);
+        bar.style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('phaseProcessing').style.display = 'none';
+            document.getElementById('phaseQueued').style.display     = 'block';
+        }, 500);
+    })
+    .catch(err => {
+        clearInterval(stepInterval);
+        document.getElementById('phaseProcessing').style.display = 'none';
+        document.getElementById('phaseError').style.display      = 'block';
+        document.getElementById('loaderErrMsg').textContent =
+            (err && err.message) ? err.message : 'Terjadi kesalahan server. Coba lagi.';
+        btnEl.disabled = false;
+    });
+}
+
+function closeLoader() {
+    document.getElementById('aiOverlay').classList.remove('show');
+    document.getElementById('btnAnalyze').disabled = false;
+}
 
 @if($totalSessions > 0)
 

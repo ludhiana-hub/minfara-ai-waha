@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RunAnalyticsJob;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -96,5 +98,18 @@ class AnalyticsController extends Controller
             'trendDays', 'trendSessions', 'trendPositive', 'trendNegative', 'trendIntent',
             'recent', 'unanalysed'
         ));
+    }
+
+    public function run(Request $request): JsonResponse
+    {
+        $date = $request->input('date') ?: Carbon::today()->toDateString();
+
+        dispatch(new RunAnalyticsJob($date, force: true));
+
+        return response()->json([
+            'status'  => 'queued',
+            'date'    => $date,
+            'message' => "Job analisis untuk {$date} berhasil diantrekan.",
+        ]);
     }
 }

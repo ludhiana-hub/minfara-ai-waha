@@ -44,7 +44,8 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
          ->name('notification-logs.index');
 
     // ── Analytics ─────────────────────────────────────────────────────────────
-    Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('analytics',      [AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::post('analytics/run', [AnalyticsController::class, 'run'])->name('analytics.run');
 
     // WAHA status AJAX endpoint
     Route::get('api/waha-status', [DashboardController::class, 'wahaStatus'])->name('api.waha-status');
