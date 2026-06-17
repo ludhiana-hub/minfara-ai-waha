@@ -55,34 +55,21 @@ Kembalikan JSON dengan format persis ini:
 purchase_intent_score: angka 0-10 (0=tidak ada niat beli, 10=hampir pasti beli)
 PROMPT;
 
-        // Lazy-resolve AI providers here (NOT in constructor) to avoid DB queries during
-        // Laravel boot/command-discovery when package:discover runs without a database.
-        // NvidiaService (Nemotron) is primary — best reasoning for structured JSON analytics.
-        $providers = [
-            app(NvidiaService::class),
-            app(GroqService::class),
-            app(GeminiService::class),
-            app(OpenRouterService::class),
-        ];
+        // Lazy-resolve here (NOT in constructor) to avoid DB queries during Laravel boot.
+        // Analytics exclusively uses NVIDIA NIM — model can be swapped via BotConfig/CMS.
+        $nvidia = app(NvidiaService::class);
+        $result = $nvidia->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
 
-        foreach ($providers as $provider) {
-            // Reasoning models (nemotron-ultra) need more tokens for internal thinking;
-            // standard instruction models (qwen/gpt-oss) work fine at 600.
-            $maxTokens = 600;
-            $result = $provider->chat($prompt, self::SYSTEM_PROMPT, $maxTokens, 0.3);
-
-            if (!$result['success']) {
-                continue;
-            }
-
+        if ($result['success']) {
             $parsed = $this->parseJson($result['reply']);
             if ($parsed !== null) {
                 return $parsed;
             }
         }
 
-        Log::warning('[Analytics] Semua AI provider gagal untuk sesi', [
+        Log::warning('[Analytics] NVIDIA analytics gagal untuk sesi', [
             'messages' => $logs->count(),
+            'error'    => $result['error'] ?? 'JSON parse failed',
         ]);
 
         return null;
