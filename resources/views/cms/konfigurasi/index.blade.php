@@ -239,6 +239,7 @@
                         <div class="col-md-7">
                             <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $geminiModel = $configs['gemini_model']->value ?? $envFallbacks['gemini_model']; @endphp
+                            @if(!empty($aiModels['gemini'] ?? []))
                             <select name="gemini_model" class="form-select font-monospace">
                                 @foreach($aiModels['gemini'] as $m)
                                     <option value="{{ $m['id'] }}" {{ $geminiModel === $m['id'] ? 'selected' : '' }}>
@@ -249,6 +250,10 @@
                                     <option value="{{ $geminiModel }}" selected>{{ $geminiModel }} (custom)</option>
                                 @endif
                             </select>
+                            @else
+                            <input type="text" name="gemini_model" class="form-control font-monospace"
+                                value="{{ $geminiModel }}" placeholder="gemini-2.5-flash">
+                            @endif
                             <div class="form-text">
                                 Semua model di atas gratis (free tier Google AI Studio).
                                 @if(isset($configs['gemini_model']) && $configs['gemini_model']->value)
@@ -293,6 +298,7 @@
                         <div class="col-md-7">
                             <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $groqModel = $configs['groq_model']->value ?? $envFallbacks['groq_model']; @endphp
+                            @if(!empty($aiModels['groq'] ?? []))
                             <select name="groq_model" class="form-select font-monospace">
                                 @foreach($aiModels['groq'] as $m)
                                     <option value="{{ $m['id'] }}" {{ $groqModel === $m['id'] ? 'selected' : '' }}>
@@ -303,6 +309,10 @@
                                     <option value="{{ $groqModel }}" selected>{{ $groqModel }} (custom)</option>
                                 @endif
                             </select>
+                            @else
+                            <input type="text" name="groq_model" class="form-control font-monospace"
+                                value="{{ $groqModel }}" placeholder="llama-3.3-70b-versatile">
+                            @endif
                             <div class="form-text">
                                 Semua model di atas gratis (free tier Groq, ada batas request/menit).
                                 @if(isset($configs['groq_model']) && $configs['groq_model']->value)
@@ -351,6 +361,7 @@
                         <div class="col-12">
                             <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $orModel = $configs['openrouter_model']->value ?? $envFallbacks['openrouter_model']; @endphp
+                            @if(!empty($aiModels['openrouter'] ?? []))
                             <select name="openrouter_model" class="form-select font-monospace">
                                 @foreach($aiModels['openrouter'] as $m)
                                     <option value="{{ $m['id'] }}" {{ $orModel === $m['id'] ? 'selected' : '' }}>
@@ -361,6 +372,10 @@
                                     <option value="{{ $orModel }}" selected>{{ $orModel }} (custom)</option>
                                 @endif
                             </select>
+                            @else
+                            <input type="text" name="openrouter_model" class="form-control font-monospace"
+                                value="{{ $orModel }}" placeholder="qwen/qwen3-14b:free">
+                            @endif
                             <div class="form-text">
                                 Semua model di atas gratis (hanya ada batas request per hari).
                                 @if(isset($configs['openrouter_model']) && $configs['openrouter_model']->value)
@@ -410,6 +425,7 @@
                         <div class="col-md-9">
                             <label class="form-label fw-semibold">Model (Primary — dapat dipilih)</label>
                             @php $nvidiaModel = $configs['nvidia_model']->value ?? $envFallbacks['nvidia_model']; @endphp
+                            @if(!empty($aiModels['nvidia']['primary'] ?? []))
                             <select name="nvidia_model" class="form-select font-monospace">
                                 @foreach($aiModels['nvidia']['primary'] as $m)
                                     <option value="{{ $m['id'] }}" {{ $nvidiaModel === $m['id'] ? 'selected' : '' }}>
@@ -420,6 +436,10 @@
                                     <option value="{{ $nvidiaModel }}" selected>{{ $nvidiaModel }} (custom)</option>
                                 @endif
                             </select>
+                            @else
+                            <input type="text" name="nvidia_model" class="form-control font-monospace"
+                                value="{{ $nvidiaModel }}" placeholder="qwen/qwen3.5-397b-a17b">
+                            @endif
                             <div class="form-text">
                                 Model primary dicoba pertama kali untuk setiap sesi analitik.
                                 @if(isset($configs['nvidia_model']) && $configs['nvidia_model']->value)
@@ -431,6 +451,7 @@
                         </div>
 
                         <!-- Fallback chain — FYI only, not selectable -->
+                        @if(!empty($aiModels['nvidia']['fallback'] ?? []))
                         <div class="col-12">
                             <label class="form-label fw-semibold text-muted" style="font-size:.85rem">
                                 <i class="bi bi-info-circle me-1"></i>Fallback Otomatis (FYI — tidak dapat diubah)
@@ -448,6 +469,7 @@
                                 Urutan ini hardcoded di sistem. Hanya primary di atas yang dapat Anda pilih.
                             </div>
                         </div>
+                        @endif
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">API Key</label>
