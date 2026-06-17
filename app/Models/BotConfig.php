@@ -19,7 +19,13 @@ class BotConfig extends Model
 
     public static function set(string $key, mixed $value): void
     {
-        static::updateOrCreate(['key' => $key], ['value' => $value]);
+        $record = static::where('key', $key)->first();
+        if ($record) {
+            $record->update(['value' => $value]);
+        } else {
+            // label has no DB default, so provide key name as fallback on first create
+            static::create(['key' => $key, 'value' => $value, 'label' => $key]);
+        }
         Cache::forget('bot_config_' . $key);
     }
 

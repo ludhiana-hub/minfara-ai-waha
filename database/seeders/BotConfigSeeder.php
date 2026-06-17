@@ -81,7 +81,9 @@ PROMPT;
             ['key' => 'groq_api_key',         'value' => '',                                                'type' => 'password', 'label' => 'Groq API Key',                     'description' => 'API Key Groq dari console.groq.com', 'group' => 'api'],
             ['key' => 'groq_model',           'value' => 'qwen/qwen3-32b',                        'type' => 'text',     'label' => 'Groq Model',                       'description' => 'Model Groq yang digunakan, contoh: llama-3.3-70b-versatile', 'group' => 'api'],
             ['key' => 'openrouter_api_key',   'value' => '',                                                'type' => 'password', 'label' => 'OpenRouter API Key',               'description' => 'API Key dari openrouter.ai', 'group' => 'api'],
-            ['key' => 'openrouter_model',     'value' => 'deepseek/deepseek-v4-flash:free',                  'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: deepseek/deepseek-v4-flash:free', 'group' => 'api'],
+            ['key' => 'openrouter_model',     'value' => 'qwen/qwen3-14b:free',                             'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: qwen/qwen3-14b:free', 'group' => 'api'],
+            ['key' => 'nvidia_api_key',       'value' => '',                                                'type' => 'password', 'label' => 'NVIDIA NIM API Key',               'description' => 'API Key dari build.nvidia.com — gratis, untuk Customer Analytics', 'group' => 'api'],
+            ['key' => 'nvidia_model',         'value' => 'qwen/qwen3.5-397b-a17b',                         'type' => 'text',     'label' => 'NVIDIA NIM Model (Analytics)',      'description' => 'Model NVIDIA NIM utama untuk analitik percakapan', 'group' => 'api'],
         ];
 
         // Key yang selalu di-update (system prompt & token limit) agar perubahan seeder langsung berlaku
