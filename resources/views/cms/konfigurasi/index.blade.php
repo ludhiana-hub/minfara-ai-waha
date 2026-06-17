@@ -232,17 +232,25 @@
                 <div class="card-header d-flex align-items-center gap-2">
                     <i class="bi bi-stars text-warning"></i>
                     <strong>Google Gemini AI</strong>
+                    <span class="badge bg-warning text-dark ms-auto">Free Tier</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Model</label>
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $geminiModel = $configs['gemini_model']->value ?? $envFallbacks['gemini_model']; @endphp
-                            <input type="text" name="gemini_model" class="form-control font-monospace"
-                                value="{{ $geminiModel }}"
-                                placeholder="gemini-2.0-flash">
+                            <select name="gemini_model" class="form-select font-monospace">
+                                @foreach($aiModels['gemini'] as $m)
+                                    <option value="{{ $m['id'] }}" {{ $geminiModel === $m['id'] ? 'selected' : '' }}>
+                                        {{ $m['label'] }} — {{ $m['desc'] }}
+                                    </option>
+                                @endforeach
+                                @if(!collect($aiModels['gemini'])->pluck('id')->contains($geminiModel))
+                                    <option value="{{ $geminiModel }}" selected>{{ $geminiModel }} (custom)</option>
+                                @endif
+                            </select>
                             <div class="form-text">
-                                Contoh: <code>gemini-2.0-flash</code>, <code>gemini-1.5-pro</code>
+                                Semua model di atas gratis (free tier Google AI Studio).
                                 @if(isset($configs['gemini_model']) && $configs['gemini_model']->value)
                                     <span class="badge bg-success ms-1">DB</span>
                                 @elseif($envFallbacks['gemini_model'])
@@ -278,17 +286,25 @@
                 <div class="card-header d-flex align-items-center gap-2">
                     <i class="bi bi-lightning-charge-fill text-primary"></i>
                     <strong>Groq AI</strong>
+                    <span class="badge bg-primary ms-auto">Free Tier</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Model</label>
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $groqModel = $configs['groq_model']->value ?? $envFallbacks['groq_model']; @endphp
-                            <input type="text" name="groq_model" class="form-control font-monospace"
-                                value="{{ $groqModel }}"
-                                placeholder="llama-3.3-70b-versatile">
+                            <select name="groq_model" class="form-select font-monospace">
+                                @foreach($aiModels['groq'] as $m)
+                                    <option value="{{ $m['id'] }}" {{ $groqModel === $m['id'] ? 'selected' : '' }}>
+                                        {{ $m['label'] }} — {{ $m['desc'] }}
+                                    </option>
+                                @endforeach
+                                @if(!collect($aiModels['groq'])->pluck('id')->contains($groqModel))
+                                    <option value="{{ $groqModel }}" selected>{{ $groqModel }} (custom)</option>
+                                @endif
+                            </select>
                             <div class="form-text">
-                                Contoh: <code>llama-3.3-70b-versatile</code>, <code>llama-3.1-8b-instant</code>, <code>mixtral-8x7b-32768</code>
+                                Semua model di atas gratis (free tier Groq, ada batas request/menit).
                                 @if(isset($configs['groq_model']) && $configs['groq_model']->value)
                                     <span class="badge bg-success ms-1">DB</span>
                                 @elseif($envFallbacks['groq_model'])
@@ -323,35 +339,30 @@
                 <div class="card-header d-flex align-items-center gap-2">
                     <i class="bi bi-diagram-3-fill text-success"></i>
                     <strong>OpenRouter AI</strong>
-                    <span class="badge bg-success ms-auto">Free Models Available</span>
+                    <span class="badge bg-success ms-auto">Free Models</span>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-warning py-2 mb-3" style="font-size:.82rem">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>WAJIB ada <code>:free</code></strong> di akhir nama model — tanpa itu OpenRouter mengenakan biaya/kredit!
+                        Semua model di bawah sudah menyertakan <code>:free</code>.
+                    </div>
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Model</label>
+                            <label class="form-label fw-semibold">Model (Primary)</label>
                             @php $orModel = $configs['openrouter_model']->value ?? $envFallbacks['openrouter_model']; @endphp
-                            <input type="text" name="openrouter_model" list="orModelList" class="form-control font-monospace"
-                                value="{{ $orModel }}"
-                                placeholder="qwen/qwen3-14b:free">
-                            <datalist id="orModelList">
-                                {{-- ===== GRATIS (wajib pakai :free di akhir nama model) ===== --}}
-                                <option value="qwen/qwen3-14b:free">✅ GRATIS | Qwen3 14B — Cepat, multilingual ID+DE ⭐ Direkomendasikan</option>
-                                <option value="qwen/qwen3-30b-a3b:free">✅ GRATIS | Qwen3 30B — Lebih pintar, sedikit lebih lambat</option>
-                                <option value="qwen/qwen3-8b:free">✅ GRATIS | Qwen3 8B — Super cepat, ringan</option>
-                                <option value="qwen/qwen3-235b-a22b:free">✅ GRATIS | Qwen3 235B (MoE) — Paling powerful, bisa lambat</option>
-                                <option value="deepseek/deepseek-chat-v3-0324:free">✅ GRATIS | DeepSeek Chat V3 — Sangat baik, multilingual</option>
-                                <option value="deepseek/deepseek-r1:free">✅ GRATIS | DeepSeek R1 — Reasoning, lebih lambat</option>
-                                <option value="meta-llama/llama-3.3-70b-instruct:free">✅ GRATIS | Llama 3.3 70B — Meta, capable</option>
-                                <option value="meta-llama/llama-3.1-8b-instruct:free">✅ GRATIS | Llama 3.1 8B — Meta, super cepat</option>
-                                <option value="google/gemma-3-27b-it:free">✅ GRATIS | Gemma 3 27B — Google</option>
-                                <option value="google/gemma-3-12b-it:free">✅ GRATIS | Gemma 3 12B — Google, cepat</option>
-                                <option value="mistralai/mistral-7b-instruct:free">✅ GRATIS | Mistral 7B — Cepat</option>
-                                <option value="microsoft/phi-3-mini-128k-instruct:free">✅ GRATIS | Phi-3 Mini 128K — Konteks panjang</option>
-                            </datalist>
-                            <div class="form-text text-danger fw-semibold">
-                                ⚠️ WAJIB ada <code>:free</code> di akhir nama model — tanpa itu OpenRouter mengenakan biaya/kredit!</div>
+                            <select name="openrouter_model" class="form-select font-monospace">
+                                @foreach($aiModels['openrouter'] as $m)
+                                    <option value="{{ $m['id'] }}" {{ $orModel === $m['id'] ? 'selected' : '' }}>
+                                        {{ $m['label'] }} — {{ $m['desc'] }}
+                                    </option>
+                                @endforeach
+                                @if(!collect($aiModels['openrouter'])->pluck('id')->contains($orModel))
+                                    <option value="{{ $orModel }}" selected>{{ $orModel }} (custom)</option>
+                                @endif
+                            </select>
                             <div class="form-text">
-                                Semua model di atas bertanda <code>:free</code> = GRATIS, hanya ada batas request per hari.
+                                Semua model di atas gratis (hanya ada batas request per hari).
                                 @if(isset($configs['openrouter_model']) && $configs['openrouter_model']->value)
                                     <span class="badge bg-success ms-1">DB</span>
                                 @elseif($envFallbacks['openrouter_model'])
@@ -392,20 +403,25 @@
                 <div class="card-body">
                     <div class="alert alert-success py-2 mb-3" style="font-size:.82rem">
                         <i class="bi bi-bar-chart-line me-1"></i>
-                        Provider <strong>utama</strong> untuk fitur <strong>Customer Analytics</strong>.
-                        Fallback ke Groq → Gemini → OpenRouter jika NVIDIA gagal.
+                        Provider <strong>khusus</strong> untuk fitur <strong>Customer Analytics</strong>.
+                        Jika primary gagal, bot otomatis coba model fallback (lihat di bawah). Tidak fallback ke Groq/Gemini/OpenRouter.
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label fw-semibold">Model</label>
+                        <div class="col-md-9">
+                            <label class="form-label fw-semibold">Model (Primary — dapat dipilih)</label>
                             @php $nvidiaModel = $configs['nvidia_model']->value ?? $envFallbacks['nvidia_model']; @endphp
-                            <input type="text" name="nvidia_model" class="form-control font-monospace"
-                                value="{{ $nvidiaModel }}"
-                                placeholder="qwen/qwen3.5-397b-a17b">
+                            <select name="nvidia_model" class="form-select font-monospace">
+                                @foreach($aiModels['nvidia']['primary'] as $m)
+                                    <option value="{{ $m['id'] }}" {{ $nvidiaModel === $m['id'] ? 'selected' : '' }}>
+                                        {{ $m['label'] }} — {{ $m['desc'] }}
+                                    </option>
+                                @endforeach
+                                @if(!collect($aiModels['nvidia']['primary'])->pluck('id')->contains($nvidiaModel))
+                                    <option value="{{ $nvidiaModel }}" selected>{{ $nvidiaModel }} (custom)</option>
+                                @endif
+                            </select>
                             <div class="form-text">
-                                Default: <code>qwen/qwen3.5-397b-a17b</code> (4s, terbaik untuk analytics) ·
-                                Alternatif: <code>openai/gpt-oss-120b</code> (5s) ·
-                                <code>nvidia/nemotron-3-ultra-550b-a55b</code> (lambat, akurasi max)
+                                Model primary dicoba pertama kali untuk setiap sesi analitik.
                                 @if(isset($configs['nvidia_model']) && $configs['nvidia_model']->value)
                                     <span class="badge bg-success ms-1">DB</span>
                                 @elseif($envFallbacks['nvidia_model'])
@@ -413,10 +429,30 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Fallback chain — FYI only, not selectable -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-muted" style="font-size:.85rem">
+                                <i class="bi bi-info-circle me-1"></i>Fallback Otomatis (FYI — tidak dapat diubah)
+                            </label>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach($aiModels['nvidia']['fallback'] as $i => $m)
+                                    <div class="d-flex align-items-center gap-1 px-3 py-1 rounded-pill border bg-light" style="font-size:.78rem">
+                                        <span class="badge rounded-pill text-bg-secondary" style="font-size:.7rem">{{ $i + 1 }}</span>
+                                        <span class="font-monospace text-secondary">{{ $m['id'] }}</span>
+                                        <span class="text-muted">— {{ $m['desc'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="form-text mt-1">
+                                Urutan ini hardcoded di sistem. Hanya primary di atas yang dapat Anda pilih.
+                            </div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label fw-semibold">API Key</label>
                             <div class="form-text text-muted mb-1" style="font-size:.78rem">
-                                Dapatkan API key di <strong>build.nvidia.com</strong> → API Key
+                                Dapatkan API key gratis di <strong>build.nvidia.com</strong> → API Key
                             </div>
                             @php $nvidiaKey = $configs['nvidia_api_key']->value ?? $envFallbacks['nvidia_api_key']; @endphp
                             <div class="input-group">
@@ -432,7 +468,7 @@
                             @elseif($envFallbacks['nvidia_api_key'])
                                 <div class="form-text text-info"><i class="bi bi-info-circle me-1"></i>Dibaca dari <code>.env</code>. Simpan di sini untuk override.</div>
                             @else
-                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset — analytics fallback ke Groq/Gemini/OpenRouter.</div>
+                                <div class="form-text text-warning"><i class="bi bi-exclamation-circle me-1"></i>Belum diset — fitur Customer Analytics tidak akan berfungsi.</div>
                             @endif
                         </div>
                     </div>

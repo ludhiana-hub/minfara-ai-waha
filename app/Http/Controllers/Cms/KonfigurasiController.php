@@ -28,7 +28,9 @@ class KonfigurasiController extends Controller
             'nvidia_model'        => config('services.nvidia.model', 'qwen/qwen3.5-397b-a17b'),
         ];
 
-        return view('cms.konfigurasi.index', compact('configs', 'envFallbacks'));
+        $aiModels = config('ai_models');
+
+        return view('cms.konfigurasi.index', compact('configs', 'envFallbacks', 'aiModels'));
     }
 
     public function update(Request $request)

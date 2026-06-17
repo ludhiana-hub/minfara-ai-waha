@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AnalyticsDailySummary;
+use App\Models\BotConfig;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
 use Illuminate\Support\Collection;
@@ -59,12 +60,19 @@ PROMPT;
         // Analytics uses NVIDIA NIM only — fallback between models, never to other providers.
         $nvidia = app(NvidiaService::class);
 
-        $models = [
-            'qwen/qwen3.5-397b-a17b',               // primary — best quality
-            'qwen/qwen3.5-122b-a10b',                // backup 1 — smaller, lebih cepat
-            'nvidia/llama-3.3-nemotron-super-49b-v1.5', // backup 2
-            'deepseek-ai/deepseek-v4-flash',         // backup 3 — paling cepat
+        // Primary model is configurable from CMS (Konfigurasi → NVIDIA).
+        // Fallback chain is fixed: tried in order if primary fails.
+        $primary = BotConfig::get('nvidia_model') ?: 'qwen/qwen3.5-397b-a17b';
+        $fallbacks = [
+            'qwen/qwen3.5-122b-a10b',
+            'nvidia/llama-3.3-nemotron-super-49b-v1.5',
+            'deepseek-ai/deepseek-v4-flash',
         ];
+        // Exclude primary from fallback list to avoid trying the same model twice
+        $models = array_values(array_merge(
+            [$primary],
+            array_filter($fallbacks, fn ($m) => $m !== $primary)
+        ));
 
         foreach ($models as $model) {
             $result = $nvidia->withModel($model)->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
