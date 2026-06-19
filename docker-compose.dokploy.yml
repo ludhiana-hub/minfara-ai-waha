@@ -150,6 +150,8 @@ services:
       WAHA_DASHBOARD_PASSWORD: "${WAHA_DASHBOARD_PASSWORD}"
       WHATSAPP_HOOK_URL: "http://187.77.116.47:8080/api/whatsapp/webhook"
       WHATSAPP_HOOK_EVENTS: "message"
+      WHATSAPP_DEFAULT_ENGINE: "NOWEB"
+      WHATSAPP_RESTART_ALL_SESSIONS: "TRUE"
     volumes:
       - waha_data:/app/.sessions
     networks:
