@@ -146,7 +146,7 @@
             @endforeach
         </div>
         {{-- Analisis Sekarang --}}
-        <button class="btn btn-analyze" id="btnAnalyze" onclick="runAnalysis()">
+        <button class="btn btn-analyze" id="btnAnalyze" onclick="confirmAnalysis()">
             <i class="bi bi-stars me-1"></i>Analisis Sekarang
             @if($unanalysed > 0)
                 <span class="badge bg-white text-dark ms-1" style="font-size:.72rem">{{ $unanalysed }} baru</span>
@@ -399,6 +399,25 @@
 </div>
 @endif
 
+{{-- ── Konfirmasi Analisis ──────────────────────────────────────────────────── --}}
+<div class="ai-overlay" id="confirmOverlay">
+    <div class="ai-loader-card">
+        <div class="mb-3"><i class="bi bi-stars text-primary" style="font-size:2.4rem"></i></div>
+        <h5 class="fw-bold mb-1">Mulai Analisis Sekarang?</h5>
+        <p class="text-muted mb-4" style="font-size:.85rem">
+            AI akan menganalisis seluruh percakapan <strong>hari ini</strong>
+            ({{ now()->translatedFormat('d M Y') }}). Proses ini memakai kuota AI dan
+            tidak bisa dibatalkan setelah dimulai.
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+            <button class="btn btn-analyze px-4" onclick="startAnalysis()">
+                <i class="bi bi-play-fill me-1"></i>Ya, Analisis
+            </button>
+            <button class="btn btn-outline-secondary btn-sm px-4" onclick="cancelConfirm()">Batal</button>
+        </div>
+    </div>
+</div>
+
 {{-- ── AI Loader Overlay ──────────────────────────────────────────────────── --}}
 <div class="ai-overlay" id="aiOverlay">
     <div class="ai-loader-card">
@@ -462,6 +481,18 @@ const AI_STEPS = [
     'Menyusun laporan analitik...',
     'Hampir selesai...',
 ];
+
+// Tampilkan modal konfirmasi dulu — jangan langsung proses
+function confirmAnalysis() {
+    document.getElementById('confirmOverlay').classList.add('show');
+}
+function cancelConfirm() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+}
+function startAnalysis() {
+    document.getElementById('confirmOverlay').classList.remove('show');
+    runAnalysis();
+}
 
 function runAnalysis() {
     const overlay  = document.getElementById('aiOverlay');

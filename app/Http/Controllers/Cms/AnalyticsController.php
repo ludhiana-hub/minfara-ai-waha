@@ -85,11 +85,14 @@ class AnalyticsController extends Controller
             ->take(20)
             ->get();
 
-        // Unanalysed count (today — belum diproses)
+        // Unanalysed count (today) — hanya percakapan yang BELUM dianalisis.
+        // Setelah klik "Analisis Sekarang", nomor yang sudah masuk ConversationAnalysis
+        // hari ini dikecualikan → angka turun ke 0 sampai ada percakapan baru.
+        $analyzedToday = ConversationAnalysis::forDate($to)->pluck('phone_number');
         $unanalysed = WhatsappLog::whereDate('created_at', today())
-            ->select('from_number')
+            ->whereNotIn('from_number', $analyzedToday)
             ->distinct()
-            ->count();
+            ->count('from_number');
 
         return view('cms.analytics.dashboard', compact(
             'period', 'from', 'to',
