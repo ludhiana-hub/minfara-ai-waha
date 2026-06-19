@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\RunAnalyticsJob;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
+use App\Services\AnalyticsRunner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -100,17 +100,30 @@ class AnalyticsController extends Controller
         ));
     }
 
-    public function run(Request $request): JsonResponse
+    public function run(Request $request, AnalyticsRunner $runner): JsonResponse
     {
         $request->validate(['date' => 'nullable|date_format:Y-m-d']);
         $date = $request->input('date') ?: Carbon::today()->toDateString();
 
-        dispatch(new RunAnalyticsJob($date, force: true));
+        $r = $runner->runForDate($date, force: true);
+
+        if ($r['empty']) {
+            return response()->json([
+                'status'   => 'empty',
+                'analyzed' => 0,
+                'message'  => "Belum ada percakapan pada {$date} untuk dianalisis.",
+            ]);
+        }
+
+        $allFailed = $r['failed'] === $r['analyzed'];
 
         return response()->json([
-            'status'  => 'queued',
-            'date'    => $date,
-            'message' => "Job analisis untuk {$date} berhasil diantrekan.",
+            'status'   => $allFailed ? 'ai_failed' : 'done',
+            'analyzed' => $r['analyzed'],
+            'failed'   => $r['failed'],
+            'message'  => $allFailed
+                ? "Analisis gagal — AI (NVIDIA) tidak merespons. Cek API key NVIDIA."
+                : "Berhasil menganalisis {$r['analyzed']} sesi" . ($r['failed'] ? " ({$r['failed']} gagal)" : "") . ".",
         ]);
     }
 }

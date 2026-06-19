@@ -409,22 +409,19 @@
         {{-- Phase 1 — Processing --}}
         <div id="phaseProcessing">
             <h5 class="fw-bold mb-1">AI Sedang Menganalisis</h5>
-            <p class="text-muted mb-0" style="font-size:.83rem">Proses ini berjalan di background — bisa 1–5 menit</p>
+            <p class="text-muted mb-0" style="font-size:.83rem">Sedang menganalisis percakapan — mohon tunggu</p>
             <div class="ai-progress"><div class="ai-progress-fill" id="loaderBar"></div></div>
             <p class="fw-semibold mb-2" style="color:#0d6efd;font-size:.9rem" id="loaderMsg">Memulai analisis...</p>
             <div class="thinking-dots"><span></span><span></span><span></span></div>
         </div>
 
-        {{-- Phase 2 — Queued success --}}
+        {{-- Phase 2 — Selesai (hasil nyata) --}}
         <div id="phaseQueued" style="display:none">
-            <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size:2.4rem"></i></div>
-            <h5 class="fw-bold mb-1">Job Berhasil Diantrekan!</h5>
-            <p class="text-muted mb-4" style="font-size:.85rem">
-                AI sedang memproses percakapan di background.<br>
-                Klik tombol di bawah setelah 1–2 menit untuk melihat hasil.
-            </p>
+            <div class="mb-3" id="doneIcon"><i class="bi bi-check-circle-fill text-success" style="font-size:2.4rem"></i></div>
+            <h5 class="fw-bold mb-1" id="doneTitle">Analisis Selesai!</h5>
+            <p class="text-muted mb-4" style="font-size:.85rem" id="doneMsg">Berhasil menganalisis percakapan.</p>
             <div class="d-flex gap-2 justify-content-center">
-                <button class="btn btn-primary btn-sm px-4" onclick="window.location.reload()">
+                <button class="btn btn-primary btn-sm px-4" id="doneReloadBtn" onclick="window.location.reload()">
                     <i class="bi bi-arrow-clockwise me-1"></i>Muat Ulang
                 </button>
                 <button class="btn btn-outline-secondary btn-sm" onclick="closeLoader()">Tutup</button>
@@ -501,9 +498,30 @@ function runAnalysis() {
         if (!r.ok) return r.json().then(e => Promise.reject(e));
         return r.json();
     })
-    .then(() => {
+    .then(data => {
         clearInterval(stepInterval);
         bar.style.width = '100%';
+
+        const icon  = document.getElementById('doneIcon');
+        const title = document.getElementById('doneTitle');
+        const msg   = document.getElementById('doneMsg');
+        const reloadBtn = document.getElementById('doneReloadBtn');
+
+        if (data.status === 'done') {
+            icon.innerHTML  = '<i class="bi bi-check-circle-fill text-success" style="font-size:2.4rem"></i>';
+            title.textContent = 'Analisis Selesai!';
+            msg.textContent   = data.message || 'Berhasil menganalisis percakapan.';
+            reloadBtn.style.display = '';
+            // Auto-reload agar data baru langsung tampil
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            // empty / ai_failed — tidak ada data baru, jangan reload
+            icon.innerHTML  = '<i class="bi bi-exclamation-circle-fill text-warning" style="font-size:2.4rem"></i>';
+            title.textContent = data.status === 'empty' ? 'Tidak Ada Percakapan' : 'Analisis Gagal';
+            msg.textContent   = data.message || 'Tidak ada yang dianalisis.';
+            reloadBtn.style.display = 'none';
+        }
+
         setTimeout(() => {
             document.getElementById('phaseProcessing').style.display = 'none';
             document.getElementById('phaseQueued').style.display     = 'block';

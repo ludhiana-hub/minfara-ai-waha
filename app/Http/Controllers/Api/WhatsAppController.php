@@ -119,9 +119,13 @@ class WhatsAppController extends Controller
         $chatId = $rawFrom;
         $from   = preg_replace('/@.*$/', '', $rawFrom);
 
+        // NOWEB (Baileys) simpan nama di `_data.pushName` (kapital N) — beda dari
+        // WEBJS yang pakai `_data.pushname` (lowercase). Cek keduanya.
         $contactName = $payload['notifyName']
             ?? $payload['_data']['notifyName']
+            ?? $payload['_data']['pushName']
             ?? $payload['_data']['pushname']
+            ?? $payload['_data']['verifiedName']
             ?? null;
         if ($contactName) {
             $contactName = trim($contactName);

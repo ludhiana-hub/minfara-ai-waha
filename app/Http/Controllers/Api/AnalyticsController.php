@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Jobs\RunAnalyticsJob;
 use App\Models\ConversationAnalysis;
+use App\Services\AnalyticsRunner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -244,7 +245,9 @@ class AnalyticsController extends Controller
         path: '/api/analytics/run',
         operationId: 'analyticsRun',
         summary: 'Trigger analisis percakapan secara manual',
-        description: 'Mengantrikan job analisis AI untuk tanggal tertentu. Membutuhkan X-Internal-Key. Job berjalan di background queue — tidak blocking.',
+        description: 'Menjalankan analisis AI untuk tanggal tertentu. Membutuhkan X-Internal-Key. '
+            . 'Default: async (queue, non-blocking, 202). Set `sync=true` untuk menjalankan '
+            . 'synchronous dan menerima statistik hasil nyata (200).',
         security: [['InternalApiKey' => []]],
         tags: ['Analytics'],
         requestBody: new OA\RequestBody(
@@ -254,12 +257,28 @@ class AnalyticsController extends Controller
                     description: 'Tanggal yang dianalisis (default: kemarin)'),
                 new OA\Property(property: 'force', type: 'boolean', default: false,
                     description: 'Analisis ulang meski sudah ada datanya'),
+                new OA\Property(property: 'sync', type: 'boolean', default: false,
+                    description: 'Jalankan synchronous dan kembalikan hasil nyata, bukan diantrekan'),
             ])
         ),
         responses: [
             new OA\Response(
+                response: 200,
+                description: 'Analisis synchronous selesai (sync=true)',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(property: 'status', type: 'string',
+                        enum: ['done', 'empty', 'ai_failed'], example: 'done'),
+                    new OA\Property(property: 'date', type: 'string', format: 'date'),
+                    new OA\Property(property: 'analyzed', type: 'integer', example: 12,
+                        description: 'Jumlah sesi yang dianalisis'),
+                    new OA\Property(property: 'failed', type: 'integer', example: 0,
+                        description: 'Jumlah sesi yang gagal dianalisis AI'),
+                    new OA\Property(property: 'message', type: 'string'),
+                ])
+            ),
+            new OA\Response(
                 response: 202,
-                description: 'Job berhasil diantrekan',
+                description: 'Job berhasil diantrekan (async, default)',
                 content: new OA\JsonContent(properties: [
                     new OA\Property(property: 'status', type: 'string', example: 'queued'),
                     new OA\Property(property: 'date', type: 'string', format: 'date'),
@@ -269,10 +288,24 @@ class AnalyticsController extends Controller
             new OA\Response(response: 401, description: 'X-Internal-Key tidak valid'),
         ]
     )]
-    public function run(Request $request): JsonResponse
+    public function run(Request $request, AnalyticsRunner $runner): JsonResponse
     {
         $date  = $request->input('date') ?: Carbon::yesterday()->toDateString();
         $force = $request->boolean('force');
+
+        if ($request->boolean('sync')) {
+            $r = $runner->runForDate($date, $force ?: true);
+
+            return response()->json([
+                'status'   => $r['empty']
+                    ? 'empty'
+                    : ($r['failed'] === $r['analyzed'] ? 'ai_failed' : 'done'),
+                'date'     => $r['date'],
+                'analyzed' => $r['analyzed'],
+                'failed'   => $r['failed'],
+                'message'  => "Analisis {$date} selesai: {$r['analyzed']} sesi dianalisis.",
+            ], 200);
+        }
 
         dispatch(new RunAnalyticsJob($date, $force));
 
