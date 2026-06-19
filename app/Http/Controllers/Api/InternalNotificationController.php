@@ -122,7 +122,7 @@ DESC
             new OA\Response(response: 422, description: 'Validasi request gagal'),
         ]
     )]
-    public function handle(InternalNotifyRequest $request): JsonResponse
+    public function send(InternalNotifyRequest $request): JsonResponse
     {
         $template = NotificationTemplate::active()
             ->where('trigger_key', $request->trigger_key)

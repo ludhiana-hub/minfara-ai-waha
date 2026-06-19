@@ -35,12 +35,6 @@ return [
         ],
     ],
 
-    'waha' => [
-        'url'     => env('WAHA_URL', 'http://localhost:3000'),
-        'session' => env('WAHA_SESSION', 'default'),
-        'api_key' => env('WAHA_API_KEY', ''),
-    ],
-
     'gemini' => [
         'key'   => env('GEMINI_API_KEY', ''),
         'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),

@@ -102,6 +102,7 @@ class AnalyticsController extends Controller
 
     public function run(Request $request): JsonResponse
     {
+        $request->validate(['date' => 'nullable|date_format:Y-m-d']);
         $date = $request->input('date') ?: Carbon::today()->toDateString();
 
         dispatch(new RunAnalyticsJob($date, force: true));

@@ -14,9 +14,9 @@ class WahaController extends Controller
     private function cfg(): array
     {
         return [
-            'url'     => BotConfig::get('waha_url')     ?: config('services.waha.url',     'http://localhost:3000'),
-            'key'     => BotConfig::get('waha_api_key') ?: config('services.waha.api_key', ''),
-            'session' => BotConfig::get('waha_session') ?: config('services.waha.session', 'default'),
+            'url'     => BotConfig::get('waha_url')     ?: config('whatsapp.base_url', 'http://localhost:3000'),
+            'key'     => BotConfig::get('waha_api_key') ?: config('whatsapp.api_key',  ''),
+            'session' => BotConfig::get('waha_session') ?: config('whatsapp.session',   'default'),
         ];
     }
 

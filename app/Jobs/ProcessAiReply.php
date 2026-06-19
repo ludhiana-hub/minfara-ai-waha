@@ -36,6 +36,15 @@ class ProcessAiReply implements ShouldQueue
         GroqService       $groq,
         OpenRouterService $openrouter,
     ): void {
+        if (!$whatsapp->isSessionWorking()) {
+            Log::warning('ProcessAiReply: WAHA session not WORKING, releasing for retry', [
+                'chatId' => $this->chatId,
+                'from'   => $this->from,
+            ]);
+            $this->release(30);
+            return;
+        }
+
         $whatsapp->startTyping($this->chatId);
 
         $aiEnabled     = BotConfig::getBool('ai_enabled', true);
@@ -64,6 +73,7 @@ class ProcessAiReply implements ShouldQueue
             $cooldownKey = 'ai_cooldown_' . md5($this->from);
             if (!Cache::add($cooldownKey, true, 5)) {
                 $whatsapp->stopTyping($this->chatId);
+                $whatsapp->sendMessage($this->chatId, BotConfig::get('rate_limit_message', 'Mohon tunggu sebentar sebelum mengirim pesan lagi 🙏'));
                 return;
             }
 
@@ -220,7 +230,7 @@ class ProcessAiReply implements ShouldQueue
                         'contact_name'   => $this->contactName,
                         'ip_address'     => $this->ipAddress,
                         'message_in'     => substr($this->userMessage, 0, 1000),
-                        'message_out'    => $reply,
+                        'message_out'    => substr($reply, 0, 60000),
                         'mode'           => $mode,
                         'ai_tokens_used' => $tokens ?? null,
                         'responded_at'   => now(),

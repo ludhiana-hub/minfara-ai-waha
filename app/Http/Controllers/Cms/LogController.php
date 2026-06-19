@@ -52,6 +52,7 @@ class LogController extends Controller
 
     public function clear(Request $request)
     {
+        $request->validate(['type' => 'nullable|in:all,old']);
         $type = $request->input('type', 'old');
 
         if ($type === 'all') {

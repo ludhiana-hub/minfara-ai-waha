@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',  // semua API routes tidak butuh CSRF (pakai XSRF-TOKEN header)
         ]);
         $middleware->alias([
-            'localhost'    => \App\Http\Middleware\LocalhostOnly::class,
+            'localhost'    => \App\Http\Middleware\CmsIpMiddleware::class,
             'auth.internal' => \App\Http\Middleware\InternalApiAuth::class,
         ]);
     })

@@ -106,6 +106,7 @@ class FaqController extends Controller
 
     public function reorder(Request $request)
     {
+        $request->validate(['order' => 'array', 'order.*' => 'integer']);
         $order = $request->input('order', []);
         foreach ($order as $index => $id) {
             FaqMenu::where('id', $id)->update(['sort_order' => $index]);

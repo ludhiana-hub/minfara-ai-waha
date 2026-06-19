@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnalyticsController;
-use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\BotConfigController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\InternalNotificationController;
 use App\Http\Controllers\Api\LogController;
@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
 // ── WhatsApp webhook — dipanggil oleh WAHA (public) ──────────────────────────
-Route::post('/whatsapp/webhook', [WhatsAppController::class, 'handle']);
+Route::post('/whatsapp/webhook', [WhatsAppController::class, 'webhook']);
 
 // ── FAQ ───────────────────────────────────────────────────────────────────────
 // Static routes HARUS di atas /{faq} agar tidak tertangkap sebagai ID
@@ -43,11 +43,11 @@ Route::prefix('waha')->group(function () {
 });
 
 // ── Config ────────────────────────────────────────────────────────────────────
-Route::get('/config',  [ConfigController::class, 'index']);
-Route::put('/config',  [ConfigController::class, 'update']);
+Route::get('/config',  [BotConfigController::class, 'index']);
+Route::put('/config',  [BotConfigController::class, 'update']);
 
 // ── Notification API (auth via X-Internal-Key header) ────────────────────────
-Route::post('/notification/notify', [InternalNotificationController::class, 'handle'])
+Route::post('/notification/notify', [InternalNotificationController::class, 'send'])
      ->middleware('auth.internal');
 
 // ── Notification Logs ─────────────────────────────────────────────────────────

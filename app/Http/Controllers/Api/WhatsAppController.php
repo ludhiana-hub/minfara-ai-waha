@@ -54,7 +54,7 @@ class WhatsAppController extends Controller
             ),
         ]
     )]
-    public function handle(Request $request): Response
+    public function webhook(Request $request): Response
     {
         $event   = $request->input('event');
         $payload = $request->input('payload');
@@ -114,10 +114,9 @@ class WhatsAppController extends Controller
         // Cache-based dedup using WAHA messageId — prevents double-dispatch when WAHA retries the webhook
         if (!empty($messageId)) {
             $dedupKey = 'wh_msg_' . md5((string) $messageId);
-            if (Cache::has($dedupKey)) {
+            if (!Cache::add($dedupKey, true, 30)) {
                 return response('OK', 200);
             }
-            Cache::put($dedupKey, true, 30);
         }
 
         $command       = strtolower($rawInput);
@@ -198,21 +197,24 @@ class WhatsAppController extends Controller
             return;
         }
 
-        if ($this->whatsapp->sendMessage($chatId, $content)) {
-            $this->whatsapp->stopTyping($chatId);
-            try {
-                WhatsappLog::create([
-                    'from_number'  => $from,
-                    'contact_name' => $contactName,
-                    'ip_address'   => $ipAddress,
-                    'message_in'   => substr($rawInput, 0, 1000),
-                    'message_out'  => $content,
-                    'mode'         => 'faq',
-                    'responded_at' => now(),
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
+        try {
+            if ($this->whatsapp->sendMessage($chatId, $content)) {
+                try {
+                    WhatsappLog::create([
+                        'from_number'  => $from,
+                        'contact_name' => $contactName,
+                        'ip_address'   => $ipAddress,
+                        'message_in'   => substr($rawInput, 0, 1000),
+                        'message_out'  => $content,
+                        'mode'         => 'faq',
+                        'responded_at' => now(),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
+                }
             }
+        } finally {
+            $this->whatsapp->stopTyping($chatId);
         }
     }
 }
