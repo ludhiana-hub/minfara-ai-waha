@@ -57,7 +57,15 @@ class WhatsAppController extends Controller
     public function webhook(Request $request): Response
     {
         $event   = $request->input('event');
-        $payload = $request->input('payload');
+        $payload = $request->input('payload', []);
+
+        Log::info('webhook:in', [
+            'event'    => $event,
+            'type'     => $payload['_data']['type'] ?? $payload['type'] ?? 'MISSING',
+            'from'     => $payload['from'] ?? 'MISSING',
+            'id_type'  => gettype($payload['id'] ?? null),
+            'has_body' => isset($payload['body']),
+        ]);
 
         if ($event !== 'message') {
             return response('OK', 200);
@@ -69,6 +77,7 @@ class WhatsAppController extends Controller
 
         $type = $payload['_data']['type'] ?? $payload['type'] ?? '';
         if ($type !== 'chat') {
+            Log::info('webhook:drop — type not chat', ['type' => $type]);
             return response('OK', 200);
         }
 
@@ -78,22 +87,29 @@ class WhatsAppController extends Controller
             $ts = (int) $msgTimestamp;
             if ($ts > 1_000_000_000_000) $ts = (int) ($ts / 1000); // milliseconds → seconds
             if ((time() - $ts) > 60) {
+                Log::info('webhook:drop — message too old', ['age_seconds' => time() - $ts]);
                 return response('OK', 200);
             }
         }
 
-        $rawFrom   = $payload['from'] ?? null;
-        $rawInput  = trim($payload['body'] ?? '');
-        $messageId = $payload['id'] ?? null;
+        $rawFrom      = $payload['from'] ?? null;
+        $rawInput     = trim($payload['body'] ?? '');
+        // NOWEB (Baileys) may send id as an object {id, _serialized, fromMe, remote} — extract string
+        $messageIdRaw = $payload['id'] ?? null;
+        $messageId    = is_string($messageIdRaw)
+            ? $messageIdRaw
+            : ($messageIdRaw['_serialized'] ?? $messageIdRaw['id'] ?? null);
 
         if (empty($rawFrom) || !is_string($rawFrom) || strlen($rawFrom) > 100 || $rawInput === '') {
             return response('OK', 200);
         }
 
         // Only respond to direct messages — block groups (@g.us), broadcasts, newsletters
+        // @s.whatsapp.net is Baileys/NOWEB format for individual chats (same as @c.us)
         $atPos  = strrpos($rawFrom, '@');
         $suffix = $atPos !== false ? substr($rawFrom, $atPos) : '@c.us';
-        if (!in_array($suffix, ['@c.us', '@lid'], strict: true)) {
+        if (!in_array($suffix, ['@c.us', '@lid', '@s.whatsapp.net'], strict: true)) {
+            Log::info('webhook:drop — from suffix not allowed', ['suffix' => $suffix]);
             return response('OK', 200);
         }
 
@@ -113,11 +129,14 @@ class WhatsAppController extends Controller
 
         // Cache-based dedup using WAHA messageId — prevents double-dispatch when WAHA retries the webhook
         if (!empty($messageId)) {
-            $dedupKey = 'wh_msg_' . md5((string) $messageId);
+            $dedupKey = 'wh_msg_' . md5($messageId);
             if (!Cache::add($dedupKey, true, 30)) {
+                Log::info('webhook:drop — dedup hit', ['id_suffix' => substr($messageId, -8)]);
                 return response('OK', 200);
             }
         }
+
+        Log::info('webhook:processing', ['from' => $from, 'input' => substr($rawInput, 0, 40)]);
 
         $command       = strtolower($rawInput);
         $greetingWords = array_map('trim', explode(',', BotConfig::get('bot_greeting', 'halo,hai,hi,hello,hallo,mulai,start,menu,help')));
