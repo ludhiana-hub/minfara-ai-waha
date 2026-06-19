@@ -75,9 +75,12 @@ class WhatsAppController extends Controller
             return response('OK', 200);
         }
 
-        $type = $payload['_data']['type'] ?? $payload['type'] ?? '';
-        if ($type !== 'chat') {
-            Log::info('webhook:drop — type not chat', ['type' => $type]);
+        // Skip pesan media (gambar, stiker, audio) — bot hanya proses teks.
+        // Pakai `hasMedia` (field WAHA yang stabil di semua engine), BUKAN `_data.type`
+        // yang hanya ada di WEBJS. NOWEB tidak punya `_data.type` → filter lama
+        // men-drop SEMUA pesan NOWEB.
+        if (($payload['hasMedia'] ?? false) === true) {
+            Log::info('webhook:drop — has media');
             return response('OK', 200);
         }
 
