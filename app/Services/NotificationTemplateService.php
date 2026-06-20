@@ -13,7 +13,7 @@ class NotificationTemplateService
             '{{transaction_id}}' => $data['transaction_id'] ?? '-',
             '{{status}}'         => $data['status']         ?? '-',
             '{{date}}'           => now()->format('d M Y, H:i'),
-            '{{cms_url}}'        => $data['cms_url']        ?? config('whatsapp.cms_base_url'),
+            '{{product_url}}'    => $data['product_url']    ?? config('whatsapp.cms_base_url'),
         ];
 
         return str_replace(array_keys($map), array_values($map), $template);
@@ -28,7 +28,7 @@ class NotificationTemplateService
             'amount'         => 'Rp 1.499.000',
             'transaction_id' => 'TRX-20240601-001',
             'status'         => 'Lunas',
-            'cms_url'        => config('whatsapp.cms_base_url') . '/admin/transactions/1',
+            'product_url'    => config('whatsapp.cms_base_url') . '/admin/transactions/1',
         ]);
     }
 }

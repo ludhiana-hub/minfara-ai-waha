@@ -105,7 +105,7 @@
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{transaction_id}}')">@{{transaction_id}}</span>
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{status}}')">@{{status}}</span>
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{date}}')">@{{date}}</span>
-                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{cms_url}}')">@{{cms_url}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{product_url}}')">@{{product_url}}</span>
                         </div>
                     </div>
                     <textarea name="message_body" id="messageBody" rows="12"
@@ -181,7 +181,7 @@ const dummyData = {
     '@{{transaction_id}}': 'TRX-20240601-001',
     '@{{status}}':         'paid',
     '@{{date}}':           '{{ now()->format("d M Y, H:i") }}',
-    '@{{cms_url}}':        '{{ config("whatsapp.cms_base_url") }}/admin/transactions/1',
+    '@{{product_url}}':    '{{ config("whatsapp.cms_base_url") }}/admin/transactions/1',
 };
 
 function renderPreview(text) {

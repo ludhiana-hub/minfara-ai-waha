@@ -24,7 +24,7 @@ class NotificationTemplateSeeder extends Seeder
                     '*ID:* #{{transaction_id}}',
                     '*Waktu:* {{date}}',
                     '',
-                    '🔗 {{cms_url}}',
+                    '🔗 {{product_url}}',
                 ]),
             ]
         );

@@ -71,7 +71,7 @@ Data dinamis untuk mengisi variabel dalam template pesan. Variabel yang tidak di
 | `{{transaction_id}}` | ID transaksi unik | TRX-2026-00123 |
 | `{{status}}` | Status transaksi / pembayaran | Lunas |
 | `{{date}}` | Tanggal & waktu kejadian | 12 Jun 2026, 22:00 |
-| `{{cms_url}}` | URL halaman CMS terkait | http://187.77.116.47:8080/cms-minfara/... |
+| `{{product_url}}` | URL halaman produk terkait | http://187.77.116.47:8080/cms-minfara/... |
 DESC
                         ,
                         properties: [
@@ -87,9 +87,9 @@ DESC
                                 description: 'Status transaksi atau pembayaran'),
                             new OA\Property(property: 'date', type: 'string', example: '12 Jun 2026, 22:00',
                                 description: 'Tanggal dan waktu kejadian (format bebas)'),
-                            new OA\Property(property: 'cms_url', type: 'string',
+                            new OA\Property(property: 'product_url', type: 'string',
                                 example: 'http://187.77.116.47:8080/cms-minfara/admin/transactions/123',
-                                description: 'URL halaman CMS yang relevan (opsional)'),
+                                description: 'URL halaman produk yang relevan (opsional)'),
                         ]
                     ),
                 ]

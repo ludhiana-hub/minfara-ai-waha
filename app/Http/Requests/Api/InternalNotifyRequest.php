@@ -21,7 +21,7 @@ class InternalNotifyRequest extends FormRequest
             'data.amount'        => ['nullable', 'string', 'max:100'],
             'data.transaction_id'=> ['nullable', 'string', 'max:100'],
             'data.status'        => ['nullable', 'string', 'max:50'],
-            'data.cms_url'       => ['nullable', 'string', 'max:500'],
+            'data.product_url'   => ['nullable', 'string', 'max:500'],
         ];
     }
 
