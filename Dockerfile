@@ -1,8 +1,9 @@
 
 FROM node:20-alpine AS assets
 WORKDIR /app
-COPY package.json .
-RUN npm install --no-audit --no-fund || true
+COPY package.json package-lock.json* ./
+RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+RUN npm rebuild
 COPY . .
 RUN npm run build || mkdir -p /app/public/build
 
