@@ -66,6 +66,7 @@ Data dinamis untuk mengisi variabel dalam template pesan. Variabel yang tidak di
 | Variabel | Keterangan | Contoh |
 |---|---|---|
 | `{{customer_name}}` | Nama lengkap pelanggan | Budi Santoso |
+| `{{email}}` | Email pelanggan | budi.santoso@email.com |
 | `{{program_name}}` | Nama program / kelas | Kelas B1 Online |
 | `{{amount}}` | Nominal transaksi | Rp 1.499.000 |
 | `{{transaction_id}}` | ID transaksi unik | TRX-2026-00123 |
@@ -77,6 +78,8 @@ DESC
                         properties: [
                             new OA\Property(property: 'customer_name', type: 'string', example: 'Budi Santoso',
                                 description: 'Nama lengkap pelanggan'),
+                            new OA\Property(property: 'email', type: 'string', format: 'email', example: 'budi.santoso@email.com',
+                                description: 'Email pelanggan'),
                             new OA\Property(property: 'program_name', type: 'string', example: 'Kelas B1 Online',
                                 description: 'Nama program atau kelas yang dibeli'),
                             new OA\Property(property: 'amount', type: 'string', example: 'Rp 1.499.000',

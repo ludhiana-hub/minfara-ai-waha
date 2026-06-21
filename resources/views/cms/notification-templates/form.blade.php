@@ -100,6 +100,7 @@
                         <small class="text-muted d-block mb-1">Klik variabel untuk menyisipkan ke pesan:</small>
                         <div class="d-flex flex-wrap gap-1">
                                 <span class="badge bg-primary var-badge" onclick="insertVar('@{{customer_name}}')">@{{customer_name}}</span>
+                            <span class="badge bg-primary var-badge" onclick="insertVar('@{{email}}')">@{{email}}</span>
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{program_name}}')">@{{program_name}}</span>
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{amount}}')">@{{amount}}</span>
                             <span class="badge bg-primary var-badge" onclick="insertVar('@{{transaction_id}}')">@{{transaction_id}}</span>
@@ -176,6 +177,7 @@ const preview  = document.getElementById('waPreview');
 // Dummy data for live preview
 const dummyData = {
     '@{{customer_name}}':  'Budi Santoso',
+    '@{{email}}':          'budi.santoso@email.com',
     '@{{program_name}}':   'Kelas B1 Online',
     '@{{amount}}':         'Rp 1.499.000',
     '@{{transaction_id}}': 'TRX-20240601-001',

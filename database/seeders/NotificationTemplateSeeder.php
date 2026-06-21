@@ -18,6 +18,7 @@ class NotificationTemplateSeeder extends Seeder
                     '🔔 *Transaksi Baru Masuk!*',
                     '',
                     '*Nama:* {{customer_name}}',
+                    '*Email:* {{email}}',
                     '*Program:* {{program_name}}',
                     '*Total:* {{amount}}',
                     '*Status:* {{status}}',

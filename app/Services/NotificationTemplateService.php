@@ -8,6 +8,7 @@ class NotificationTemplateService
     {
         $map = [
             '{{customer_name}}'  => $data['customer_name']  ?? '-',
+            '{{email}}'          => $data['email']          ?? '-',
             '{{program_name}}'   => $data['program_name']   ?? '-',
             '{{amount}}'         => $data['amount']         ?? '-',
             '{{transaction_id}}' => $data['transaction_id'] ?? '-',
@@ -24,6 +25,7 @@ class NotificationTemplateService
     {
         return $this->render($template, [
             'customer_name'  => 'Budi Santoso',
+            'email'          => 'budi.santoso@email.com',
             'program_name'   => 'Kelas B1 Online',
             'amount'         => 'Rp 1.499.000',
             'transaction_id' => 'TRX-20240601-001',

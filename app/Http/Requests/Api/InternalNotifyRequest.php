@@ -17,6 +17,7 @@ class InternalNotifyRequest extends FormRequest
             'trigger_key'        => ['required', 'string', 'max:100'],
             'data'               => ['required', 'array'],
             'data.customer_name' => ['nullable', 'string', 'max:255'],
+            'data.email'         => ['nullable', 'email', 'max:255'],
             'data.program_name'  => ['nullable', 'string', 'max:255'],
             'data.amount'        => ['nullable', 'string', 'max:100'],
             'data.transaction_id'=> ['nullable', 'string', 'max:100'],
