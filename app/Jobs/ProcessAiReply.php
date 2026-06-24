@@ -111,18 +111,25 @@ class ProcessAiReply implements ShouldQueue
             });
 
             if ($faqContext) {
-                static $dlmfKeywords = [
+                static $productKeywords = [
+                    // DlmF — Bahasa Jerman (kelas)
                     'kursus','les','belajar','daftar','pendaftaran','harga','biaya','bayar',
                     'program','jadwal','jerman','german','deutsch','minfara','dlmf','fara',
                     'au pair','goethe','reguler','private','bandung','flexilearn','alumni',
                     'tutor','native','kelas','a1','a2','b1','b2','online','offline',
                     'sertifikat','ujian','garansi','bundling',
+                    // LBF — Languages by Fara (multi-bahasa LMS)
+                    'inggris','english','prancis','french','turki','turkish',
+                    'jepang','japan','korea','arab','arabic','mandarin','chinese','cina',
+                    'lbf','languages by fara','bahasa asing','asinkron','self-paced',
+                    'lifetime','lms','grammar','vocab','vocabulary','cefr','jlpt','hsk','topik','n5',
+                    'pemula','beginner','sertifikasi','placement','level 1','flexlearn',
                 ];
-                $lowerInput    = strtolower($aiInput);
-                $hasDlmfIntent = !empty(array_filter($dlmfKeywords, fn($kw) => str_contains($lowerInput, $kw)));
+                $lowerInput       = strtolower($aiInput);
+                $hasDlmfIntent    = !empty(array_filter($productKeywords, fn($kw) => str_contains($lowerInput, $kw)));
 
                 if ($hasDlmfIntent) {
-                    $systemPrompt .= "\n\nINFO DlmF:\n" . $faqContext;
+                    $systemPrompt .= "\n\nINFO PRODUK:\n" . $faqContext;
                 }
             }
 
