@@ -26,7 +26,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '0',
                 'title'          => 'Menu Utama',
-                'content'        => "Hallo! Selamat datang di *Languages by Fara* 🌍\n\nPlatform belajar *8 bahasa asing* via FlexiLearn — self-paced, kapan saja & di mana saja!\n\nPilih kategori FAQ:\n\n*1* FAQ Umum (30 pertanyaan)\n*2* FAQ Level (10 pertanyaan)\n*3* FAQ Materi (14 pertanyaan)\n*4* FAQ FlexiLearn / LMS (20 pertanyaan)\n*5* FAQ Harga & Pembayaran (19 pertanyaan)\n*6* Tentang Languages by Fara (13 pertanyaan)\n*99* Hubungi Admin\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu! 🤖\n\n📱 @languagesbyfara",
+                'content'        => "Hallo! Selamat datang di *Languages by Fara* 🌍\n\nPlatform belajar *8 bahasa asing* via FlexiLearn — self-paced, kapan saja & di mana saja!\n\nPilih kategori FAQ:\n\n*1* General\n*2* Level & Penempatan Level\n*3* Materi Pembelajaran\n*4* FlexiLearn LMS Languages by Fara\n*5* Pembayaran & Harga\n*6* Tentang Languages by Fara\n*99* Hubungi Admin\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu! 🤖\n\n📱 @languagesbyfara",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 0,
@@ -47,7 +47,7 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '1',
-                'title'          => 'FAQ Umum',
+                'title'          => 'General',
                 'content'        => "❓ *FAQ Umum — Languages by Fara*\n\nKetik nomor untuk melihat jawaban:\n\n*1.1* Program ini untuk bahasa apa saja?\n*1.2* Apa perbedaan setiap program bahasa?\n*1.3* Bahasa mana yang paling cocok untuk saya?\n*1.4* Apakah bisa belajar lebih dari satu bahasa sekaligus?\n*1.5* Apakah program ini cocok untuk pemula?\n*1.6* Apakah cocok untuk yang sudah pernah belajar?\n*1.7* Apakah ada placement test?\n*1.8* Apakah LMS ini termasuk sertifikat?\n*1.9* Apakah sertifikat diakui internasional?\n*1.10* Bisa membantu persiapan studi ke luar negeri?\n*1.11* Bisa membantu persiapan kerja di luar negeri?\n*1.12* Bisa membantu persiapan pindah ke luar negeri?\n*1.13* Berapa lama durasi belajarnya?\n*1.14* Kapan belajarnya bisa dimulai?\n*1.15* Apakah bisa mulai kapan saja?\n*1.16* Apakah ada jadwal tertentu?\n*1.17* Apakah sistem belajarnya fleksibel?\n*1.18* Apakah ada batas usia peserta?\n*1.19* Apakah ada program untuk anak-anak?\n*1.20* Apakah ada program untuk remaja?\n*1.21* Apakah ada program untuk dewasa?\n*1.22* Harus punya pengalaman belajar bahasa sebelumnya?\n*1.23* Apakah materi bisa diakses melalui HP?\n*1.24* Apakah bisa mengulang materi yang dipelajari?\n*1.25* Apakah ada tugas atau latihan?\n*1.26* Apakah ada mentor yang bisa ditanya?\n*1.27* Apakah semua bahasa sudah tersedia sekarang?\n*1.28* Apakah akan mendapatkan update materi?\n*1.29* Harus selesaikan level sebelumnya untuk naik?\n*1.30* Apakah bisa belajar dari luar Indonesia?\n{$f0}",
                 'parent_command' => null,
                 'is_active'      => true,
@@ -56,7 +56,7 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '2',
-                'title'          => 'FAQ Level',
+                'title'          => 'Level & Penempatan Level',
                 'content'        => "📊 *FAQ Level — Languages by Fara*\n\nKetik nomor untuk melihat jawaban:\n\n*2.1* Apa aja level yang tersedia?\n*2.2* Bagaimana cara menentukan level saya?\n*2.3* Apakah harus mulai dari level dasar dulu?\n*2.4* Apakah bisa langsung masuk level tertentu?\n*2.5* Berapa lama menyelesaikan satu level?\n*2.6* Berapa jam belajar yang dibutuhkan setiap minggu?\n*2.7* Kurikulum Languages by Fara mengacu ke standar apa?\n*2.8* Apa itu CEFR?\n*2.9* Apakah level di LBF sama dengan level ujian resmi?\n*2.10* Kalau sudah pernah belajar, level mana yang diambil?\n{$f0}",
                 'parent_command' => null,
                 'is_active'      => true,
@@ -65,7 +65,7 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '3',
-                'title'          => 'FAQ Materi',
+                'title'          => 'Materi Pembelajaran',
                 'content'        => "📖 *FAQ Materi — Languages by Fara*\n\nKetik nomor untuk melihat jawaban:\n\n*3.1* Apa aja yang dipelajari?\n*3.2* Apakah fokus belajarnya grammar?\n*3.3* Apakah ada materi vocabulary?\n*3.4* Apakah ada materi speaking?\n*3.5* Apakah ada materi listening?\n*3.6* Apakah ada materi reading?\n*3.7* Apakah ada materi writing?\n*3.8* Apakah ada latihan pronunciation?\n*3.9* Apakah ada latihan percakapan?\n*3.10* Apakah ada kuis?\n*3.11* Bentuk kuisnya seperti apa?\n*3.12* Apakah ada ujian?\n*3.13* Apakah semua materi bisa diakses berulang kali?\n*3.14* Apakah materi cocok untuk belajar mandiri?\n{$f0}",
                 'parent_command' => null,
                 'is_active'      => true,
@@ -74,7 +74,7 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '4',
-                'title'          => 'FAQ FlexiLearn / LMS',
+                'title'          => 'FlexiLearn LMS Languages by Fara',
                 'content'        => "💻 *FAQ FlexiLearn / LMS — Languages by Fara*\n\nKetik nomor untuk melihat jawaban:\n\n*4.1* Apa itu FlexiLearn?\n*4.2* Bagaimana cara mengakses FlexiLearn?\n*4.3* Apakah FlexiLearn bisa diakses melalui HP?\n*4.4* Apakah FlexiLearn bisa diakses melalui laptop atau komputer?\n*4.5* Apakah ada aplikasi mobile?\n*4.6* Apakah FlexiLearn tersedia 24 jam?\n*4.7* Apakah saya bisa belajar kapan saja?\n*4.8* Apakah video pembelajaran bisa diputar ulang?\n*4.9* Apakah materi bisa diakses berulang kali?\n*4.10* Apakah materi bisa didownload?\n*4.11* Apakah ada progress tracker?\n*4.12* Apakah ada reminder belajar?\n*4.13* Apakah ada forum diskusi?\n*4.14* Siapa itu MinFara?\n*4.15* Apakah ada fitur catatan (notes)?\n*4.16* Apakah ada bookmark materi?\n*4.17* Apakah ada fitur pencarian materi?\n*4.18* Bagaimana jika saya lupa password?\n*4.19* Apakah akun bisa digunakan di lebih dari satu perangkat?\n*4.20* Jika ada kendala saat belajar, hubungi siapa?\n{$f0}",
                 'parent_command' => null,
                 'is_active'      => true,
@@ -83,7 +83,7 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '5',
-                'title'          => 'FAQ Harga & Pembayaran',
+                'title'          => 'Pembayaran & Harga',
                 'content'        => "💰 *FAQ Harga & Pembayaran — Languages by Fara*\n\nKetik nomor untuk melihat jawaban:\n\n*5.1* Berapa harga program di Languages by Fara?\n*5.2* Apa saja yang didapat pada paket Bahasa Jerman?\n*5.3* Apa saja yang didapat pada paket Bahasa Inggris, Prancis, dll?\n*5.4* Kenapa harga Bahasa Jerman dan bahasa lainnya berbeda?\n*5.5* Apa perbedaan paket 2 bulan, 6 bulan, 12 bulan, dan lifetime?\n*5.6* Apa itu paket Lifetime?\n*5.7* Paket mana yang paling direkomendasikan?\n*5.8* Apakah semua paket mendapatkan sertifikat?\n*5.9* Bagaimana cara melakukan pembayaran?\n*5.10* Pembayarannya transfer ke rekening siapa?\n*5.11* Apakah pembayaran bisa melalui Bank BCA?\n*5.12* Apakah pembayaran bisa melalui Bank Mandiri?\n*5.13* Apa yang harus dilakukan setelah pembayaran?\n*5.14* Berapa lama proses aktivasi akun?\n*5.15* Apakah ada biaya tambahan selain harga paket?\n*5.16* Apakah bisa upgrade paket setelah membeli?\n*5.17* Apakah pembayaran bisa dicicil?\n*5.18* Apakah pembayaran bisa dikembalikan (refund)?\n*5.19* Apakah ada promo atau diskon?\n{$f0}",
                 'parent_command' => null,
                 'is_active'      => true,
