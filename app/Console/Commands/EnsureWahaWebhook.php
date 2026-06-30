@@ -41,6 +41,20 @@ class EnsureWahaWebhook extends Command
             if ($response->successful()) {
                 $this->info("WAHA webhook set: {$webhookUrl} [message, message.any, session.status]");
                 Log::info('waha:ensure-webhook — OK', ['url' => $webhookUrl]);
+
+                // Simpan nomor WA bot sendiri untuk filter self-messages di webhook handler
+                try {
+                    $me = Http::timeout(5)
+                        ->withHeaders(['X-Api-Key' => $apiKey])
+                        ->get("{$url}/api/{$session}/me");
+                    if ($me->ok() && $ownId = $me->json('id')) {
+                        BotConfig::updateOrCreate(['key' => 'waha_own_number'], ['value' => $ownId]);
+                        Log::info('waha:ensure-webhook — own number stored', ['id' => $ownId]);
+                        $this->info("Own WA number stored: {$ownId}");
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('waha:ensure-webhook — could not fetch own number', ['error' => $e->getMessage()]);
+                }
             } else {
                 $this->warn("WAHA webhook update returned HTTP {$response->status()} — will retry on next deploy");
                 Log::warning('waha:ensure-webhook — non-2xx', ['status' => $response->status(), 'body' => $response->body()]);

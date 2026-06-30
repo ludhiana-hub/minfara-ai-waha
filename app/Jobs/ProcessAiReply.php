@@ -44,11 +44,11 @@ class ProcessAiReply implements ShouldQueue
         }
 
         // Reliable fallback: query WAHA message history directly.
-        // Use 120s window (not pauseMinutes*60) to avoid:
-        // (a) cache TTL mismatch: bot_sent_* cache = 5 min, 120s window is safely within that
-        // (b) infinite re-pause: once pause expires, owner reply is >120s old → no re-trigger
+        // 300s window (5 min): covers queue-backup scenario where job retries for several minutes.
+        // Cache TTL 20min > 300s → no mismatch. Pause 600s > 300s → no infinite re-pause.
+        // hasOwnerRepliedRecently also uses last_bot_ts_ as accurate per-chatId baseline.
         $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
-        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, 120)) {
+        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, 300)) {
             PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
             Log::info('ProcessAiReply: paused via WAHA history check — owner replied manually', [
                 'from' => $this->from,
@@ -211,8 +211,8 @@ class ProcessAiReply implements ShouldQueue
         // Pada titik ini owner sudah punya waktu untuk membalas manual dari HP.
         // Cek isPaused (webhook-based) DAN hasOwnerRepliedRecently (WAHA API-based).
         $alreadyPaused    = PausedContact::isPaused($this->from);
-        // Same 120s window as Check #1 — consistent, cache-safe, no infinite re-pause
-        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 120);
+        // Same 300s window as Check #1 — consistent, cache-safe, no infinite re-pause
+        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 300);
         if ($alreadyPaused || $ownerJustReplied) {
             if ($ownerJustReplied) {
                 PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);

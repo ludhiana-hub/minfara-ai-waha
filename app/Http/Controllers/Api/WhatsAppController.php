@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessAiReply;
+use App\Jobs\ReConfigureWahaWebhookJob;
 use App\Models\BotConfig;
 use App\Models\FaqMenu;
 use App\Models\PausedContact;
@@ -68,12 +69,39 @@ class WhatsAppController extends Controller
             'has_body' => isset($payload['body']),
         ]);
 
+        // Ketika WAHA reconnect, ia kirim session.status: WORKING.
+        // Kita queue ulang waha:ensure-webhook agar message.any selalu aktif setelah reconnect.
+        if ($event === 'session.status') {
+            if (($payload['status'] ?? '') === 'WORKING') {
+                ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
+                Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
+            }
+            return response('OK', 200);
+        }
+
         // message.any diperlukan untuk NOWEB/Baileys agar menangkap pesan manual dari HP owner
         if (!in_array($event, ['message', 'message.any'], true)) {
             return response('OK', 200);
         }
 
-        if (($payload['fromMe'] ?? false) === true) {
+        // Deteksi owner reply: cek fromMe field ATAU cocokkan dengan nomor WA bot sendiri.
+        // NOWEB/Baileys kadang kirim fromMe: false meski pesan dari akun sendiri (known bug).
+        $isFromMe = ($payload['fromMe'] ?? false) === true;
+        if (!$isFromMe) {
+            $ownNumber = BotConfig::get('waha_own_number', '');
+            $sender    = $payload['from'] ?? '';
+            if ($ownNumber && (
+                $sender === $ownNumber ||
+                (str_contains($ownNumber, '@') && str_starts_with($sender, explode('@', $ownNumber)[0]))
+            )) {
+                $isFromMe = true;
+                Log::info('webhook: fromMe=false but sender matches own number — treating as owner reply', [
+                    'from'      => $sender,
+                    'ownNumber' => $ownNumber,
+                ]);
+            }
+        }
+        if ($isFromMe) {
             $this->handleOwnerReply($payload);
             return response('OK', 200);
         }

@@ -82,12 +82,16 @@ class WhatsAppService
                 return false;
             }
 
-            // Track message ID so handleOwnerReply can skip echo-back events (fromMe:true via API)
+            // Track message ID so handleOwnerReply can skip echo-back events (fromMe:true via API).
+            // TTL 20 min > hasOwnerRepliedRecently window (5 min) — no cache mismatch.
             $raw = $response->json('id');
             $key = is_array($raw) ? ($raw['_serialized'] ?? $raw['id'] ?? null) : $raw;
             if ($key) {
-                Cache::put('bot_sent_' . md5((string) $key), true, now()->addMinutes(5));
+                Cache::put('bot_sent_' . md5((string) $key), true, now()->addMinutes(20));
             }
+
+            // Track last bot reply timestamp per chatId — used as accurate baseline in hasOwnerRepliedRecently
+            Cache::put('last_bot_ts_' . md5($chatId), time(), now()->addHours(1));
 
             return true;
 
@@ -109,25 +113,42 @@ class WhatsAppService
                     'downloadMedia' => false,
                 ]);
 
-            // Log untuk diagnose apa yang WAHA kembalikan
-            $rawData = $response->json() ?? [];
+            // Fallback to alternative WAHA endpoint format (older versions / different builds)
+            if (!$response->ok()) {
+                Log::debug('hasOwnerRepliedRecently: primary endpoint failed, trying fallback', [
+                    'status' => $response->status(),
+                ]);
+                $response = Http::timeout(4)
+                    ->withHeaders(['X-Api-Key' => $this->apiKey])
+                    ->get("{$this->url}/api/messages", [
+                        'session'       => $this->session,
+                        'chatId'        => $chatId,
+                        'limit'         => 15,
+                        'downloadMedia' => false,
+                    ]);
+            }
+
             // WAHA bisa return plain array [...] ATAU object {messages: [...], total: N}
+            $rawData  = $response->json() ?? [];
             $messages = (is_array($rawData) && array_is_list($rawData))
                 ? $rawData
                 : ($rawData['messages'] ?? array_values($rawData));
 
             Log::debug('hasOwnerRepliedRecently: WAHA response', [
-                'chatId'   => $chatId,
+                'chatId'     => $chatId,
                 'httpStatus' => $response->status(),
-                'msgCount' => is_array($messages) ? count($messages) : '(not array)',
-                'sample'   => is_array($messages) ? array_slice($messages, 0, 1) : null,
+                'msgCount'   => is_array($messages) ? count($messages) : '(not array)',
+                'sample'     => is_array($messages) ? array_slice($messages, 0, 1) : null,
             ]);
 
             if (!$response->ok()) {
                 return false;
             }
 
-            $cutoffTime = time() - $withinSeconds;
+            // Use last_bot_ts as accurate baseline: "did owner reply AFTER bot's last message?"
+            // Fallback to withinSeconds window if no baseline stored yet.
+            $lastBotTs  = Cache::get('last_bot_ts_' . md5($chatId));
+            $cutoffTime = $lastBotTs ?? (time() - $withinSeconds);
 
             foreach ($messages as $msg) {
                 if (!($msg['fromMe'] ?? false)) {
