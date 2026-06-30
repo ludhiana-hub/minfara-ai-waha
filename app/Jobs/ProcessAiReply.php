@@ -181,6 +181,8 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
+        $reply = $this->sanitizeWhatsappText($reply);
+
         $recentDuplicate = WhatsappLog::where('from_number', $this->from)
             ->where('message_in', substr($this->userMessage, 0, 1000))
             ->where('mode', $mode)
@@ -236,6 +238,20 @@ class ProcessAiReply implements ShouldQueue
             $whatsapp->sendMessage($this->chatId, $fallback);
             $whatsapp->stopTyping($this->chatId);
         } catch (\Exception) {}
+    }
+
+    private function sanitizeWhatsappText(string $text): string
+    {
+        // [teks](url) → url saja (WhatsApp tidak render markdown link)
+        $text = preg_replace('/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/', '$2', $text);
+
+        // **bold** → *bold* (WhatsApp pakai single asterisk)
+        $text = preg_replace('/\*\*(.+?)\*\*/s', '*$1*', $text);
+
+        // __italic__ → _italic_
+        $text = preg_replace('/__(.+?)__/s', '_$1_', $text);
+
+        return $text;
     }
 
     private function providerHasKey(string $provider): bool
