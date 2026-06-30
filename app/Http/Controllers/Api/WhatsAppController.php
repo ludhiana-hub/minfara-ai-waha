@@ -203,7 +203,7 @@ class WhatsAppController extends Controller
             $contactName = trim($contactName) ?: null;
         }
 
-        $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '30');
+        $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
 
         PausedContact::pauseContact($from, $contactName, $pauseMinutes);
 

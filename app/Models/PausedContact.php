@@ -17,7 +17,7 @@ class PausedContact extends Model
             ->exists();
     }
 
-    public static function pauseContact(string $from, ?string $contactName, int $minutes = 30): void
+    public static function pauseContact(string $from, ?string $contactName, int $minutes = 10): void
     {
         static::updateOrCreate(
             ['from_number' => $from],
