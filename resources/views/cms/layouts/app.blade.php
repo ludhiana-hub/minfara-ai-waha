@@ -88,6 +88,13 @@
             <a href="{{ route('cms.faq.index') }}" class="nav-link {{ request()->routeIs('cms.faq.*') ? 'active' : '' }}">
                 <i class="bi bi-journal-text"></i> Menu FAQ
             </a>
+            <a href="{{ route('cms.faq-suggestions.index') }}" class="nav-link {{ request()->routeIs('cms.faq-suggestions.*') ? 'active' : '' }}">
+                <i class="bi bi-lightbulb"></i> Saran FAQ
+                @php $pendingSuggestions = \App\Models\FaqSuggestion::where('status','pending')->where('high_priority', true)->count(); @endphp
+                @if($pendingSuggestions > 0)
+                    <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingSuggestions }}</span>
+                @endif
+            </a>
             <a href="{{ route('cms.konfigurasi.index') }}" class="nav-link {{ request()->routeIs('cms.konfigurasi.*') ? 'active' : '' }}">
                 <i class="bi bi-gear"></i> Konfigurasi
             </a>

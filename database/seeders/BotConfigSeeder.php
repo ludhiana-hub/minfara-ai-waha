@@ -22,9 +22,14 @@ FORMAT WA (WAJIB):
 • Jawaban ringkas: intro singkat → isi → CTA (maks 8 baris total)
 • WAJIB: Selesaikan jawaban — JANGAN pernah potong di tengah kalimat
 
+BATAS TOPIK (WAJIB DIPATUHI):
+• Kamu HANYA boleh menjawab pertanyaan seputar Languages by Fara, program bahasa, LMS FlexiLearn, pendaftaran, pembayaran, dan hal terkait LBF.
+• Jika pertanyaan SAMA SEKALI tidak berhubungan dengan topik di atas → balas: "Maaf kak, aku hanya bisa bantu seputar Languages by Fara 🌍 Untuk info lain, langsung tanya admin ya~ Ketik *99* untuk chat admin."
+• DILARANG mengarang info yang tidak ada di KNOWLEDGE BASE yang disediakan.
+
 CARA MENJAWAB:
-1. Pertanyaan tentang program/bahasa/level → gunakan INFO LBF di bawah, jawab dengan manfaat nyata
-2. Pertanyaan harga/paket → sebutkan harga dari INFO LBF, rekomendasikan Lifetime
+1. Pertanyaan tentang program/bahasa/level → gunakan KNOWLEDGE BASE di bawah, jawab dengan manfaat nyata
+2. Pertanyaan harga/paket → sebutkan harga dari KNOWLEDGE BASE, rekomendasikan Lifetime
 3. Daftar/bayar/akun → arahkan ke admin via wa.me
 4. Pertanyaan tidak jelas atau di luar topik → JANGAN mengarang, arahkan ke admin
 5. Ditanya owner/pendiri → Fara, pendiri LBF, di bawah PT Fara Kreatif Sejahtera, Bandung
@@ -87,6 +92,9 @@ PROMPT;
             ['key' => 'openrouter_model',     'value' => 'qwen/qwen3-14b:free',                             'type' => 'text',     'label' => 'OpenRouter Model',                 'description' => 'Semua model bertanda :free GRATIS. Contoh: qwen/qwen3-14b:free', 'group' => 'api'],
             ['key' => 'nvidia_api_key',       'value' => '',                                                'type' => 'password', 'label' => 'NVIDIA NIM API Key',               'description' => 'API Key dari build.nvidia.com — gratis, untuk Customer Analytics', 'group' => 'api'],
             ['key' => 'nvidia_model',         'value' => 'qwen/qwen3.5-397b-a17b',                         'type' => 'text',     'label' => 'NVIDIA NIM Model (Analytics)',      'description' => 'Model NVIDIA NIM utama untuk analitik percakapan', 'group' => 'api'],
+            ['key' => 'human_takeover_minutes','value' => '10',                                               'type' => 'number',   'label' => 'Durasi Human Takeover (menit)',     'description' => 'Berapa menit bot diam setelah owner balas manual dari WA', 'group' => 'general'],
+            ['key' => 'faq_digest',            'value' => '',                                                 'type' => 'textarea', 'label' => 'FAQ Digest (Auto-generated)',       'description' => 'Dibangun otomatis dari FAQ aktif. Jangan edit manual.', 'group' => 'ai'],
+            ['key' => 'dynamic_knowledge',     'value' => '',                                                 'type' => 'textarea', 'label' => 'Dynamic Knowledge (Auto-generated)','description' => 'Dibangun mingguan dari percakapan sukses. Jangan edit manual.', 'group' => 'ai'],
         ];
 
         // Key yang selalu di-update (system prompt & token limit) agar perubahan seeder langsung berlaku

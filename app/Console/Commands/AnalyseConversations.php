@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\FaqGapAggregatorJob;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
 use App\Services\ConversationAnalysisService;
@@ -89,6 +90,9 @@ class AnalyseConversations extends Command
         $summary = $this->service->generateDailySummary($date);
 
         $this->info("[{$date}] Selesai. Diproses: {$processed}, Skip: {$skipped}. Total sesi: {$summary->total_sessions}.");
+
+        // Aggregate FAQ gaps from today's analysis in background
+        FaqGapAggregatorJob::dispatch($date);
     }
 
     private function fallbackResult(): array

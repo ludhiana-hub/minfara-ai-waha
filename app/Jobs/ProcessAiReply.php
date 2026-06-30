@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\BotConfig;
 use App\Models\FaqMenu;
+use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\GeminiService;
 use App\Services\GroqService;
@@ -36,6 +37,12 @@ class ProcessAiReply implements ShouldQueue
         GroqService       $groq,
         OpenRouterService $openrouter,
     ): void {
+        // Cek human takeover — owner mungkin sudah balas manual setelah job ini di-queue
+        if (PausedContact::isPaused($this->from)) {
+            Log::info('ProcessAiReply: skip — human takeover active', ['from' => $this->from]);
+            return;
+        }
+
         if (!$whatsapp->isSessionWorking()) {
             Log::warning('ProcessAiReply: WAHA session not WORKING, releasing for retry', [
                 'chatId' => $this->chatId,
@@ -83,54 +90,10 @@ class ProcessAiReply implements ShouldQueue
 
             $aiInput = mb_substr($this->userMessage, 0, 600);
 
-            $faqContext = Cache::remember('faq_ai_context', 300, function () {
-                $totalCap   = 1000;
-                $perItemCap = 300;
-                $built      = '';
-
-                foreach (FaqMenu::active()
-                    ->whereNotNull('content')
-                    ->where('command', '!=', '0')
-                    ->where('command', '!=', '99')
-                    ->orderBy('sort_order')
-                    ->get(['title', 'content']) as $m)
-                {
-                    $text = preg_replace('/Ketik \*[^*]+\*[^\n]*/iu', '', $m->content);
-                    $text = preg_replace('/[─]+/u', '', $text);
-                    $text = preg_replace('/\*([^*\n]+)\*/u', '$1', $text);
-                    $text = preg_replace('/\n{3,}/', "\n\n", trim($text));
-                    $item = "### {$m->title}\n" . mb_substr($text, 0, $perItemCap);
-
-                    if (mb_strlen($built) + mb_strlen($item) > $totalCap) {
-                        break;
-                    }
-                    $built .= ($built ? "\n\n" : '') . $item;
-                }
-
-                return $built;
-            });
-
-            if ($faqContext) {
-                static $productKeywords = [
-                    // DlmF — Bahasa Jerman (kelas)
-                    'kursus','les','belajar','daftar','pendaftaran','harga','biaya','bayar',
-                    'program','jadwal','jerman','german','deutsch','minfara','dlmf','fara',
-                    'au pair','goethe','reguler','private','bandung','flexilearn','alumni',
-                    'tutor','native','kelas','a1','a2','b1','b2','online','offline',
-                    'sertifikat','ujian','garansi','bundling',
-                    // LBF — Languages by Fara (multi-bahasa LMS)
-                    'inggris','english','prancis','french','turki','turkish',
-                    'jepang','japan','korea','arab','arabic','mandarin','chinese','cina',
-                    'lbf','languages by fara','bahasa asing','asinkron','self-paced',
-                    'lifetime','lms','grammar','vocab','vocabulary','cefr','jlpt','hsk','topik','n5',
-                    'pemula','beginner','sertifikasi','placement','level 1','flexlearn',
-                ];
-                $lowerInput       = strtolower($aiInput);
-                $hasDlmfIntent    = !empty(array_filter($productKeywords, fn($kw) => str_contains($lowerInput, $kw)));
-
-                if ($hasDlmfIntent) {
-                    $systemPrompt .= "\n\nINFO PRODUK:\n" . $faqContext;
-                }
+            // Inject pre-computed FAQ digest — built by BuildFaqDigestJob, always up-to-date
+            $faqDigest = BotConfig::get('faq_digest', '');
+            if ($faqDigest) {
+                $systemPrompt .= "\n\n" . $faqDigest;
             }
 
             $historyKey = 'chat_history_' . md5($this->from);
@@ -225,6 +188,14 @@ class ProcessAiReply implements ShouldQueue
             ->exists();
 
         if ($recentDuplicate) {
+            $whatsapp->stopTyping($this->chatId);
+            return;
+        }
+
+        // Cek sekali lagi sebelum kirim — tangkap race condition jika owner balas
+        // saat AI sedang memproses (jeda antara dispatch dan eksekusi)
+        if (PausedContact::isPaused($this->from)) {
+            Log::info('ProcessAiReply: aborted before send — human takeover active', ['from' => $this->from]);
             $whatsapp->stopTyping($this->chatId);
             return;
         }
