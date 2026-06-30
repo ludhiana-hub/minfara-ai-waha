@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessAiReply;
 use App\Models\BotConfig;
 use App\Models\FaqMenu;
+use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
@@ -72,6 +73,7 @@ class WhatsAppController extends Controller
         }
 
         if (($payload['fromMe'] ?? false) === true) {
+            $this->handleOwnerReply($payload);
             return response('OK', 200);
         }
 
@@ -143,6 +145,11 @@ class WhatsAppController extends Controller
             }
         }
 
+        if (PausedContact::isPaused($from)) {
+            Log::info('webhook:drop — human takeover active', ['from' => $from]);
+            return response('OK', 200);
+        }
+
         Log::info('webhook:processing', ['from' => $from, 'input' => substr($rawInput, 0, 40)]);
 
         $command       = strtolower($rawInput);
@@ -166,6 +173,58 @@ class WhatsAppController extends Controller
         }
 
         return response('OK', 200);
+    }
+
+    private function handleOwnerReply(array $payload): void
+    {
+        // Ambil nomor penerima (customer) dari payload.to saat fromMe: true
+        $rawTo = $payload['to'] ?? null;
+
+        if (empty($rawTo) || !is_string($rawTo) || strlen($rawTo) > 100) {
+            return;
+        }
+
+        $atPos  = strrpos($rawTo, '@');
+        $suffix = $atPos !== false ? substr($rawTo, $atPos) : '';
+
+        // Hanya proses direct message, skip group
+        if (!in_array($suffix, ['@c.us', '@lid', '@s.whatsapp.net'], strict: true)) {
+            return;
+        }
+
+        $from = preg_replace('/@.*$/', '', $rawTo);
+
+        $contactName = $payload['notifyName']
+            ?? $payload['_data']['notifyName']
+            ?? $payload['_data']['pushName']
+            ?? $payload['_data']['pushname']
+            ?? null;
+        if ($contactName) {
+            $contactName = trim($contactName) ?: null;
+        }
+
+        $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '30');
+
+        PausedContact::pauseContact($from, $contactName, $pauseMinutes);
+
+        Log::info('webhook:human-takeover', [
+            'from'          => $from,
+            'paused_minutes' => $pauseMinutes,
+        ]);
+
+        try {
+            WhatsappLog::create([
+                'from_number'  => $from,
+                'contact_name' => $contactName,
+                'ip_address'   => null,
+                'message_in'   => $payload['body'] ?? null,
+                'message_out'  => null,
+                'mode'         => 'human_takeover',
+                'responded_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('handleOwnerReply: failed to log', ['error' => $e->getMessage()]);
+        }
     }
 
     private function endChat(string $chatId, string $from, ?string $contactName, ?string $ipAddress): void

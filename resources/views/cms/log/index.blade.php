@@ -20,7 +20,7 @@
             <div class="fw-bold">{{ $todayTotal }}</div>
         </div>
     </div>
-    @foreach(['faq'=>'success','ai'=>'primary','error'=>'danger','end_chat'=>'secondary'] as $mode=>$color)
+    @foreach(['faq'=>'success','ai'=>'primary','error'=>'danger','end_chat'=>'secondary','human_takeover'=>'warning'] as $mode=>$color)
     <div class="col-auto">
         <div class="card px-3 py-2">
             <div class="small text-muted">{{ ucfirst(str_replace('_',' ',$mode)) }}</div>
@@ -40,6 +40,7 @@
                 <option value="ai" {{ request('mode')==='ai'?'selected':'' }}>AI</option>
                 <option value="error" {{ request('mode')==='error'?'selected':'' }}>Error</option>
                 <option value="end_chat" {{ request('mode')==='end_chat'?'selected':'' }}>End Chat</option>
+                <option value="human_takeover" {{ request('mode')==='human_takeover'?'selected':'' }}>Human Takeover</option>
             </select>
             <input type="text" name="search" class="form-control form-control-sm" style="max-width:200px"
                 placeholder="Nomor WA / Nama..." value="{{ request('search') }}">

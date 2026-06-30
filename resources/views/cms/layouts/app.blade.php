@@ -60,6 +60,7 @@
         .badge-ai { background: #0d6efd; }
         .badge-error { background: #dc3545; }
         .badge-end_chat { background: #6c757d; }
+        .badge-human_takeover { background: #fd7e14; }
         .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
         .card-header { background: #fff; border-bottom: 1px solid #f0f0f0; font-weight: 600; }
         .stat-card { border-left: 4px solid var(--brand-primary); }
