@@ -98,6 +98,59 @@ class WhatsAppService
         }
     }
 
+    public function hasOwnerRepliedRecently(string $chatId, int $withinSeconds = 300): bool
+    {
+        try {
+            $response = Http::timeout(4)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->get("{$this->url}/api/{$this->session}/chats/{$chatId}/messages", [
+                    'limit'         => 15,
+                    'downloadMedia' => false,
+                ]);
+
+            if (!$response->ok()) {
+                return false;
+            }
+
+            $messages   = $response->json() ?? [];
+            $cutoffTime = time() - $withinSeconds;
+
+            foreach ($messages as $msg) {
+                if (!($msg['fromMe'] ?? false)) {
+                    continue;
+                }
+
+                // Exclude messages sent by the bot via API (tracked in cache by doSend)
+                $rawId = $msg['id'] ?? null;
+                $msgId = is_array($rawId)
+                    ? ($rawId['_serialized'] ?? $rawId['id'] ?? null)
+                    : $rawId;
+                if ($msgId && Cache::has('bot_sent_' . md5((string) $msgId))) {
+                    continue;
+                }
+
+                // Normalize timestamp (WAHA may return seconds or milliseconds)
+                $ts = (int) ($msg['timestamp'] ?? 0);
+                if ($ts > 1_000_000_000_000) {
+                    $ts = (int) ($ts / 1000);
+                }
+
+                if ($ts >= $cutoffTime) {
+                    Log::info('hasOwnerRepliedRecently: owner manual reply detected', [
+                        'chatId' => $chatId,
+                        'msgId'  => $msgId,
+                        'age'    => time() - $ts,
+                    ]);
+                    return true;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('hasOwnerRepliedRecently: WAHA fetch failed', ['error' => $e->getMessage()]);
+        }
+
+        return false;
+    }
+
     public function isSessionWorking(): bool
     {
         try {

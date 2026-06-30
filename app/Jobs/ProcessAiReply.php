@@ -43,6 +43,18 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
+        // Reliable fallback: query WAHA message history directly.
+        // Catches manual owner replies even when webhook fromMe event was never received
+        // (engine/version-dependent behavior). Window = same as pause duration.
+        $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
+        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, $pauseMinutes * 60)) {
+            PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
+            Log::info('ProcessAiReply: paused via WAHA history check — owner replied manually', [
+                'from' => $this->from,
+            ]);
+            return;
+        }
+
         if (!$whatsapp->isSessionWorking()) {
             Log::warning('ProcessAiReply: WAHA session not WORKING, releasing for retry', [
                 'chatId' => $this->chatId,
