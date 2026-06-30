@@ -25,6 +25,8 @@ if [ "$1" = "php-fpm" ]; then
     php artisan view:cache    || true
     echo "[entrypoint] Running migrations..."
     php artisan migrate --force || true
+    echo "[entrypoint] Ensuring WAHA webhook events (message.any for human takeover)..."
+    php artisan waha:ensure-webhook 2>/dev/null || true
     echo "[entrypoint] Seeding database..."
     php artisan db:seed --force || true
     echo "[entrypoint] Generating Swagger docs..."

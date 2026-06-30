@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BotConfig;
 use App\Models\FaqMenu;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -79,6 +80,13 @@ class WhatsAppService
                 ]);
 
                 return false;
+            }
+
+            // Track message ID so handleOwnerReply can skip echo-back events (fromMe:true via API)
+            $raw = $response->json('id');
+            $key = is_array($raw) ? ($raw['_serialized'] ?? $raw['id'] ?? null) : $raw;
+            if ($key) {
+                Cache::put('bot_sent_' . md5((string) $key), true, now()->addMinutes(5));
             }
 
             return true;

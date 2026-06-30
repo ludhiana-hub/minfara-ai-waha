@@ -4,6 +4,7 @@ use App\Http\Controllers\Cms\AnalyticsController;
 use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\FaqSuggestionController;
+use App\Http\Controllers\Cms\HumanTakeoverController;
 use App\Http\Controllers\Cms\KonfigurasiController;
 use App\Http\Controllers\Cms\LogController;
 use App\Http\Controllers\Cms\NotificationLogController;
@@ -52,6 +53,11 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
     Route::get('faq-suggestions',               [FaqSuggestionController::class, 'index'])->name('faq-suggestions.index');
     Route::get('faq-suggestions/{faqSuggestion}/approve', [FaqSuggestionController::class, 'approve'])->name('faq-suggestions.approve');
     Route::patch('faq-suggestions/{faqSuggestion}/reject', [FaqSuggestionController::class, 'reject'])->name('faq-suggestions.reject');
+
+    // ── Human Takeover ────────────────────────────────────────────────────────
+    Route::get('human-takeover',                    [HumanTakeoverController::class, 'index'])->name('human-takeover.index');
+    Route::post('human-takeover',                   [HumanTakeoverController::class, 'manualPause'])->name('human-takeover.pause');
+    Route::patch('human-takeover/{number}/resume',  [HumanTakeoverController::class, 'resume'])->name('human-takeover.resume');
 
     // WAHA status AJAX endpoint
     Route::get('api/waha-status', [DashboardController::class, 'wahaStatus'])->name('api.waha-status');

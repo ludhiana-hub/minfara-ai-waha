@@ -95,6 +95,13 @@
                     <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingSuggestions }}</span>
                 @endif
             </a>
+            <a href="{{ route('cms.human-takeover.index') }}" class="nav-link {{ request()->routeIs('cms.human-takeover.*') ? 'active' : '' }}">
+                <i class="bi bi-person-raised-hand"></i> Jeda Percakapan
+                @php $activePauses = \App\Models\PausedContact::where('paused_until', '>', now())->count(); @endphp
+                @if($activePauses > 0)
+                    <span class="badge bg-warning text-dark ms-auto" style="font-size:.65rem">{{ $activePauses }}</span>
+                @endif
+            </a>
             <a href="{{ route('cms.konfigurasi.index') }}" class="nav-link {{ request()->routeIs('cms.konfigurasi.*') ? 'active' : '' }}">
                 <i class="bi bi-gear"></i> Konfigurasi
             </a>

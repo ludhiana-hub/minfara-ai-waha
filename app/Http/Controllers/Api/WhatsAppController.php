@@ -68,7 +68,8 @@ class WhatsAppController extends Controller
             'has_body' => isset($payload['body']),
         ]);
 
-        if ($event !== 'message') {
+        // message.any diperlukan untuk NOWEB/Baileys agar menangkap pesan manual dari HP owner
+        if (!in_array($event, ['message', 'message.any'], true)) {
             return response('OK', 200);
         }
 
@@ -177,6 +178,14 @@ class WhatsAppController extends Controller
 
     private function handleOwnerReply(array $payload): void
     {
+        // Skip echo-back: pesan yang dikirim bot via API juga fromMe:true tapi bukan owner manual
+        $rawId = $payload['id'] ?? null;
+        $msgId = is_array($rawId) ? ($rawId['_serialized'] ?? $rawId['id'] ?? null) : $rawId;
+        if ($msgId && Cache::has('bot_sent_' . md5((string) $msgId))) {
+            Log::info('handleOwnerReply: skip — bot-sent echo, not owner manual reply');
+            return;
+        }
+
         // Ambil nomor penerima (customer) dari payload.to saat fromMe: true
         $rawTo = $payload['to'] ?? null;
 
