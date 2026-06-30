@@ -206,10 +206,19 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
-        // Cek sekali lagi sebelum kirim — tangkap race condition jika owner balas
-        // saat AI sedang memproses (jeda antara dispatch dan eksekusi)
-        if (PausedContact::isPaused($this->from)) {
-            Log::info('ProcessAiReply: aborted before send — human takeover active', ['from' => $this->from]);
+        // Check #2 — sebelum kirim: cek lagi setelah AI selesai proses (2–10 detik).
+        // Pada titik ini owner sudah punya waktu untuk membalas manual dari HP.
+        // Cek isPaused (webhook-based) DAN hasOwnerRepliedRecently (WAHA API-based).
+        $alreadyPaused = PausedContact::isPaused($this->from);
+        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, $pauseMinutes * 60);
+        if ($alreadyPaused || $ownerJustReplied) {
+            if ($ownerJustReplied) {
+                PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
+            }
+            Log::info('ProcessAiReply: aborted before send — human takeover (check #2)', [
+                'from'   => $this->from,
+                'source' => $ownerJustReplied ? 'waha_history' : 'db_paused',
+            ]);
             $whatsapp->stopTyping($this->chatId);
             return;
         }

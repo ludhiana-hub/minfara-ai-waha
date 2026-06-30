@@ -101,18 +101,32 @@ class WhatsAppService
     public function hasOwnerRepliedRecently(string $chatId, int $withinSeconds = 300): bool
     {
         try {
+            // chatId contains @ which must be percent-encoded in URL path (@→%40)
             $response = Http::timeout(4)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
-                ->get("{$this->url}/api/{$this->session}/chats/{$chatId}/messages", [
+                ->get("{$this->url}/api/{$this->session}/chats/" . urlencode($chatId) . "/messages", [
                     'limit'         => 15,
                     'downloadMedia' => false,
                 ]);
+
+            // Log untuk diagnose apa yang WAHA kembalikan
+            $rawData = $response->json() ?? [];
+            // WAHA bisa return plain array [...] ATAU object {messages: [...], total: N}
+            $messages = (is_array($rawData) && array_is_list($rawData))
+                ? $rawData
+                : ($rawData['messages'] ?? array_values($rawData));
+
+            Log::debug('hasOwnerRepliedRecently: WAHA response', [
+                'chatId'   => $chatId,
+                'httpStatus' => $response->status(),
+                'msgCount' => is_array($messages) ? count($messages) : '(not array)',
+                'sample'   => is_array($messages) ? array_slice($messages, 0, 1) : null,
+            ]);
 
             if (!$response->ok()) {
                 return false;
             }
 
-            $messages   = $response->json() ?? [];
             $cutoffTime = time() - $withinSeconds;
 
             foreach ($messages as $msg) {
