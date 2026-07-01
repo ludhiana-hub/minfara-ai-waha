@@ -202,9 +202,7 @@ class WhatsAppController extends Controller
             $this->whatsapp->startTyping($chatId);
             $this->faqReply($chatId, $from, $menu, $rawInput, $contactName, $ipAddress);
         } else {
-            $delaySeconds = max(3, (int) BotConfig::get('bot_reply_delay_seconds', '5'));
-            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress)
-                ->delay(now()->addSeconds($delaySeconds));
+            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress);
         }
 
         return response('OK', 200);

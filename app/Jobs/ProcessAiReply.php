@@ -45,19 +45,6 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
-        // Reliable fallback: query WAHA message history directly.
-        // 600s window (10 min) = pause duration — detects ongoing manual conversations.
-        // Baseline = last_customer_ts_ (set by webhook for THIS message) → no re-pause after expiry.
-        $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
-        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, 600)) {
-            Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
-            PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
-            Log::info('ProcessAiReply: paused via WAHA history check — owner replied manually', [
-                'from' => $this->from,
-            ]);
-            return;
-        }
-
         if (!$whatsapp->isSessionWorking()) {
             Log::warning('ProcessAiReply: WAHA session not WORKING, releasing for retry', [
                 'chatId' => $this->chatId,
@@ -209,20 +196,8 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
-        // Check #2 — sebelum kirim: cek lagi setelah AI selesai proses (1–5 detik).
-        // Pada titik ini owner sudah punya waktu lebih untuk membalas manual dari HP.
-        // Cek cache (instan) + isPaused (DB) + hasOwnerRepliedRecently (WAHA API, 600s window).
-        $alreadyPaused    = Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from);
-        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 600);
-        if ($alreadyPaused || $ownerJustReplied) {
-            if ($ownerJustReplied) {
-                Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
-                PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
-            }
-            Log::info('ProcessAiReply: aborted before send — human takeover (check #2)', [
-                'from'   => $this->from,
-                'source' => $ownerJustReplied ? 'waha_history' : 'db_paused',
-            ]);
+        if (Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from)) {
+            Log::info('ProcessAiReply: aborted before send — human takeover active', ['from' => $this->from]);
             $whatsapp->stopTyping($this->chatId);
             return;
         }
