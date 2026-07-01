@@ -37,8 +37,10 @@ class ProcessAiReply implements ShouldQueue
         GroqService       $groq,
         OpenRouterService $openrouter,
     ): void {
-        // Cek human takeover — owner mungkin sudah balas manual setelah job ini di-queue
-        if (PausedContact::isPaused($this->from)) {
+        // Cek human takeover — cek cache dulu (instan) lalu DB sebagai fallback.
+        // Cache di-set oleh handleOwnerReply() sebelum DB write untuk eliminasi race condition.
+        $fromHash = md5($this->from);
+        if (Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from)) {
             Log::info('ProcessAiReply: skip — human takeover active', ['from' => $this->from]);
             return;
         }
@@ -209,8 +211,8 @@ class ProcessAiReply implements ShouldQueue
 
         // Check #2 — sebelum kirim: cek lagi setelah AI selesai proses (2–10 detik).
         // Pada titik ini owner sudah punya waktu untuk membalas manual dari HP.
-        // Cek isPaused (webhook-based) DAN hasOwnerRepliedRecently (WAHA API-based).
-        $alreadyPaused    = PausedContact::isPaused($this->from);
+        // Cek cache (instan) + isPaused (DB) + hasOwnerRepliedRecently (WAHA API).
+        $alreadyPaused    = Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from);
         // Same 300s window as Check #1 — consistent, cache-safe, no infinite re-pause
         $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 300);
         if ($alreadyPaused || $ownerJustReplied) {

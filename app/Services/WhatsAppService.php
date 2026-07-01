@@ -145,10 +145,12 @@ class WhatsAppService
                 return false;
             }
 
-            // Use last_bot_ts as accurate baseline: "did owner reply AFTER bot's last message?"
-            // Fallback to withinSeconds window if no baseline stored yet.
-            $lastBotTs  = Cache::get('last_bot_ts_' . md5($chatId));
-            $cutoffTime = $lastBotTs ?? (time() - $withinSeconds);
+            // Baseline akurat: "apakah owner reply SETELAH customer message terakhir datang?"
+            // last_customer_ts_ di-set saat webhook menerima pesan customer (TTL 2 jam).
+            // Fallback ke last_bot_ts_ (kapan bot terakhir kirim), lalu window default.
+            $lastCustomerTs = Cache::get('last_customer_ts_' . md5($chatId));
+            $lastBotTs      = Cache::get('last_bot_ts_' . md5($chatId));
+            $cutoffTime     = $lastCustomerTs ?? $lastBotTs ?? (time() - $withinSeconds);
 
             foreach ($messages as $msg) {
                 if (!($msg['fromMe'] ?? false)) {

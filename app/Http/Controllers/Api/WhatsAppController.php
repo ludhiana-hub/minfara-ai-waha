@@ -192,13 +192,21 @@ class WhatsAppController extends Controller
             return response('OK', 200);
         }
 
+        // Simpan timestamp pesan customer — dipakai oleh hasOwnerRepliedRecently sebagai
+        // baseline akurat ("apakah owner reply SETELAH pesan ini datang?")
+        Cache::put('last_customer_ts_' . md5($chatId), time(), now()->addHours(2));
+
         $menu = FaqMenu::active()->where('command', $command)->first();
 
         if ($menu) {
             $this->whatsapp->startTyping($chatId);
             $this->faqReply($chatId, $from, $menu, $rawInput, $contactName, $ipAddress);
         } else {
-            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress);
+            // Delay sebelum proses AI — beri waktu owner untuk ketik manual terlebih dulu.
+            // Jika owner balas dalam jeda ini, CHECK #1 / #2 di job akan mendeteksinya.
+            $delaySeconds = max(3, (int) BotConfig::get('bot_reply_delay_seconds', '8'));
+            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress)
+                ->delay(now()->addSeconds($delaySeconds));
         }
 
         return response('OK', 200);
@@ -241,6 +249,10 @@ class WhatsAppController extends Controller
         }
 
         $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
+
+        // Set cache flag secara INSTAN sebelum DB write — job CHECK #1 baca ini lebih cepat
+        // dari query DB sehingga tidak ada race condition antara handleOwnerReply dan job.
+        Cache::put('human_takeover_' . md5($from), true, now()->addMinutes($pauseMinutes));
 
         PausedContact::pauseContact($from, $contactName, $pauseMinutes);
 
