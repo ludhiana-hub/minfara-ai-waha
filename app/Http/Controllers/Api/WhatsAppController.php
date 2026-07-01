@@ -202,7 +202,9 @@ class WhatsAppController extends Controller
             $this->whatsapp->startTyping($chatId);
             $this->faqReply($chatId, $from, $menu, $rawInput, $contactName, $ipAddress);
         } else {
-            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress);
+            $delaySeconds = max(3, (int) BotConfig::get('bot_reply_delay_seconds', '5'));
+            ProcessAiReply::dispatch($chatId, $from, $rawInput, $contactName, $ipAddress)
+                ->delay(now()->addSeconds($delaySeconds));
         }
 
         return response('OK', 200);
@@ -218,10 +220,35 @@ class WhatsAppController extends Controller
             return;
         }
 
-        // Ambil nomor penerima (customer) dari payload.to saat fromMe: true
-        $rawTo = $payload['to'] ?? null;
+        // Ambil nomor penerima (customer) dari payload
+        // WEBJS: customer ada di payload.to (payload.from = own number)
+        // NOWEB/Baileys: customer ada di payload.from (key.remoteJid = chat partner), payload.to = null
+        $ownNumber  = BotConfig::get('waha_own_number', '');
+        $ownPhone   = $ownNumber ? preg_replace('/@.*$/', '', $ownNumber) : '';
+
+        $rawTo = $payload['to']
+            ?? $payload['_data']['to']
+            ?? $payload['_data']['key']['remoteJid']
+            ?? null;
+
+        // NOWEB/Baileys fallback: jika to tidak ada, pakai from jika bukan nomor bot sendiri
+        if ((empty($rawTo) || !is_string($rawTo)) && isset($payload['from'])) {
+            $rawFrom   = $payload['from'];
+            $fromPhone = preg_replace('/@.*$/', '', $rawFrom);
+            if (!$ownPhone || $fromPhone !== $ownPhone) {
+                $rawTo = $rawFrom;
+                Log::info('handleOwnerReply: NOWEB mode — using payload.from as customer JID', [
+                    'customer' => $rawTo,
+                ]);
+            }
+        }
 
         if (empty($rawTo) || !is_string($rawTo) || strlen($rawTo) > 100) {
+            Log::warning('handleOwnerReply: could not extract recipient — pause NOT set', [
+                'has_to' => isset($payload['to']),
+                'from'   => $payload['from'] ?? null,
+                'own'    => $ownNumber,
+            ]);
             return;
         }
 
