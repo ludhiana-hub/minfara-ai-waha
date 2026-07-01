@@ -14,9 +14,9 @@ class EnsureWahaWebhook extends Command
 
     public function handle(): int
     {
-        $url     = BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
-        $apiKey  = BotConfig::get('waha_api_key') ?: config('services.waha.api_key', '');
-        $session = BotConfig::get('waha_session') ?: config('services.waha.session', 'default');
+        $url     = BotConfig::get('waha_url')     ?: config('whatsapp.base_url', 'http://localhost:3000');
+        $apiKey  = BotConfig::get('waha_api_key') ?: config('whatsapp.api_key', '');
+        $session = BotConfig::get('waha_session') ?: config('whatsapp.session', 'default');
         $appUrl  = config('app.url');
 
         if (empty($appUrl) || str_contains($appUrl, 'localhost')) {

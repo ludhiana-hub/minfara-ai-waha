@@ -12,6 +12,7 @@ use App\Models\WhatsappLog;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
@@ -72,10 +73,22 @@ class WhatsAppController extends Controller
         // Ketika WAHA reconnect, ia kirim session.status: WORKING.
         // Kita queue ulang waha:ensure-webhook agar message.any selalu aktif setelah reconnect.
         if ($event === 'session.status') {
-            if (($payload['status'] ?? '') === 'WORKING') {
+            $status = $payload['status'] ?? '';
+
+            if ($status === 'WORKING') {
                 ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
                 Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
+            } elseif (in_array($status, ['STOPPED', 'FAILED'], true)) {
+                // Recovery instan lewat queue, tidak nunggu jadwal waha:ensure-session berikutnya.
+                Artisan::queue('waha:ensure-session');
+                Log::warning('webhook: WAHA session down — queued waha:ensure-session', ['status' => $status]);
+            } elseif ($status === 'SCAN_QR_CODE') {
+                // Butuh aksi manual (scan QR di dashboard WAHA) — restart tidak membantu.
+                Log::warning('webhook: WAHA session needs QR scan — manual action required', ['status' => $status]);
+            } else {
+                Log::info('webhook: session.status event', ['status' => $status]);
             }
+
             return response('OK', 200);
         }
 

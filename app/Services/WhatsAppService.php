@@ -16,9 +16,9 @@ class WhatsAppService
 
     public function __construct()
     {
-        $this->url     = BotConfig::get('waha_url')     ?: config('services.waha.url', 'http://localhost:3000');
-        $this->apiKey  = BotConfig::get('waha_api_key') ?: config('services.waha.api_key', '');
-        $this->session = BotConfig::get('waha_session') ?: config('services.waha.session', 'default');
+        $this->url     = BotConfig::get('waha_url')     ?: config('whatsapp.base_url', 'http://localhost:3000');
+        $this->apiKey  = BotConfig::get('waha_api_key') ?: config('whatsapp.api_key', '');
+        $this->session = BotConfig::get('waha_session') ?: config('whatsapp.session', 'default');
     }
 
     public function sendMessage(string $chatId, string $text): bool
@@ -203,13 +203,39 @@ class WhatsAppService
 
     public function isSessionWorking(): bool
     {
+        return $this->sessionStatus() === 'WORKING';
+    }
+
+    public function sessionStatus(): string
+    {
         try {
             $response = Http::timeout(5)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
                 ->get("{$this->url}/api/sessions/{$this->session}");
 
-            return $response->ok() && ($response->json('status') === 'WORKING');
+            return $response->ok() ? ($response->json('status') ?? 'UNKNOWN') : 'UNREACHABLE';
         } catch (\Exception) {
+            return 'UNREACHABLE';
+        }
+    }
+
+    public function startSession(): bool
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->post("{$this->url}/api/sessions/{$this->session}/start");
+
+            if (!$response->successful()) {
+                Log::error('WAHA startSession failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+            }
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error('WAHA startSession exception', ['message' => $e->getMessage()]);
             return false;
         }
     }

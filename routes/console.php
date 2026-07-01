@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Pastikan sesi WAHA selalu WORKING — auto-restart jika session mati setelah container restart
-Schedule::command('waha:ensure-session')->everyTwoMinutes();
+Schedule::command('waha:ensure-session')->everyMinute();
 
 // Analisis percakapan WA setiap hari pukul 02:00
 // Memproses percakapan kemarin — klasifikasi topik, sentiment, perilaku customer
