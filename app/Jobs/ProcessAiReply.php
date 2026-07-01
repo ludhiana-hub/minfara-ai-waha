@@ -46,11 +46,11 @@ class ProcessAiReply implements ShouldQueue
         }
 
         // Reliable fallback: query WAHA message history directly.
-        // 300s window (5 min): covers queue-backup scenario where job retries for several minutes.
-        // Cache TTL 20min > 300s → no mismatch. Pause 600s > 300s → no infinite re-pause.
-        // hasOwnerRepliedRecently also uses last_bot_ts_ as accurate per-chatId baseline.
+        // 600s window (10 min) = pause duration — detects ongoing manual conversations.
+        // Baseline = last_customer_ts_ (set by webhook for THIS message) → no re-pause after expiry.
         $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
-        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, 300)) {
+        if ($whatsapp->hasOwnerRepliedRecently($this->chatId, 600)) {
+            Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
             PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
             Log::info('ProcessAiReply: paused via WAHA history check — owner replied manually', [
                 'from' => $this->from,
@@ -209,14 +209,14 @@ class ProcessAiReply implements ShouldQueue
             return;
         }
 
-        // Check #2 — sebelum kirim: cek lagi setelah AI selesai proses (2–10 detik).
-        // Pada titik ini owner sudah punya waktu untuk membalas manual dari HP.
-        // Cek cache (instan) + isPaused (DB) + hasOwnerRepliedRecently (WAHA API).
+        // Check #2 — sebelum kirim: cek lagi setelah AI selesai proses (1–5 detik).
+        // Pada titik ini owner sudah punya waktu lebih untuk membalas manual dari HP.
+        // Cek cache (instan) + isPaused (DB) + hasOwnerRepliedRecently (WAHA API, 600s window).
         $alreadyPaused    = Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from);
-        // Same 300s window as Check #1 — consistent, cache-safe, no infinite re-pause
-        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 300);
+        $ownerJustReplied = !$alreadyPaused && $whatsapp->hasOwnerRepliedRecently($this->chatId, 600);
         if ($alreadyPaused || $ownerJustReplied) {
             if ($ownerJustReplied) {
+                Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
                 PausedContact::pauseContact($this->from, $this->contactName, $pauseMinutes);
             }
             Log::info('ProcessAiReply: aborted before send — human takeover (check #2)', [
