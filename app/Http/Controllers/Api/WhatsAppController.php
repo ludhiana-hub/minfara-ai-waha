@@ -174,7 +174,10 @@ class WhatsAppController extends Controller
             }
         }
 
-        if (PausedContact::isPaused($from)) {
+        // Cek cache dulu (instan) lalu DB — cache di-set oleh handleOwnerReply sebelum DB write
+        // untuk menangkap race condition di FAQ/endChat path yang dieksekusi synchronously.
+        $fromHash = md5($from);
+        if (Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($from)) {
             Log::info('webhook:drop — human takeover active', ['from' => $from]);
             return response('OK', 200);
         }
@@ -192,9 +195,13 @@ class WhatsAppController extends Controller
             return response('OK', 200);
         }
 
-        // Simpan timestamp pesan customer — dipakai oleh hasOwnerRepliedRecently sebagai
-        // baseline akurat ("apakah owner reply SETELAH pesan ini datang?")
+        // Simpan timestamp pesan customer untuk baseline di hasOwnerRepliedRecently
         Cache::put('last_customer_ts_' . md5($chatId), time(), now()->addHours(2));
+
+        // Simpan last customer message — dipakai proactive resume job setelah takeover berakhir
+        Cache::put('pending_resume_chatid_' . md5($from), $chatId, now()->addHours(2));
+        Cache::put('pending_resume_body_' . md5($from), $rawInput, now()->addHours(2));
+        Cache::put('pending_resume_name_' . md5($from), $contactName, now()->addHours(2));
 
         $menu = FaqMenu::active()->where('command', $command)->first();
 
@@ -296,16 +303,36 @@ class WhatsAppController extends Controller
 
         $pauseMinutes = (int) BotConfig::get('human_takeover_minutes', '10');
 
-        // Set cache flag secara INSTAN sebelum DB write — job CHECK #1 baca ini lebih cepat
-        // dari query DB sehingga tidak ada race condition antara handleOwnerReply dan job.
-        Cache::put('human_takeover_' . md5($from), true, now()->addMinutes($pauseMinutes));
+        // Cek sebelum set cache — dispatch resume job hanya saat takeover PERTAMA kali di-set.
+        // Jika owner kirim beberapa pesan, hanya 1 proactive resume job yang terdaftar.
+        $fromHash      = md5($from);
+        $alreadyPaused = Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($from);
+
+        // Set cache flag INSTAN sebelum DB write — job CHECK #1 baca cache lebih cepat dari DB.
+        Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
 
         PausedContact::pauseContact($from, $contactName, $pauseMinutes);
 
         Log::info('webhook:human-takeover', [
-            'from'          => $from,
+            'from'           => $from,
             'paused_minutes' => $pauseMinutes,
         ]);
+
+        // Dispatch proactive AI resume setelah pause berakhir (hanya pada takeover pertama)
+        if (!$alreadyPaused) {
+            $resumeChatId = Cache::get('pending_resume_chatid_' . $fromHash);
+            $resumeBody   = Cache::get('pending_resume_body_' . $fromHash);
+            $resumeName   = Cache::get('pending_resume_name_' . $fromHash);
+
+            if ($resumeChatId && $resumeBody) {
+                ProcessAiReply::dispatch($resumeChatId, $from, $resumeBody, $resumeName ?? $contactName, null)
+                    ->delay(now()->addMinutes($pauseMinutes)->addSeconds(5));
+                Log::info('handleOwnerReply: scheduled proactive AI resume', [
+                    'from'          => $from,
+                    'delay_minutes' => $pauseMinutes,
+                ]);
+            }
+        }
 
         try {
             WhatsappLog::create([
