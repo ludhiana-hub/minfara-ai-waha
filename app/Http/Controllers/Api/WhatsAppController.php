@@ -79,9 +79,15 @@ class WhatsAppController extends Controller
                 ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
                 Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
             } elseif (in_array($status, ['STOPPED', 'FAILED'], true)) {
-                // Recovery instan lewat queue, tidak nunggu jadwal waha:ensure-session berikutnya.
-                Artisan::queue('waha:ensure-session');
-                Log::warning('webhook: WAHA session down — queued waha:ensure-session', ['status' => $status]);
+                // Debounce 15s — WAHA bisa kirim event STOPPED/FAILED beruntun (termasuk duplikat untuk
+                // event yang sama), tanpa ini beberapa waha:ensure-session bisa saling tumpang tindih dan
+                // memanggil /start berkali-kali dalam hitungan detik.
+                if (Cache::add('waha_recovery_debounce', true, 15)) {
+                    Artisan::queue('waha:ensure-session');
+                    Log::warning('webhook: WAHA session down — queued waha:ensure-session', ['status' => $status]);
+                } else {
+                    Log::info('webhook: WAHA session down — recovery already in flight, skipping', ['status' => $status]);
+                }
             } elseif ($status === 'SCAN_QR_CODE') {
                 // Butuh aksi manual (scan QR di dashboard WAHA) — restart tidak membantu.
                 Log::warning('webhook: WAHA session needs QR scan — manual action required', ['status' => $status]);
