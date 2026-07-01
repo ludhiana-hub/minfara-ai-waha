@@ -15,14 +15,14 @@ class WahaEnsureSessionCommand extends Command
     private const FAILURE_STREAK_CACHE_KEY  = 'waha_down_streak';
     private const CRITICAL_STREAK_THRESHOLD = 10; // ~10 menit beruntun di cadence everyMinute()
 
-    public function __construct(private readonly WhatsAppService $whatsapp)
+    // Resolved via handle() method injection, NOT the constructor — Laravel instantiates every
+    // registered command (including via constructor-injected dependencies) while building the console
+    // command list, e.g. during `composer install`'s package:discover step at Docker build time, when
+    // no database exists yet. Constructor injection here would make BotConfig::get() run at that point
+    // and crash the build. Method injection defers resolution until the command actually executes.
+    public function handle(WhatsAppService $whatsapp): int
     {
-        parent::__construct();
-    }
-
-    public function handle(): int
-    {
-        $status = $this->whatsapp->sessionStatus();
+        $status = $whatsapp->sessionStatus();
 
         if ($status === 'WORKING') {
             if (Cache::get(self::FAILURE_STREAK_CACHE_KEY, 0) > 0) {
@@ -55,7 +55,7 @@ class WahaEnsureSessionCommand extends Command
         ]);
         $this->warn("Session status: {$status} — triggering start...");
 
-        if ($this->whatsapp->startSession()) {
+        if ($whatsapp->startSession()) {
             Log::info('waha:ensure-session — session start triggered successfully');
             $this->info('Session start triggered.');
         } else {
