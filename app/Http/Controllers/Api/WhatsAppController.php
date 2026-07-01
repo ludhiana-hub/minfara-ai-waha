@@ -210,12 +210,37 @@ class WhatsAppController extends Controller
 
     private function handleOwnerReply(array $payload): void
     {
-        // Skip echo-back: pesan yang dikirim bot via API juga fromMe:true tapi bukan owner manual
-        $rawId = $payload['id'] ?? null;
-        $msgId = is_array($rawId) ? ($rawId['_serialized'] ?? $rawId['id'] ?? null) : $rawId;
-        if ($msgId && Cache::has('bot_sent_' . md5((string) $msgId))) {
-            Log::info('handleOwnerReply: skip — bot-sent echo, not owner manual reply');
-            return;
+        // Skip echo-back: bot API-sent messages also arrive as fromMe:true via message.any.
+        // NOWEB: sendText response id (plain string) ≠ message.any id._serialized (full JID key).
+        // Check ALL available id variants, then fall back to body fingerprint.
+        $rawId      = $payload['id'] ?? null;
+        $idsToCheck = [];
+        if (is_array($rawId)) {
+            if (isset($rawId['_serialized']) && $rawId['_serialized'] !== '') {
+                $idsToCheck[] = (string) $rawId['_serialized'];
+            }
+            if (isset($rawId['id']) && $rawId['id'] !== '') {
+                $idsToCheck[] = (string) $rawId['id'];
+            }
+        } elseif (is_string($rawId) && $rawId !== '') {
+            $idsToCheck[] = $rawId;
+        }
+        foreach ($idsToCheck as $echoId) {
+            if (Cache::has('bot_sent_' . md5($echoId))) {
+                Log::info('handleOwnerReply: skip — bot-sent echo (id match)', ['id' => $echoId]);
+                return;
+            }
+        }
+        // Body fingerprint fallback: handles total ID format mismatch between sendText and message.any
+        $echoBody   = $payload['body'] ?? '';
+        $echoChatId = $payload['chatId'] ?? ($payload['to'] ?? ($payload['from'] ?? ''));
+        if ($echoBody !== '' && $echoChatId !== '') {
+            if (Cache::has('bot_sent_body_' . md5($echoChatId . mb_substr($echoBody, 0, 100)))) {
+                Log::info('handleOwnerReply: skip — bot-sent echo (body match)', [
+                    'body_prefix' => mb_substr($echoBody, 0, 40),
+                ]);
+                return;
+            }
         }
 
         // Ambil nomor penerima (customer) dari payload

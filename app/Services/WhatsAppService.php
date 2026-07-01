@@ -83,12 +83,25 @@ class WhatsAppService
             }
 
             // Track message ID so handleOwnerReply can skip echo-back events (fromMe:true via API).
-            // TTL 20 min > hasOwnerRepliedRecently window (5 min) — no cache mismatch.
-            $raw = $response->json('id');
-            $key = is_array($raw) ? ($raw['_serialized'] ?? $raw['id'] ?? null) : $raw;
-            if ($key) {
-                Cache::put('bot_sent_' . md5((string) $key), true, now()->addMinutes(20));
+            // NOWEB: sendText returns plain id string but message.any event has {_serialized, id} object.
+            // Store ALL variants so handleOwnerReply catches the mismatch regardless of format.
+            $raw    = $response->json('id');
+            $botIds = [];
+            if (is_array($raw)) {
+                if (isset($raw['_serialized']) && $raw['_serialized'] !== '') {
+                    $botIds[] = (string) $raw['_serialized'];
+                }
+                if (isset($raw['id']) && $raw['id'] !== '') {
+                    $botIds[] = (string) $raw['id'];
+                }
+            } elseif (is_string($raw) && $raw !== '') {
+                $botIds[] = $raw;
             }
+            foreach (array_unique($botIds) as $botId) {
+                Cache::put('bot_sent_' . md5($botId), true, now()->addMinutes(20));
+            }
+            // Body fingerprint fallback: catches total ID format mismatch (NOWEB edge case)
+            Cache::put('bot_sent_body_' . md5($chatId . mb_substr($text, 0, 100)), true, now()->addSeconds(60));
 
             // Track last bot reply timestamp per chatId — used as accurate baseline in hasOwnerRepliedRecently
             Cache::put('last_bot_ts_' . md5($chatId), time(), now()->addHours(1));
