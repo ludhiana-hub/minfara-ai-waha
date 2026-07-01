@@ -47,12 +47,12 @@ return [
 
     'openrouter' => [
         'key'   => env('OPENROUTER_API_KEY', ''),
-        'model' => env('OPENROUTER_MODEL', 'deepseek/deepseek-chat-v3-0324:free'),
+        'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
     ],
 
     'nvidia' => [
         'key'   => env('NVIDIA_API_KEY', ''),
-        'model' => env('NVIDIA_MODEL', 'qwen/qwen3.5-397b-a17b'),
+        'model' => env('NVIDIA_MODEL', 'meta/llama-3.1-8b-instruct'),
     ],
 
 ];

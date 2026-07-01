@@ -75,7 +75,7 @@ PROMPT;
         ));
 
         foreach ($models as $model) {
-            $result = $nvidia->withModel($model)->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
+            $result = $nvidia->withTimeout(120)->withModel($model)->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
 
             if (!$result['success']) {
                 Log::warning('[Analytics] NVIDIA model gagal, coba berikutnya', [

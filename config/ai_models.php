@@ -26,7 +26,8 @@ return [
     ],
 
     'openrouter' => [
-        ['id' => 'qwen/qwen3-14b:free',                         'label' => 'Qwen3 14B',           'desc' => 'Cepat, multilingual ID+DE — direkomendasikan'],
+        ['id' => 'openrouter/free',                             'label' => 'Auto Router (Free)',  'desc' => 'Otomatis pilih dari puluhan model gratis yang sedang aktif — anti model deprecated, direkomendasikan'],
+        ['id' => 'qwen/qwen3-14b:free',                         'label' => 'Qwen3 14B',           'desc' => 'Cepat, multilingual ID+DE'],
         ['id' => 'qwen/qwen3-30b-a3b:free',                     'label' => 'Qwen3 30B MoE',       'desc' => 'Lebih pintar dari 14B, sedikit lebih lambat'],
         ['id' => 'qwen/qwen3-8b:free',                          'label' => 'Qwen3 8B',            'desc' => 'Super cepat, ringan'],
         ['id' => 'qwen/qwen3-235b-a22b:free',                   'label' => 'Qwen3 235B MoE',      'desc' => 'Paling powerful, bisa lebih lambat'],

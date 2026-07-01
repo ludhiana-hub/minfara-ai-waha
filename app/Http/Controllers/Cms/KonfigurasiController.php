@@ -25,7 +25,10 @@ class KonfigurasiController extends Controller
             'openrouter_api_key'  => config('services.openrouter.key', ''),
             'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
             'nvidia_api_key'      => config('services.nvidia.key', ''),
-            'nvidia_model'        => config('services.nvidia.model', 'qwen/qwen3.5-397b-a17b'),
+            // NOT config('services.nvidia.model') — that config key now holds the fast CUSTOMER-CHAT
+            // default (see NvidiaService), while this CMS field is the ANALYTICS model (heavy reasoning
+            // models), matching ConversationAnalysisService's own hardcoded default.
+            'nvidia_model'        => 'qwen/qwen3.5-397b-a17b',
         ];
 
         $aiModels = config('ai_models') ?? [];

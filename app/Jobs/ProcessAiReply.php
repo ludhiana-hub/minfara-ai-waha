@@ -8,6 +8,7 @@ use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\GeminiService;
 use App\Services\GroqService;
+use App\Services\NvidiaService;
 use App\Services\OpenRouterService;
 use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,7 +22,23 @@ class ProcessAiReply implements ShouldQueue
 
     public int $tries   = 2;
     public int $backoff = 10;
-    public int $timeout = 120;
+    public int $timeout = 150;
+
+    // Fallback models tried on the SAME provider (same API key) before moving to the next provider —
+    // handles model-specific outages (blocked/deprecated model) that switching providers wouldn't fix.
+    private const FALLBACK_MODELS = [
+        'groq'       => ['gemma2-9b-it', 'llama-3.1-8b-instant'],
+        'gemini'     => ['gemini-1.5-flash-8b'],
+        'openrouter' => [], // openrouter/free already routes across ~24+ free models internally
+        'nvidia'     => [],
+    ];
+
+    // Hard cap on total HTTP attempts across all providers/models/retries so a chain of timeouts can't
+    // blow past the job timeout (150s). See ProcessAiReply plan notes for the worst-case math.
+    private const MAX_TOTAL_ATTEMPTS = 6;
+
+    // How long a provider that exhausted all its models is skipped before being retried again ("rebound").
+    private const PROVIDER_COOLDOWN_SECONDS = 300;
 
     public function __construct(
         private readonly string  $chatId,
@@ -36,6 +53,7 @@ class ProcessAiReply implements ShouldQueue
         GeminiService     $gemini,
         GroqService       $groq,
         OpenRouterService $openrouter,
+        NvidiaService     $nvidia,
     ): void {
         // Cek human takeover — cek cache dulu (instan) lalu DB sebagai fallback.
         // Cache di-set oleh handleOwnerReply() sebelum DB write untuk eliminasi race condition.
@@ -111,17 +129,41 @@ class ProcessAiReply implements ShouldQueue
                 $tokens = 0;
                 Log::info('AI response served from cache', ['key' => substr($respCacheKey, -8)]);
             } else {
-                $result       = null;
-                $usedProvider = null;
-                $failedErrors = [];
+                $result        = null;
+                $usedProvider  = null;
+                $usedModel     = null;
+                $failedErrors  = [];
+                $attemptLog    = [];
+                $totalAttempts = 0;
 
                 $services = [
                     'gemini'     => $gemini,
                     'groq'       => $groq,
                     'openrouter' => $openrouter,
+                    'nvidia'     => $nvidia,
                 ];
 
+                $primaryModelFor = [
+                    'groq'       => fn() => BotConfig::get('groq_model')       ?: config('services.groq.model', 'llama-3.3-70b-versatile'),
+                    'gemini'     => fn() => BotConfig::get('gemini_model')     ?: config('services.gemini.model', 'gemini-2.0-flash'),
+                    'openrouter' => fn() => BotConfig::get('openrouter_model') ?: config('services.openrouter.model', 'openrouter/free'),
+                    // Deliberately NOT BotConfig::get('nvidia_model') — that key is the analytics model
+                    // (ConversationAnalysisService). Customer chat always uses the fast config default.
+                    'nvidia'     => fn() => config('services.nvidia.model', 'meta/llama-3.1-8b-instruct'),
+                ];
+
+                // Providers that recently failed on every model get skipped for a while — unless EVERY
+                // configured provider is currently marked unhealthy, in which case ignore the marks
+                // entirely and try the normal order anyway (never skip straight to the fallback message).
+                $unhealthyProviders = array_values(array_filter($providerOrder, fn($p) =>
+                    Cache::has('ai_provider_unhealthy_' . $p)
+                ));
+                $allUnhealthy = count($providerOrder) > 0 && count($unhealthyProviders) === count($providerOrder);
+
                 foreach ($providerOrder as $provider) {
+                    if ($totalAttempts >= self::MAX_TOTAL_ATTEMPTS) {
+                        break;
+                    }
                     if (!$this->providerHasKey($provider)) {
                         continue;
                     }
@@ -129,13 +171,72 @@ class ProcessAiReply implements ShouldQueue
                     if (!$service) {
                         continue;
                     }
-                    $result = $service->chat($aiInput, $systemPrompt, $maxTokens, $temperature, $history);
-                    if ($result['success']) {
-                        $usedProvider = $provider;
+                    if (!$allUnhealthy && Cache::has('ai_provider_unhealthy_' . $provider)) {
+                        Log::info("AI provider {$provider} skipped — cooldown active");
+                        continue;
+                    }
+
+                    $models = array_values(array_unique(array_merge(
+                        [$primaryModelFor[$provider]()],
+                        self::FALLBACK_MODELS[$provider] ?? []
+                    )));
+
+                    // Stays true only if every model in this provider's list actually got a fair try —
+                    // false if the total-attempt cap cut it short, so we don't unfairly mark it unhealthy.
+                    $providerFullyTried = true;
+
+                    foreach ($models as $model) {
+                        if ($totalAttempts >= self::MAX_TOTAL_ATTEMPTS) {
+                            $providerFullyTried = false;
+                            break 2;
+                        }
+
+                        $attempt = $service->withModel($model)->chat($aiInput, $systemPrompt, $maxTokens, $temperature, $history);
+                        $totalAttempts++;
+
+                        if ($attempt['success']) {
+                            $result       = $attempt;
+                            $usedProvider = $provider;
+                            $usedModel    = $model;
+                            $attemptLog[$provider][$model] = 'success';
+                            Cache::forget('ai_provider_unhealthy_' . $provider);
+                            break 2;
+                        }
+
+                        $error = $attempt['error'] ?? 'unknown';
+
+                        // Only a connection timeout is worth retrying — quota/model/key errors won't
+                        // change on an immediate retry.
+                        if ($error === 'Connection timeout' && $totalAttempts < self::MAX_TOTAL_ATTEMPTS) {
+                            usleep(1_000_000);
+                            $retry = $service->withModel($model)->chat($aiInput, $systemPrompt, $maxTokens, $temperature, $history);
+                            $totalAttempts++;
+
+                            if ($retry['success']) {
+                                $result       = $retry;
+                                $usedProvider = $provider;
+                                $usedModel    = $model;
+                                $attemptLog[$provider][$model] = 'success (after retry)';
+                                Cache::forget('ai_provider_unhealthy_' . $provider);
+                                break 2;
+                            }
+                            $attemptLog[$provider][$model] = "{$error} (retried, still failed: " . ($retry['error'] ?? 'unknown') . ')';
+                        } else {
+                            $attemptLog[$provider][$model] = $error;
+                        }
+
+                        $failedErrors[] = $error;
+                        Log::warning("AI provider {$provider} model {$model} failed, trying next", ['error' => $error]);
+                    }
+
+                    if (!$result && $providerFullyTried) {
+                        Cache::put('ai_provider_unhealthy_' . $provider, true, self::PROVIDER_COOLDOWN_SECONDS);
+                        Log::info("AI provider {$provider} marked unhealthy for " . self::PROVIDER_COOLDOWN_SECONDS . 's — all models exhausted');
+                    }
+
+                    if ($result) {
                         break;
                     }
-                    $failedErrors[] = $result['error'] ?? 'unknown';
-                    Log::warning("AI provider {$provider} failed, trying next", ['error' => $result['error'] ?? 'unknown']);
                 }
 
                 if ($result && $result['success']) {
@@ -145,9 +246,9 @@ class ProcessAiReply implements ShouldQueue
                     $tokens = $result['tokens'] ?? null;
 
                     if (!empty($failedErrors)) {
-                        Log::info("AI fallback resolved via {$usedProvider}", [
-                            'failed_providers' => count($failedErrors),
-                            'errors'           => $failedErrors,
+                        Log::info("AI fallback resolved via {$usedProvider}/{$usedModel}", [
+                            'failed_attempts' => count($failedErrors),
+                            'attempt_log'     => $attemptLog,
                         ]);
                     }
 
@@ -174,6 +275,15 @@ class ProcessAiReply implements ShouldQueue
                     $reply = $allQuotaExceeded
                         ? "Maaf, semua layanan MinFara AI sedang overload saat ini 😅\n\nCoba lagi beberapa menit lagi ya! Atau ketik *99* untuk chat langsung dengan admin kami."
                         : BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
+
+                    Log::error('AI reply failed — all providers/models exhausted', [
+                        'from'              => $this->from,
+                        'chatId'            => $this->chatId,
+                        'total_attempts'    => $totalAttempts,
+                        'attempt_log'       => $attemptLog,
+                        'skipped_unhealthy' => $unhealthyProviders,
+                        'fail_open'         => $allUnhealthy,
+                    ]);
                 }
             }
         }
@@ -260,6 +370,7 @@ class ProcessAiReply implements ShouldQueue
             'gemini'     => !empty(BotConfig::get('gemini_api_key') ?: config('services.gemini.key', '')),
             'groq'       => !empty(BotConfig::get('groq_api_key') ?: config('services.groq.key', '')),
             'openrouter' => !empty(BotConfig::get('openrouter_api_key') ?: config('services.openrouter.key', '')),
+            'nvidia'     => !empty(BotConfig::get('nvidia_api_key') ?: config('services.nvidia.key', '')),
             default      => false,
         };
     }

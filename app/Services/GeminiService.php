@@ -20,6 +20,15 @@ class GeminiService implements AiServiceInterface
         $this->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
     }
 
+    public function withModel(string $model): static
+    {
+        $clone           = clone $this;
+        $clone->model    = $model;
+        // Endpoint is derived from the model name — must be rebuilt on clone, not just the model swapped.
+        $clone->endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
+        return $clone;
+    }
+
     public function chat(string $userMessage, string $systemPrompt, int $maxTokens = 500, float $temperature = 0.7, array $history = []): array
     {
         // Convert neutral format [{role: user/assistant, content}] to Gemini format [{role: user/model, parts}]
