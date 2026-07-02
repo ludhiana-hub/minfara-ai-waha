@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\InternalNotifyRequest;
 use App\Jobs\SendWhatsAppNotificationJob;
+use App\Models\BotConfig;
 use App\Models\NotificationLog;
 use App\Models\NotificationTarget;
 use App\Models\NotificationTemplate;
@@ -150,6 +151,16 @@ DESC
         $data           = $request->input('data', []);
         $renderedMessage = $this->templateService->render($template->message_body, $data);
 
+        // Stagger dispatch supaya worker queue tidak kirim "bertubi-tubi" ke WAHA saat volume bulk tinggi.
+        $cumulativeDelay = 0;
+        $minDelay = BotConfig::getInt('waha_send_delay_min', (int) config('whatsapp.send_throttle.min_delay', 5));
+        $maxDelay = BotConfig::getInt('waha_send_delay_max', (int) config('whatsapp.send_throttle.max_delay', 10));
+        $minDelay = max(0, $minDelay);
+        $maxDelay = max(0, $maxDelay);
+        if ($maxDelay < $minDelay) {
+            [$minDelay, $maxDelay] = [$maxDelay, $minDelay];
+        }
+
         foreach ($targets as $target) {
             $log = NotificationLog::create([
                 'template_id'      => $template->id,
@@ -163,7 +174,9 @@ DESC
                 $target->phone_number,
                 $renderedMessage,
                 $log->id,
-            );
+            )->delay(now()->addSeconds($cumulativeDelay));
+
+            $cumulativeDelay += random_int($minDelay, $maxDelay);
         }
 
         return response()->json([

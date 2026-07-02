@@ -27,6 +27,9 @@ class WhatsAppService
             $chatId .= '@c.us';
         }
 
+        // Throttle sekali per upaya kirim logis — retry @lid tidak kena jeda ganda.
+        app(WhatsAppSendThrottle::class)->waitBeforeSend();
+
         $sent = $this->doSend($chatId, $text);
 
         // @lid accounts: WAHA WEBJS sends `from` without suffix so we default to @c.us,
