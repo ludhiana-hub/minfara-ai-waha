@@ -119,7 +119,7 @@ class ProcessAiReply implements ShouldQueue
             $historyKey = 'chat_history_' . md5($this->from);
             $history    = Cache::get($historyKey, []);
 
-            $respCacheKey = 'ai_resp_' . md5(strtolower(trim($aiInput)) . '|' . substr(md5($systemPrompt), 0, 8));
+            $respCacheKey = 'ai_resp_' . md5($this->from . '|' . strtolower(trim($aiInput)) . '|' . substr(md5($systemPrompt), 0, 8));
             $cachedReply  = empty($history) ? Cache::get($respCacheKey) : null;
 
             if ($cachedReply !== null) {

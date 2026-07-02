@@ -4,13 +4,13 @@ namespace App\Jobs;
 
 use App\Models\BotConfig;
 use App\Models\ConversationAnalysis;
+use App\Models\KnowledgeSuggestion;
 use App\Models\WhatsappLog;
 use App\Services\GroqService;
 use App\Services\GeminiService;
 use App\Services\OpenRouterService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class KnowledgeSynthesizerJob implements ShouldQueue
@@ -38,7 +38,8 @@ class KnowledgeSynthesizerJob implements ShouldQueue
         }
 
         // Collect up to 20 sessions, build transcript snippets
-        $transcripts = [];
+        $transcripts         = [];
+        $contributingPhones  = [];
 
         foreach ($sessions->take(20) as $phone) {
             $logs = WhatsappLog::where('from_number', $phone)
@@ -58,7 +59,8 @@ class KnowledgeSynthesizerJob implements ShouldQueue
                 'Q: ' . mb_substr($l->message_in, 0, 150) . "\nA: " . mb_substr($l->message_out, 0, 200)
             )->implode("\n---\n");
 
-            $transcripts[] = $pairs;
+            $transcripts[]        = $pairs;
+            $contributingPhones[] = $phone;
         }
 
         if (empty($transcripts)) {
@@ -66,7 +68,8 @@ class KnowledgeSynthesizerJob implements ShouldQueue
             return;
         }
 
-        $combined = implode("\n\n===\n\n", array_slice($transcripts, 0, 10));
+        $combined   = implode("\n\n===\n\n", array_slice($transcripts, 0, 10));
+        $usedPhones = array_slice($contributingPhones, 0, 10);
 
         $prompt = <<<PROMPT
 Dari percakapan WhatsApp bot berikut antara calon peserta dan asisten Languages by Fara, ekstrak 5-8 Q&A terbaik yang menunjukkan jawaban bot yang akurat dan membantu.
@@ -118,20 +121,29 @@ PROMPT;
             return;
         }
 
-        // Build compact knowledge string
-        $snippets = array_map(fn($i) => 'Q: ' . ($i['q'] ?? '') . ' → ' . ($i['a'] ?? ''), $items);
-        $knowledge = implode("\n", $snippets);
+        // Simpan sebagai saran pending — TIDAK langsung ditulis ke dynamic_knowledge/prompt live.
+        // Admin harus approve tiap item lewat CMS (KnowledgeSuggestionController) agar hasil ekstraksi
+        // AI (yang bisa saja berisi halusinasi dari percakapan sebelumnya) tidak otomatis tayang ke
+        // semua customer tanpa direview.
+        $created = 0;
+        foreach ($items as $item) {
+            $q = trim((string) ($item['q'] ?? ''));
+            $a = trim((string) ($item['a'] ?? ''));
+            if ($q === '' || $a === '') {
+                continue;
+            }
 
-        BotConfig::updateOrCreate(
-            ['key' => 'dynamic_knowledge'],
-            ['key' => 'dynamic_knowledge', 'value' => mb_substr($knowledge, 0, 2000), 'type' => 'textarea', 'label' => 'Dynamic Knowledge (Auto-generated)', 'group' => 'ai']
-        );
+            KnowledgeSuggestion::create([
+                'question'       => mb_substr($q, 0, 500),
+                'answer'         => mb_substr($a, 0, 500),
+                'example_phones' => $usedPhones,
+                'period_start'   => $since,
+                'period_end'     => now()->toDateString(),
+                'status'         => 'pending',
+            ]);
+            $created++;
+        }
 
-        Cache::forget('bot_config_dynamic_knowledge');
-
-        // Trigger digest rebuild so dynamic_knowledge is picked up
-        BuildFaqDigestJob::dispatch();
-
-        Log::info('KnowledgeSynthesizerJob: done', ['snippets' => count($items)]);
+        Log::info('KnowledgeSynthesizerJob: done', ['snippets' => $created]);
     }
 }

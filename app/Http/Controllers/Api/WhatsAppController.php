@@ -76,8 +76,15 @@ class WhatsAppController extends Controller
             $status = $payload['status'] ?? '';
 
             if ($status === 'WORKING') {
-                ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
-                Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
+                // Debounce 5 menit — tanpa ini, reconfigure webhook terpicu di SETIAP event WORKING,
+                // termasuk WORKING yang muncul berulang saat reconnect, dan PUT config ke WAHA tampak
+                // memaksa engine WAHA restart sehingga sesi flapping WORKING→STOPPED→STARTING terus-menerus.
+                if (Cache::add('waha_webhook_reconfigure_debounce', true, 300)) {
+                    ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
+                    Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
+                } else {
+                    Log::info('webhook: WAHA WORKING — reconfigure applied recently, skipping');
+                }
             } elseif (in_array($status, ['STOPPED', 'FAILED', 'STARTING'], true)) {
                 // Debounce 15s — WAHA bisa kirim event STOPPED/FAILED beruntun (termasuk duplikat untuk
                 // event yang sama), tanpa ini beberapa waha:ensure-session bisa saling tumpang tindih dan

@@ -304,6 +304,8 @@ class WhatsAppService
         $status = $this->sessionStatus();
 
         if ($status === 'WORKING') {
+            Cache::forget('waha_starting_since');
+
             return true;
         }
 
@@ -320,6 +322,23 @@ class WhatsAppService
 
         if ($status === 'STOPPED') {
             return $this->startSession();
+        }
+
+        // STARTING adalah status transisi normal — beri masa tenggang 45 detik sebelum
+        // dianggap macet, supaya sesi yang memang sedang benar-benar starting tidak
+        // diinterupsi restart di tengah jalan (lihat WhatsAppController::webhook()).
+        if ($status === 'STARTING') {
+            $since = Cache::get('waha_starting_since');
+
+            if (!$since) {
+                Cache::put('waha_starting_since', now(), now()->addMinutes(5));
+
+                return true;
+            }
+
+            if (now()->diffInSeconds($since) < 45) {
+                return true;
+            }
         }
 
         return $this->restartSession();

@@ -5,6 +5,7 @@ use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\FaqSuggestionController;
 use App\Http\Controllers\Cms\HumanTakeoverController;
+use App\Http\Controllers\Cms\KnowledgeSuggestionController;
 use App\Http\Controllers\Cms\KonfigurasiController;
 use App\Http\Controllers\Cms\LogController;
 use App\Http\Controllers\Cms\NotificationLogController;
@@ -53,6 +54,11 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
     Route::get('faq-suggestions',               [FaqSuggestionController::class, 'index'])->name('faq-suggestions.index');
     Route::get('faq-suggestions/{faqSuggestion}/approve', [FaqSuggestionController::class, 'approve'])->name('faq-suggestions.approve');
     Route::patch('faq-suggestions/{faqSuggestion}/reject', [FaqSuggestionController::class, 'reject'])->name('faq-suggestions.reject');
+
+    // ── Knowledge Suggestions ─────────────────────────────────────────────────
+    Route::get('knowledge-suggestions',                             [KnowledgeSuggestionController::class, 'index'])->name('knowledge-suggestions.index');
+    Route::patch('knowledge-suggestions/{knowledgeSuggestion}/approve', [KnowledgeSuggestionController::class, 'approve'])->name('knowledge-suggestions.approve');
+    Route::patch('knowledge-suggestions/{knowledgeSuggestion}/reject',  [KnowledgeSuggestionController::class, 'reject'])->name('knowledge-suggestions.reject');
 
     // ── Human Takeover ────────────────────────────────────────────────────────
     Route::get('human-takeover',                    [HumanTakeoverController::class, 'index'])->name('human-takeover.index');

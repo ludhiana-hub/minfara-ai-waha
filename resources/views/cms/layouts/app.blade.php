@@ -95,6 +95,13 @@
                     <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingSuggestions }}</span>
                 @endif
             </a>
+            <a href="{{ route('cms.knowledge-suggestions.index') }}" class="nav-link {{ request()->routeIs('cms.knowledge-suggestions.*') ? 'active' : '' }}">
+                <i class="bi bi-book-half"></i> Saran Pengetahuan
+                @php $pendingKnowledge = \App\Models\KnowledgeSuggestion::where('status','pending')->count(); @endphp
+                @if($pendingKnowledge > 0)
+                    <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingKnowledge }}</span>
+                @endif
+            </a>
             <a href="{{ route('cms.human-takeover.index') }}" class="nav-link {{ request()->routeIs('cms.human-takeover.*') ? 'active' : '' }}">
                 <i class="bi bi-person-raised-hand"></i> Jeda Percakapan
                 @php $activePauses = \App\Models\PausedContact::where('paused_until', '>', now())->count(); @endphp
