@@ -78,7 +78,7 @@ class WhatsAppController extends Controller
             if ($status === 'WORKING') {
                 ReConfigureWahaWebhookJob::dispatch()->delay(now()->addSeconds(3));
                 Log::info('webhook: WAHA WORKING — queued webhook re-configuration');
-            } elseif (in_array($status, ['STOPPED', 'FAILED'], true)) {
+            } elseif (in_array($status, ['STOPPED', 'FAILED', 'STARTING'], true)) {
                 // Debounce 15s — WAHA bisa kirim event STOPPED/FAILED beruntun (termasuk duplikat untuk
                 // event yang sama), tanpa ini beberapa waha:ensure-session bisa saling tumpang tindih dan
                 // memanggil /start berkali-kali dalam hitungan detik.

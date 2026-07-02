@@ -222,12 +222,43 @@ class WhatsAppService
     public function startSession(): bool
     {
         try {
-            $response = Http::timeout(10)
+            $response = Http::timeout(15)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
                 ->post("{$this->url}/api/sessions/{$this->session}/start");
 
+            if ($response->successful()) {
+                return true;
+            }
+
+            // Session sudah STARTING/WORKING — /start ditolak 422, tapi bukan kegagalan nyata.
+            if ($response->status() === 422 && str_contains($response->body(), 'already started')) {
+                $status = $this->sessionStatus();
+                Log::info('WAHA startSession: session already active', ['status' => $status]);
+
+                return in_array($status, ['WORKING', 'STARTING'], true);
+            }
+
+            Log::error('WAHA startSession failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('WAHA startSession exception', ['message' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    public function restartSession(): bool
+    {
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->post("{$this->url}/api/sessions/{$this->session}/restart");
+
             if (!$response->successful()) {
-                Log::error('WAHA startSession failed', [
+                Log::error('WAHA restartSession failed', [
                     'status' => $response->status(),
                     'body'   => $response->body(),
                 ]);
@@ -235,9 +266,60 @@ class WhatsAppService
 
             return $response->successful();
         } catch (\Exception $e) {
-            Log::error('WAHA startSession exception', ['message' => $e->getMessage()]);
+            Log::error('WAHA restartSession exception', ['message' => $e->getMessage()]);
             return false;
         }
+    }
+
+    public function logoutSession(): bool
+    {
+        try {
+            $response = Http::timeout(15)
+                ->withHeaders(['X-Api-Key' => $this->apiKey])
+                ->post("{$this->url}/api/sessions/{$this->session}/logout");
+
+            if (!$response->successful()) {
+                Log::error('WAHA logoutSession failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+            }
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error('WAHA logoutSession exception', ['message' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * Pulihkan sesi berdasarkan status saat ini.
+     * FAILED/STARTING → restart; STOPPED → start; streak tinggi + FAILED → logout lalu start.
+     */
+    public function recoverSession(bool $forceLogout = false): bool
+    {
+        $status = $this->sessionStatus();
+
+        if ($status === 'WORKING') {
+            return true;
+        }
+
+        if ($status === 'SCAN_QR_CODE') {
+            return false;
+        }
+
+        if ($forceLogout) {
+            $this->logoutSession();
+            sleep(3);
+
+            return $this->startSession();
+        }
+
+        if ($status === 'STOPPED') {
+            return $this->startSession();
+        }
+
+        return $this->restartSession();
     }
 
     public function buildMainMenu(): string

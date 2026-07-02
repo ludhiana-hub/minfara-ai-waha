@@ -49,17 +49,24 @@ class WahaEnsureSessionCommand extends Command
             return self::SUCCESS;
         }
 
-        Log::warning('waha:ensure-session — session not WORKING, attempting start', [
-            'status' => $status,
-            'streak' => $streak,
-        ]);
-        $this->warn("Session status: {$status} — triggering start...");
+        // FAILED berulang: restart biasa tidak cukup — logout lalu start ulang (mungkin perlu scan QR).
+        $forceLogout = $status === 'FAILED' && $streak >= 5;
 
-        if ($whatsapp->startSession()) {
-            Log::info('waha:ensure-session — session start triggered successfully');
-            $this->info('Session start triggered.');
+        Log::warning('waha:ensure-session — session not WORKING, attempting recovery', [
+            'status'       => $status,
+            'streak'       => $streak,
+            'force_logout' => $forceLogout,
+        ]);
+        $action = $forceLogout ? 'logout + start' : ($status === 'STOPPED' ? 'start' : 'restart');
+        $this->warn("Session status: {$status} — triggering {$action}...");
+
+        if ($whatsapp->recoverSession($forceLogout)) {
+            Log::info('waha:ensure-session — session recovery triggered successfully', [
+                'action' => $action,
+            ]);
+            $this->info("Session recovery triggered ({$action}).");
         } else {
-            $this->error('Failed to start session.');
+            $this->error('Failed to recover session.');
         }
 
         // Log::critical di sini murni mempermudah grep di storage/logs/laravel.log untuk downtime

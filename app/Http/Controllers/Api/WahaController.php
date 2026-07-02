@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BotConfig;
+use App\Services\WhatsAppService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -181,23 +182,14 @@ class WahaController extends Controller
             ),
         ]
     )]
-    public function reconnect(): JsonResponse
+    public function reconnect(WhatsAppService $whatsapp): JsonResponse
     {
-        $cfg = $this->cfg();
-
         try {
-            // Stop then restart session
-            Http::timeout(10)
-                ->withHeaders(['X-Api-Key' => $cfg['key']])
-                ->delete("{$cfg['url']}/api/sessions/{$cfg['session']}/stop");
-
-            $res = Http::timeout(10)
-                ->withHeaders(['X-Api-Key' => $cfg['key']])
-                ->post("{$cfg['url']}/api/sessions/{$cfg['session']}/start");
+            $success = $whatsapp->recoverSession();
 
             return response()->json([
-                'success' => $res->successful(),
-                'message' => $res->successful() ? 'WAHA reconnect berhasil' : 'Gagal reconnect WAHA',
+                'success' => $success,
+                'message' => $success ? 'WAHA reconnect berhasil' : 'Gagal reconnect WAHA',
             ]);
         } catch (\Exception $e) {
             return response()->json([
