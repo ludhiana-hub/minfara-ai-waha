@@ -28,15 +28,15 @@ FORMAT WA (WAJIB):
 
 BATAS TOPIK (WAJIB DIPATUHI):
 • Kamu HANYA boleh menjawab pertanyaan seputar Languages by Fara, program bahasa, LMS FlexiLearn, pendaftaran, pembayaran, dan hal terkait LBF.
-• Jika pertanyaan SAMA SEKALI tidak berhubungan dengan topik di atas → balas: "Maaf kak, aku hanya bisa bantu seputar Languages by Fara 🌍 Untuk info lain, langsung tanya admin ya~ Ketik *99* untuk chat admin."
+• Jika pertanyaan SAMA SEKALI tidak berhubungan dengan topik di atas → balas: "Maaf kak, aku hanya bisa bantu seputar Languages by Fara 🌍 Ketik *0* buat lihat menu FAQ ya~"
 • DILARANG mengarang info yang tidak ada di KNOWLEDGE BASE yang disediakan.
-• DILARANG menyebutkan URL/website apa pun selain yang tertulis eksplisit di system prompt ini (https://mitfara.com, https://lms.mitfara.com, https://wa.me/6289647897616). Jika ragu, arahkan ke admin — JANGAN mengarang domain.
+• DILARANG menyebutkan URL/website apa pun selain yang tertulis eksplisit di system prompt ini (https://mitfara.com, https://lms.mitfara.com, https://wa.me/6289647897616). Jika ragu, arahkan ke https://mitfara.com atau ketik *99* — sebut admin hanya kalau benar-benar diperlukan, JANGAN mengarang domain.
 
 CARA MENJAWAB:
 1. Pertanyaan tentang program/bahasa/level → gunakan KNOWLEDGE BASE di bawah, jawab dengan manfaat nyata
 2. Pertanyaan harga/paket → sebutkan harga dari KNOWLEDGE BASE, rekomendasikan Lifetime
-3. Daftar/bayar/akun → arahkan ke admin via wa.me
-4. Pertanyaan tidak jelas atau di luar topik → JANGAN mengarang, arahkan ke admin
+3. Daftar/bayar/akun → arahkan customer checkout mandiri di https://mitfara.com (ketik *99* untuk panduan langkah checkout)
+4. Pertanyaan tidak jelas atau di luar topik → JANGAN mengarang, arahkan ke menu *0*/*99* dulu; sebut admin hanya jika customer masih bingung setelah itu
 5. Ditanya owner/pendiri → Fara, pendiri LBF, di bawah PT Fara Kreatif Sejahtera, Bandung
 6. Panggil "kamu" | Perkenalkan diri saat pertama menyapa
 7. Jangan tambah footer "ketik *0*" — sudah otomatis
@@ -47,10 +47,10 @@ CTA WAJIB — SELALU tutup setiap respons dengan salah satu ini (pilih yang pali
 "Mau lihat semua program bahasa? Ketik *1*, atau ketik *2* untuk info harga 😊"
 
 💳 Topik daftar/bayar/akun:
-"Langsung aja hubungi admin untuk mulai! Chat sekarang → https://wa.me/6289647897616 atau ketik *99* 🚀"
+"Yuk langsung checkout aja di https://mitfara.com! Ketik *99* buat lihat panduan lengkap langkah checkout-nya 🚀"
 
 ❓ Pertanyaan tidak jelas/di luar topik:
-"Untuk pertanyaan ini lebih baik langsung tanya admin ya, biar lebih akurat! → https://wa.me/6289647897616 🙌"
+"Coba ketik *0* buat lihat menu FAQ dulu ya, kalau masih belum ketemu jawabannya baru deh hubungi admin kami di https://wa.me/6289647897616 🙌"
 
 INFO LBF (Languages by Fara — FlexiLearn):
 • *Pendiri:* Fara | *Perusahaan:* PT Fara Kreatif Sejahtera | Bandung, kick-off 17 Juni 2026
@@ -78,11 +78,11 @@ PROMPT;
             ['key' => 'ai_max_tokens',        'value' => '500',                                             'type' => 'number',   'label' => 'Maksimal Token AI',                'description' => 'Batas token output AI (100-2000)', 'group' => 'ai'],
             ['key' => 'ai_temperature',       'value' => '0.7',                                            'type' => 'number',   'label' => 'Temperatur AI (0.0-1.0)',          'description' => 'Semakin tinggi semakin kreatif, semakin rendah semakin konsisten', 'group' => 'ai'],
             ['key' => 'ai_system_prompt',     'value' => $systemPrompt,                                    'type' => 'textarea', 'label' => 'System Prompt AI',                 'group' => 'ai'],
-            ['key' => 'footer_faq',           'value' => "─────────────────\nKetik *0* menu utama | *99* hubungi admin",
+            ['key' => 'footer_faq',           'value' => "─────────────────\nKetik *0* menu utama | *99* cara checkout",
                                                                                                             'type' => 'textarea', 'label' => 'Footer Pesan FAQ',                'group' => 'message'],
-            ['key' => 'footer_ai',            'value' => "─────────────────\n_MinFara AI_ 🤖 _· Languages by Fara_\nKetik *0* menu utama | *99* hubungi admin",
+            ['key' => 'footer_ai',            'value' => "─────────────────\n_MinFara AI_ 🤖 _· Languages by Fara_\nKetik *0* menu utama | *99* cara checkout",
                                                                                                             'type' => 'textarea', 'label' => 'Footer Pesan AI',                 'group' => 'message'],
-            ['key' => 'fallback_message',     'value' => "Maaf! 🙏 MinFara AI sedang tidak dapat memproses pertanyaanmu saat ini.\n\nSilakan coba beberapa saat lagi, atau ketik *99* untuk langsung terhubung dengan admin kami. 😊\n─────────────────\n_MinFara AI_ 🤖 _· Languages by Fara_\nKetik *0* menu utama | *99* hubungi admin",
+            ['key' => 'fallback_message',     'value' => "Maaf! 🙏 MinFara AI sedang tidak dapat memproses pertanyaanmu saat ini.\n\nSilakan coba beberapa saat lagi, atau ketik *99* untuk lihat cara checkout di website. Kalau masih butuh bantuan langsung, hubungi admin kami di https://wa.me/6289647897616 😊\n─────────────────\n_MinFara AI_ 🤖 _· Languages by Fara_\nKetik *0* menu utama | *99* cara checkout",
                                                                                                             'type' => 'textarea', 'label' => 'Pesan Error AI',                  'group' => 'message'],
             ['key' => 'admin_wa',             'value' => '6289647897616',                                  'type' => 'text',     'label' => 'Nomor WA Admin',                   'description' => 'Format: 628xxx tanpa + dan spasi', 'group' => 'contact'],
             ['key' => 'admin_wa_label',       'value' => 'MinFara Admin',                                  'type' => 'text',     'label' => 'Label Admin WA',                   'group' => 'contact'],
@@ -107,7 +107,7 @@ PROMPT;
         ];
 
         // Key yang selalu di-update agar perubahan seeder langsung berlaku di production
-        $alwaysUpdate = ['ai_system_prompt', 'ai_max_tokens', 'footer_ai', 'fallback_message'];
+        $alwaysUpdate = ['ai_system_prompt', 'ai_max_tokens', 'footer_ai', 'footer_faq', 'fallback_message'];
 
         foreach ($configs as $config) {
             if (in_array($config['key'], $alwaysUpdate)) {

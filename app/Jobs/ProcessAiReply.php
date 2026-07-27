@@ -87,13 +87,13 @@ class ProcessAiReply implements ShouldQueue
                     $content = $mainMenu->content ?? $whatsapp->buildMainMenu();
                     $whatsapp->sendMessage($this->chatId, $content);
                 } else {
-                    $whatsapp->sendMessage($this->chatId, "Hallo! 👋 Ketik *0* untuk melihat menu atau *99* untuk hubungi admin.");
+                    $whatsapp->sendMessage($this->chatId, "Hallo! 👋 Ketik *0* untuk melihat menu atau *99* untuk cara checkout.");
                 }
 
                 $whatsapp->stopTyping($this->chatId);
                 return;
             }
-            $reply  = BotConfig::get('fallback_message', "Hallo! 👋 Perintah tidak dikenali.\n\nKetik *0* untuk melihat menu lengkap atau *99* untuk chat dengan admin.");
+            $reply  = BotConfig::get('fallback_message', "Hallo! 👋 Perintah tidak dikenali.\n\nKetik *0* untuk melihat menu lengkap atau *99* untuk cara checkout di website.");
             $mode   = 'error';
             $tokens = null;
         } else {
@@ -273,7 +273,7 @@ class ProcessAiReply implements ShouldQueue
                         && count(array_filter($failedErrors, fn($e) => $e !== 'quota_exceeded')) === 0;
 
                     $reply = $allQuotaExceeded
-                        ? "Maaf, semua layanan MinFara AI sedang overload saat ini 😅\n\nCoba lagi beberapa menit lagi ya! Atau ketik *99* untuk chat langsung dengan admin kami."
+                        ? "Maaf, semua layanan MinFara AI sedang overload saat ini 😅\n\nCoba lagi beberapa menit lagi ya! Atau ketik *99* untuk lihat cara checkout, atau hubungi admin di https://wa.me/6289647897616 kalau mendesak."
                         : BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
 
                     Log::error('AI reply failed — all providers/models exhausted', [

@@ -26,7 +26,6 @@ class BuildFaqDigestJob implements ShouldQueue
         foreach (FaqMenu::active()
             ->whereNotNull('content')
             ->where('command', '!=', '0')
-            ->where('command', '!=', '99')
             ->orderBy('sort_order')
             ->get(['title', 'content']) as $item)
         {

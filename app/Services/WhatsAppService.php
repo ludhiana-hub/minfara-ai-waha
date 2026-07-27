@@ -347,6 +347,6 @@ class WhatsAppService
     public function buildMainMenu(): string
     {
         return FaqMenu::active()->where('command', '0')->value('content')
-            ?? "Hallo! Ketik *1* untuk Program Kursus atau *99* untuk hubungi admin.";
+            ?? "Hallo! Ketik *1* untuk Program Kursus atau *99* untuk cara checkout.";
     }
 }

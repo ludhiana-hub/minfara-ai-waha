@@ -201,7 +201,7 @@ class WhatsAppController extends Controller
         }
 
         // Cek cache dulu (instan) lalu DB — cache di-set oleh handleOwnerReply sebelum DB write
-        // untuk menangkap race condition di FAQ/endChat path yang dieksekusi synchronously.
+        // untuk menangkap race condition di FAQ path yang dieksekusi synchronously.
         $fromHash = md5($from);
         if (Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($from)) {
             Log::info('webhook:drop — human takeover active', ['from' => $from]);
@@ -214,11 +214,6 @@ class WhatsAppController extends Controller
         $greetingWords = array_map('trim', explode(',', BotConfig::get('bot_greeting', 'halo,hai,hi,hello,hallo,mulai,start,menu,help')));
         if (in_array($command, $greetingWords, strict: true)) {
             $command = '0';
-        }
-
-        if ($command === '99') {
-            $this->endChat($chatId, $from, $contactName, $ipAddress);
-            return response('OK', 200);
         }
 
         // Simpan timestamp pesan customer untuk baseline di hasOwnerRepliedRecently
@@ -372,47 +367,6 @@ class WhatsAppController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('handleOwnerReply: failed to log', ['error' => $e->getMessage()]);
-        }
-    }
-
-    private function endChat(string $chatId, string $from, ?string $contactName, ?string $ipAddress): void
-    {
-        $recentDuplicate = WhatsappLog::where('from_number', $from)
-            ->where('message_in', '99')
-            ->where('mode', 'end_chat')
-            ->where('responded_at', '>=', now()->subSeconds(3))
-            ->exists();
-
-        if ($recentDuplicate) {
-            return;
-        }
-
-        $adminWa     = BotConfig::get('admin_wa', '6289647897616');
-        $officeHours = BotConfig::get('office_hours', 'Senin–Sabtu, 08.00–20.00 WIB');
-
-        $reply = "📞 *Chat Berakhir*\n\n"
-            . "Terima kasih telah menghubungi MinFara! 🙏\n"
-            . "Tim admin kami siap membantu Anda lebih lanjut.\n\n"
-            . "WA Admin: *+$adminWa*\n"
-            . "Jam: $officeHours\n\n"
-            . "Ketik *0* untuk kembali ke menu utama.";
-
-        $this->whatsapp->startTyping($chatId);
-        if ($this->whatsapp->sendMessage($chatId, $reply)) {
-            $this->whatsapp->stopTyping($chatId);
-            try {
-                WhatsappLog::create([
-                    'from_number'  => $from,
-                    'contact_name' => $contactName,
-                    'ip_address'   => $ipAddress,
-                    'message_in'   => '99',
-                    'message_out'  => $reply,
-                    'mode'         => 'end_chat',
-                    'responded_at' => now(),
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
-            }
         }
     }
 

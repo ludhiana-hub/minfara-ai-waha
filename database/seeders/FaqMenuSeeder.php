@@ -9,7 +9,7 @@ class FaqMenuSeeder extends Seeder
 {
     public function run(): void
     {
-        $f0 = "─────────────────\nKetik *0* menu utama | *99* hubungi admin";
+        $f0 = "─────────────────\nKetik *0* menu utama | *99* cara checkout";
         $f1 = "─────────────────\nKetik *1* kembali | *0* menu utama";
         $f2 = "─────────────────\nKetik *2* kembali | *0* menu utama";
         $f3 = "─────────────────\nKetik *3* kembali | *0* menu utama";
@@ -20,13 +20,13 @@ class FaqMenuSeeder extends Seeder
         $menus = [
 
             // ═══════════════════════════════════════════════════════════════
-            // MENU 0 — UTAMA  |  MENU 99 — ADMIN
+            // MENU 0 — UTAMA  |  MENU 99 — CARA CHECKOUT DI WEBSITE
             // ═══════════════════════════════════════════════════════════════
 
             [
                 'command'        => '0',
                 'title'          => 'Menu Utama',
-                'content'        => "Hallo! Selamat datang di *Languages by Fara* 🌍\n\nPlatform belajar *8 bahasa asing* via FlexiLearn — self-paced, kapan saja & di mana saja!\n\nPilih kategori FAQ:\n\n*1* General\n*2* Level & Penempatan Level\n*3* Materi Pembelajaran\n*4* FlexiLearn LMS Languages by Fara\n*5* Pembayaran & Harga\n*6* Tentang Languages by Fara\n*99* Hubungi Admin\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu! 🤖\n\n📱 @languagesbyfara",
+                'content'        => "Hallo! Selamat datang di *Languages by Fara* 🌍\n\nPlatform belajar *8 bahasa asing* via FlexiLearn — self-paced, kapan saja & di mana saja!\n\nPilih kategori FAQ:\n\n*1* General\n*2* Level & Penempatan Level\n*3* Materi Pembelajaran\n*4* FlexiLearn LMS Languages by Fara\n*5* Pembayaran & Harga\n*6* Tentang Languages by Fara\n*99* Cara Checkout di Website\n\nAtau ketik pertanyaanmu langsung, *MinFara AI* siap bantu! 🤖\n\n📱 @languagesbyfara",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 0,
@@ -34,8 +34,8 @@ class FaqMenuSeeder extends Seeder
 
             [
                 'command'        => '99',
-                'title'          => 'Hubungi Admin',
-                'content'        => "👋 *Chat Langsung dengan Admin Languages by Fara!*\n\n💬 Tap link untuk langsung buka chat WhatsApp:\n\n➡️ https://wa.me/6289647897616\n\n_Tim MinFara siap bantu kamu memilih program & paket yang paling sesuai — konsultasi gratis!_\n\n⏰ _Senin–Sabtu, 08.00–20.00 WIB_\n📱 @languagesbyfara\n─────────────────\nKetik *0* untuk kembali ke menu utama",
+                'title'          => 'Cara Checkout & Aktivasi Akun di Website',
+                'content'        => "🛒 *Cara Checkout & Aktivasi Akun FlexiLearn*\n\n1. Kunjungi website mitfara.com\n2. Login jika sudah punya akun, atau *Daftar* akun baru & isi data diri\n3. Tunggu kode *OTP* yang dikirim ke email untuk verifikasi\n4. Lengkapi data diri di menu *Profil*\n5. Buka *Katalog Kursus*, pilih program FlexiLearn (bulanan/lifetime/bundling) sesuai level, lalu klik *Beli Sekarang*\n6. Di halaman checkout, pilih metode pembayaran yang tersedia, baca syarat & ketentuan, centang, lalu submit\n7. Isi survei pembelian program, lalu lanjut ke halaman payment dan bayar sesuai metode yang dipilih\n8. Setelah pembayaran selesai, kakak diarahkan kembali ke Student Portal — tunggu beberapa menit/jam, akun FlexiLearn akan dikirim via email\n9. Cek email, login ke akun FlexiLearn di lms.mitfara.com, lalu buat password baru\n10. Cari kursus kakak & masukkan *kode enrollment* dari invoice pembayaran di menu Kursus Saya\n\nSetelah kode enrollment dimasukkan, kakak bisa langsung mulai belajar bahasa pilihan di Languages by Fara!\n\n_Masih bingung di salah satu langkah? Hubungi admin kami di https://wa.me/6289647897616_\n─────────────────\nKetik *0* untuk kembali ke menu utama",
                 'parent_command' => null,
                 'is_active'      => true,
                 'sort_order'     => 9999,
@@ -613,7 +613,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '4.2',
                 'title'          => 'Bagaimana cara mengakses FlexiLearn?',
-                'content'        => "Mudah banget kak\n\n1. Pilih paket yang ingin kakak ambil\n2. Lakukan pembayaran sesuai paket yang dipilih\n3. Setelah pembayaran terkonfirmasi, tim MinFara akan membantu membuatkan akun kakak\n4. Kakak akan menerima informasi login untuk mulai belajar di FlexiLearn\n{$f4}",
+                'content'        => "Mudah banget kak, sekarang bisa checkout mandiri di website!\n\n1. Daftar/login di mitfara.com\n2. Pilih paket di Katalog Kursus, lalu checkout & bayar\n3. Setelah pembayaran selesai, akun FlexiLearn otomatis dikirim ke email kakak\n4. Login di lms.mitfara.com, lalu masukkan kode enrollment dari invoice\n\nKetik *99* untuk panduan lengkap step-by-step yaa\n{$f4}",
                 'parent_command' => '4',
                 'is_active'      => true,
                 'sort_order'     => 402,
@@ -896,7 +896,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '5.13',
                 'title'          => 'Apa yang harus dilakukan setelah pembayaran?',
-                'content'        => "Setelah melakukan pembayaran, kakak dapat mengirimkan bukti transfer kepada MinFara\n\nSetelah pembayaran berhasil diverifikasi, tim kami akan membantu membuatkan akun FlexiLearn agar kakak dapat segera mulai belajar\n{$f5}",
+                'content'        => "Setelah pembayaran di website berhasil, kakak akan diarahkan kembali ke Student Portal\n\nTunggu beberapa menit/jam, akun FlexiLearn akan dikirim otomatis ke email kakak. Cek email, login di lms.mitfara.com, lalu masukkan kode enrollment dari invoice di menu Kursus Saya\n\nKetik *99* untuk panduan lengkapnya yaa\n{$f5}",
                 'parent_command' => '5',
                 'is_active'      => true,
                 'sort_order'     => 513,
@@ -905,7 +905,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '5.14',
                 'title'          => 'Berapa lama proses aktivasi akun?',
-                'content'        => "Setelah pembayaran berhasil diverifikasi, akun biasanya akan diproses dalam waktu maksimal 1x24 jam ya kak\n\nApabila akun sudah siap digunakan, MinFara akan mengirimkan informasi login kepada kakak\n{$f5}",
+                'content'        => "Setelah pembayaran berhasil, akun FlexiLearn biasanya dikirim otomatis via email dalam beberapa menit hingga maksimal 1x24 jam ya kak\n\nKalau lewat dari itu belum diterima, coba cek folder spam dulu atau hubungi admin kami di https://wa.me/6289647897616\n{$f5}",
                 'parent_command' => '5',
                 'is_active'      => true,
                 'sort_order'     => 514,
