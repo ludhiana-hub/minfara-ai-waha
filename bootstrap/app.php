@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'localhost'    => \App\Http\Middleware\CmsIpMiddleware::class,
             'auth.internal' => \App\Http\Middleware\InternalApiAuth::class,
         ]);
+
+        // Named 'cms.login'/'cms.dashboard' (not the framework defaults 'login'/'dashboard')
+        // since this app has no other auth surface — the whole site is the CMS.
+        $middleware->redirectGuestsTo(fn () => route('cms.login'));
+        $middleware->redirectUsersTo(fn () => route('cms.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

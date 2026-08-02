@@ -134,6 +134,17 @@
         </div>
     </nav>
     <div class="sidebar-footer">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="text-truncate" style="color:rgba(255,255,255,.55); font-size:.78rem;" title="{{ auth()->user()->email }}">
+                <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
+            </div>
+            <form method="POST" action="{{ route('cms.logout') }}" class="m-0">
+                @csrf
+                <button type="submit" class="btn btn-sm p-0 border-0" style="color:rgba(255,255,255,.4);" title="Keluar">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
         <div class="version mb-1">v1.0.0</div>
         <div class="d-flex align-items-center gap-2">
             <span class="waha-dot" id="wahaDot"></span>

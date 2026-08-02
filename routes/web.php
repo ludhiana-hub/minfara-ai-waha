@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Cms\AnalyticsController;
+use App\Http\Controllers\Cms\AuthController;
 use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\FaqSuggestionController;
@@ -19,6 +20,16 @@ Route::get('/', function () {
 });
 
 Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(function () {
+    // Login TIDAK boleh minta 'auth' (itu yang mau dibuktikan user), tapi tetap di dalam IP
+    // allowlist — dua lapis pertahanan: siapa pun di IP yang diizinkan masih harus login.
+    Route::middleware('guest')->group(function () {
+        Route::get('login',  [AuthController::class, 'showLogin'])->name('login');
+        Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+    });
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+});
+
+Route::prefix('cms-minfara')->name('cms.')->middleware(['localhost', 'auth'])->group(function () {
     Route::get('/',                     [DashboardController::class, 'index'])->name('dashboard');
     Route::get('faq',                   [FaqController::class, 'index'])->name('faq.index');
     Route::get('faq/create',            [FaqController::class, 'create'])->name('faq.create');
