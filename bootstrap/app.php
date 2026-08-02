@@ -12,6 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Deploy production ada di belakang reverse proxy (Traefik/Dokploy) yang terminate
+        // SSL lalu forward ke container sebagai plain HTTP — tanpa ini, Laravel tidak tahu
+        // koneksi asli klien itu HTTPS, sehingga route()/url() generate skema http:// (bikin
+        // Chrome block submit form dengan "not secure"). '*' dipakai karena IP proxy internal
+        // Dokploy tidak statis/tidak kita kontrol; header X-Forwarded-* yang dipercaya standar
+        // (proto, host, port, for) — aman karena container tidak exposed langsung ke internet.
+        $middleware->trustProxies(at: '*');
+
         // CORS — baca dari config/cors.php
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
 

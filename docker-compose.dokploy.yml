@@ -1,6 +1,6 @@
-# Dokploy — Akses langsung via IP + port (tanpa domain, tanpa SSL)
+# Dokploy — di belakang Traefik dengan domain + SSL (Let's Encrypt otomatis)
 #
-# Akses App  : http://187.77.116.47:8080
+# Akses App  : https://dashboard-ai.mitfara.com
 # Akses WAHA : http://187.77.116.47:3001/dashboard
 #
 # Port 80   → dipakai Traefik Dokploy (jangan dipakai)
@@ -13,13 +13,17 @@
 #   WAHA_DASHBOARD_USERNAME → bebas, contoh: admin
 #   WAHA_DASHBOARD_PASSWORD → bebas, contoh: MinFara2025!
 #   INTERNAL_API_KEY        → random string ≥32 karakter (untuk auth notifikasi dari CMS)
+#   SUPER_ADMIN_PASSWORD    → WAJIB di-set sebelum deploy pertama (lihat SuperAdminSeeder) —
+#                             kalau kosong, akun admin CMS tidak akan dibuat di production.
 
 x-php-env: &php-env
   APP_NAME: "Deutsch Lernen mit Fara"
   APP_ENV: production
   APP_KEY: "${APP_KEY}"
-  APP_DEBUG: "true"
-  APP_URL: "http://187.77.116.47:8080"
+  # false: APP_DEBUG=true di production membocorkan stack trace lengkap (termasuk isi .env
+  # seperti API key & password DB) ke siapa pun yang memicu error di halaman manapun.
+  APP_DEBUG: "false"
+  APP_URL: "https://dashboard-ai.mitfara.com"
   CMS_ALLOWED_IPS: "*"
   APP_LOCALE: en
   BCRYPT_ROUNDS: "12"
@@ -43,7 +47,12 @@ x-php-env: &php-env
   WAHA_SESSION: "default"
   WAHA_API_KEY: "${WAHA_API_KEY}"
   INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
-  CMS_BASE_URL: "http://187.77.116.47:8080/cms-minfara"
+  CMS_BASE_URL: "https://dashboard-ai.mitfara.com/cms-minfara"
+  SUPER_ADMIN_NAME: "${SUPER_ADMIN_NAME:-Super Admin}"
+  SUPER_ADMIN_EMAIL: "${SUPER_ADMIN_EMAIL:-admin@mitfara.com}"
+  # Kosong di sini TIDAK apa-apa secara sintaks, tapi SuperAdminSeeder akan MENOLAK bikin akun
+  # admin di production kalau ini kosong — wajib di-set di tab Environment Dokploy.
+  SUPER_ADMIN_PASSWORD: "${SUPER_ADMIN_PASSWORD:-}"
   GROQ_API_KEY: "${GROQ_API_KEY:-}"
   GROQ_MODEL: "${GROQ_MODEL:-qwen/qwen3-32b}"
   OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
