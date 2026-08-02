@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Models\AnalyticsDailySummary;
-use App\Models\BotConfig;
 use App\Models\ConversationAnalysis;
 use App\Models\WhatsappLog;
+use App\Services\Ai\AiRequest;
+use App\Services\Ai\AiRouter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -57,48 +58,26 @@ purchase_intent_score: angka 0-10 (0=tidak ada niat beli, 10=hampir pasti beli)
 PROMPT;
 
         // Lazy-resolve here (NOT in constructor) to avoid DB queries during Laravel boot.
-        // Analytics uses NVIDIA NIM only — fallback between models, never to other providers.
-        $nvidia = app(NvidiaService::class);
+        $router = app(AiRouter::class);
 
-        // Primary model is configurable from CMS (Konfigurasi → NVIDIA), falling back to
-        // config('services.nvidia.analytics_model') — a DIFFERENT config key than the one
-        // NvidiaService uses for customer chat (services.nvidia.model), see config/services.php.
-        $primary = BotConfig::get('nvidia_model') ?: config('services.nvidia.analytics_model', 'qwen/qwen3.5-397b-a17b');
-        $fallbacks = [
-            'qwen/qwen3.5-122b-a10b',
-            'nvidia/llama-3.3-nemotron-super-49b-v1.5',
-            'deepseek-ai/deepseek-v4-flash',
-        ];
-        // Exclude primary from fallback list to avoid trying the same model twice
-        $models = array_values(array_merge(
-            [$primary],
-            array_filter($fallbacks, fn ($m) => $m !== $primary)
-        ));
+        $result = $router->run(
+            AiRequest::make('analytics', $prompt)
+                ->withSystem(self::SYSTEM_PROMPT)
+                ->withMaxTokens(600)
+                ->withTemperature(0.3)
+                ->expectingJson()
+        );
 
-        foreach ($models as $model) {
-            $result = $nvidia->withTimeout(120)->withModel($model)->chat($prompt, self::SYSTEM_PROMPT, 600, 0.3);
+        if (!$result->success) {
+            Log::warning('[Analytics] Semua model NVIDIA gagal untuk sesi', [
+                'messages'    => $logs->count(),
+                'attempt_log' => $result->attemptLog,
+            ]);
 
-            if (!$result['success']) {
-                Log::warning('[Analytics] NVIDIA model gagal, coba berikutnya', [
-                    'model' => $model,
-                    'error' => $result['error'] ?? 'unknown',
-                ]);
-                continue;
-            }
-
-            $parsed = $this->parseJson($result['reply']);
-            if ($parsed !== null) {
-                return $parsed;
-            }
-
-            Log::warning('[Analytics] JSON parse gagal', ['model' => $model]);
+            return null;
         }
 
-        Log::warning('[Analytics] Semua model NVIDIA gagal untuk sesi', [
-            'messages' => $logs->count(),
-        ]);
-
-        return null;
+        return $this->validate($result->json ?? []);
     }
 
     private function buildTranscript(Collection $logs): string
@@ -115,24 +94,15 @@ PROMPT;
         })->implode("\n\n");
     }
 
-    private function parseJson(string $raw): ?array
+    /**
+     * Domain validation/clamping for the analytics JSON shape — extraction/parsing itself
+     * now lives in AiRouter (App\Services\Ai\Support\JsonExtractor); this only whitelists
+     * enums, clamps ranges, and truncates strings to their column widths.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validate(array $data): array
     {
-        // Strip markdown code blocks if present
-        $clean = preg_replace('/^```(?:json)?\s*/i', '', trim($raw));
-        $clean = preg_replace('/\s*```$/', '', $clean);
-        $clean = trim($clean);
-
-        // Extract first {...} block
-        if (preg_match('/\{.*\}/s', $clean, $m)) {
-            $clean = $m[0];
-        }
-
-        $data = json_decode($clean, true);
-        if (!is_array($data)) {
-            Log::warning('[Analytics] JSON parse gagal', ['raw' => substr($raw, 0, 300)]);
-            return null;
-        }
-
         return [
             'topic'                 => substr($data['topic'] ?? 'Tidak teridentifikasi', 0, 200),
             'sentiment'             => in_array($data['sentiment'] ?? '', ['positive', 'neutral', 'negative'])

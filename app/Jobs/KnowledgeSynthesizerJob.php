@@ -2,13 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Models\BotConfig;
 use App\Models\ConversationAnalysis;
 use App\Models\KnowledgeSuggestion;
 use App\Models\WhatsappLog;
-use App\Services\GroqService;
-use App\Services\GeminiService;
-use App\Services\OpenRouterService;
+use App\Services\Ai\AiRequest;
+use App\Services\Ai\AiRouter;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +18,7 @@ class KnowledgeSynthesizerJob implements ShouldQueue
     public int $tries   = 2;
     public int $timeout = 180;
 
-    public function handle(GroqService $groq, GeminiService $gemini, OpenRouterService $openrouter): void
+    public function handle(AiRouter $router): void
     {
         $since = now()->subDays(7)->toDateString();
 
@@ -71,10 +69,14 @@ class KnowledgeSynthesizerJob implements ShouldQueue
         $combined   = implode("\n\n===\n\n", array_slice($transcripts, 0, 10));
         $usedPhones = array_slice($contributingPhones, 0, 10);
 
+        // Object envelope ({"items": [...]}) rather than a bare top-level array — OpenAI-
+        // compatible `response_format: json_object` mode (used via ->expectingJson() below)
+        // requires the root to be a JSON object, and a bare array would either be rejected
+        // or silently coerced by some providers.
         $prompt = <<<PROMPT
 Dari percakapan WhatsApp bot berikut antara calon peserta dan asisten Languages by Fara, ekstrak 5-8 Q&A terbaik yang menunjukkan jawaban bot yang akurat dan membantu.
 
-Format output: JSON array. Setiap item: {"q": "pertanyaan singkat", "a": "jawaban singkat maks 150 karakter"}
+Format output: JSON object dengan satu key "items", berisi array. Setiap item: {"q": "pertanyaan singkat", "a": "jawaban singkat maks 150 karakter"}
 Hanya kembalikan JSON valid, tanpa teks lain.
 
 PERCAKAPAN:
@@ -83,41 +85,23 @@ PROMPT;
 
         $systemPrompt = 'Kamu adalah ekstractor knowledge base. Output HANYA JSON valid, tidak ada penjelasan.';
 
-        $services = [
-            'groq'       => $groq,
-            'gemini'     => $gemini,
-            'openrouter' => $openrouter,
-        ];
+        $result = $router->run(
+            AiRequest::make('synthesis', $prompt)
+                ->withSystem($systemPrompt)
+                ->withMaxTokens(800)
+                ->withTemperature(0.3)
+                ->expectingJson()
+        );
 
-        $orderStr = BotConfig::get('ai_provider_order', 'groq,gemini,openrouter');
-        $order    = array_filter(array_map('trim', explode(',', $orderStr)));
-
-        $rawJson = null;
-        foreach ($order as $provider) {
-            $service = $services[$provider] ?? null;
-            if (!$service) {
-                continue;
-            }
-            $result = $service->chat($prompt, $systemPrompt, 800, 0.3, []);
-            if ($result['success']) {
-                $rawJson = $result['reply'];
-                break;
-            }
-        }
-
-        if (!$rawJson) {
-            Log::warning('KnowledgeSynthesizerJob: all AI providers failed');
+        if (!$result->success) {
+            Log::warning('KnowledgeSynthesizerJob: all AI providers failed', ['attempt_log' => $result->attemptLog]);
             return;
         }
 
-        // Strip markdown code fences if present
-        $rawJson = preg_replace('/^```(?:json)?\s*/i', '', trim($rawJson));
-        $rawJson = preg_replace('/\s*```$/', '', $rawJson);
-
-        $items = json_decode(trim($rawJson), true);
+        $items = $result->json['items'] ?? null;
 
         if (!is_array($items) || empty($items)) {
-            Log::warning('KnowledgeSynthesizerJob: invalid JSON response', ['raw' => substr($rawJson, 0, 200)]);
+            Log::warning('KnowledgeSynthesizerJob: response missing usable "items" array', ['json' => $result->json]);
             return;
         }
 

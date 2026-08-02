@@ -19,3 +19,7 @@ Schedule::command('analytics:analyse')->dailyAt('02:00');
 // Sintesis knowledge dari percakapan sukses — setiap Senin pukul 03:00
 // Mengekstrak Q&A terbaik dari percakapan minggu lalu → update dynamic_knowledge
 Schedule::job(new KnowledgeSynthesizerJob())->weeklyOn(1, '03:00');
+
+// Buang baris ai_request_traces lama — hot path chat sudah minim tulisan (mode on_retry),
+// tapi profil batch/eval nulis 'always', jadi tetap perlu retensi.
+Schedule::command('ai:prune-traces --days=14')->dailyAt('04:00');

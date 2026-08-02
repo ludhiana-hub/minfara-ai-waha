@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\BotConfig;
+use App\Services\Ai\Support\NullSleeper;
+use App\Services\Ai\Support\Sleeper;
+use App\Services\Ai\Support\SleeperContract;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -18,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
         // composer install's package:discover step where no database exists yet, and its
         // match() was missing NvidiaService with 'ai_default_provider' never seeded. Provider
         // selection lives in ProcessAiReply::$providerOrder, not a container binding.)
+
+        // NullSleeper in tests so AiRouter's retry-delay (usleep) doesn't slow the suite down.
+        $this->app->bind(SleeperContract::class, fn () => $this->app->environment('testing')
+            ? new NullSleeper()
+            : new Sleeper());
     }
 
     public function boot(): void

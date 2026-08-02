@@ -332,6 +332,12 @@ class WhatsAppController extends Controller
         // Set cache flag INSTAN sebelum DB write — job CHECK #1 baca cache lebih cepat dari DB.
         Cache::put('human_takeover_' . $fromHash, true, now()->addMinutes($pauseMinutes));
 
+        // Owner baru saja mengambil alih percakapan ini secara manual — riwayat AI sebelum
+        // takeover sudah digantikan oleh apa pun yang owner bicarakan. Tanpa ini, proactive
+        // resume job (dijadwalkan di bawah) akan melanjutkan AI dengan konteks BASI dari
+        // sebelum manusia turun tangan, seolah-olah percakapan owner tidak pernah terjadi.
+        Cache::forget('chat_history_' . $fromHash);
+
         PausedContact::pauseContact($from, $contactName, $pauseMinutes);
 
         Log::info('webhook:human-takeover', [
