@@ -51,8 +51,16 @@ return [
     ],
 
     'nvidia' => [
-        'key'   => env('NVIDIA_API_KEY', ''),
-        'model' => env('NVIDIA_MODEL', 'meta/llama-3.1-8b-instruct'),
+        'key' => env('NVIDIA_API_KEY', ''),
+        // Two DELIBERATELY separate models — do not merge them:
+        //   model            → NvidiaService, customer chat fallback provider. Must stay FAST
+        //                      (see NvidiaService's own comment on why it never reads the
+        //                      BotConfig 'nvidia_model' CMS field).
+        //   analytics_model  → ConversationAnalysisService, nightly batch analysis. Can be a
+        //                      heavy reasoning model; BotConfig's CMS field 'nvidia_model'
+        //                      overrides this at runtime and takes precedence when set.
+        'model'           => env('NVIDIA_MODEL', 'meta/llama-3.1-8b-instruct'),
+        'analytics_model' => env('NVIDIA_ANALYTICS_MODEL', 'qwen/qwen3.5-397b-a17b'),
     ],
 
 ];

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\BuildFaqDigestJob;
 use App\Models\FaqMenu;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use OpenApi\Attributes as OA;
 
 class FaqController extends Controller
@@ -113,7 +113,9 @@ class FaqController extends Controller
             'sort_order' => (FaqMenu::max('sort_order') ?? 0) + 1,
         ]);
 
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json($faq, 201);
     }
@@ -172,7 +174,9 @@ class FaqController extends Controller
         ]);
 
         $faq->update($data);
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json($faq->fresh());
     }
@@ -198,7 +202,9 @@ class FaqController extends Controller
     public function destroy(FaqMenu $faq): JsonResponse
     {
         $faq->delete();
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json(['message' => 'FAQ berhasil dihapus']);
     }
@@ -221,7 +227,9 @@ class FaqController extends Controller
     public function toggle(FaqMenu $faq): JsonResponse
     {
         $faq->update(['is_active' => !$faq->is_active]);
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json($faq->fresh());
     }
@@ -269,7 +277,9 @@ class FaqController extends Controller
             FaqMenu::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
         }
 
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json(['message' => 'Urutan berhasil diperbarui']);
     }
@@ -308,7 +318,9 @@ class FaqController extends Controller
         ]);
 
         FaqMenu::whereIn('id', $data['ids'])->update(['is_active' => $data['is_active']]);
-        Cache::forget('faq_ai_context');
+        // FAQ berubah → knowledge base bot harus di-refresh, bukan cuma cache di-drop
+        // (faq_ai_context adalah key mati, tidak pernah ditulis/dibaca di mana pun).
+        BuildFaqDigestJob::dispatch();
 
         return response()->json(['message' => 'Status FAQ diperbarui']);
     }

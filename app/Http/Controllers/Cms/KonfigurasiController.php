@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Cms;
 use App\Http\Controllers\Controller;
 use App\Models\BotConfig;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class KonfigurasiController extends Controller
 {
@@ -25,10 +24,10 @@ class KonfigurasiController extends Controller
             'openrouter_api_key'  => config('services.openrouter.key', ''),
             'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
             'nvidia_api_key'      => config('services.nvidia.key', ''),
-            // NOT config('services.nvidia.model') — that config key now holds the fast CUSTOMER-CHAT
-            // default (see NvidiaService), while this CMS field is the ANALYTICS model (heavy reasoning
-            // models), matching ConversationAnalysisService's own hardcoded default.
-            'nvidia_model'        => 'qwen/qwen3.5-397b-a17b',
+            // NOT config('services.nvidia.model') — that config key holds the fast CUSTOMER-CHAT
+            // default (see NvidiaService), while this CMS field is the ANALYTICS model, matching
+            // ConversationAnalysisService's own fallback via services.nvidia.analytics_model.
+            'nvidia_model'        => config('services.nvidia.analytics_model', 'qwen/qwen3.5-397b-a17b'),
         ];
 
         $aiModels = config('ai_models') ?? [];
@@ -68,7 +67,10 @@ class KonfigurasiController extends Controller
             }
         }
 
-        Cache::flush();
+        // BotConfig::set() already forgets each changed key's own cache entry
+        // (bot_config_{key}) — a blanket Cache::flush() here used to wipe every
+        // OTHER customer's chat history, AI circuit breakers, and response cache
+        // app-wide just because an admin saved one config field.
 
         return redirect()->route('cms.konfigurasi.index')
             ->with('success', 'Konfigurasi berhasil disimpan.');

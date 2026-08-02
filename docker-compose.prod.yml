@@ -100,7 +100,10 @@ services:
     image: minfara-bot-app
     restart: unless-stopped
     working_dir: /var/www
-    command: php artisan queue:work --queue=default --sleep=1 --tries=3 --timeout=120 --max-jobs=500
+    # --timeout HARUS lebih besar dari job timeout terbesar (ProcessAiReply::$timeout=150s) —
+    # kalau lebih kecil, worker SIGKILL job sebelum job sempat timeout & jalankan failed()
+    # sendiri, jadi customer tidak dapat balasan fallback sama sekali.
+    command: php artisan queue:work --queue=default --sleep=1 --tries=3 --timeout=200 --max-jobs=500
     environment:
       <<: *php-env
     volumes:

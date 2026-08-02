@@ -133,6 +133,13 @@ PROMPT;
                 continue;
             }
 
+            // Jawaban yang mengarahkan ke admin (wa.me/nomor WA) adalah fallback situasional,
+            // bukan pengetahuan reusable — kalau lolos jadi dynamic_knowledge permanen, bot jadi
+            // makin sering nyaranin hubungi admin alih-alih checkout mandiri di website.
+            if (preg_match('/wa\.me|hubungi admin|admin kami/i', $a)) {
+                continue;
+            }
+
             KnowledgeSuggestion::create([
                 'question'       => mb_substr($q, 0, 500),
                 'answer'         => mb_substr($a, 0, 500),

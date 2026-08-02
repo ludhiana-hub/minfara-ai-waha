@@ -60,9 +60,10 @@ PROMPT;
         // Analytics uses NVIDIA NIM only — fallback between models, never to other providers.
         $nvidia = app(NvidiaService::class);
 
-        // Primary model is configurable from CMS (Konfigurasi → NVIDIA).
-        // Fallback chain is fixed: tried in order if primary fails.
-        $primary = BotConfig::get('nvidia_model') ?: 'qwen/qwen3.5-397b-a17b';
+        // Primary model is configurable from CMS (Konfigurasi → NVIDIA), falling back to
+        // config('services.nvidia.analytics_model') — a DIFFERENT config key than the one
+        // NvidiaService uses for customer chat (services.nvidia.model), see config/services.php.
+        $primary = BotConfig::get('nvidia_model') ?: config('services.nvidia.analytics_model', 'qwen/qwen3.5-397b-a17b');
         $fallbacks = [
             'qwen/qwen3.5-122b-a10b',
             'nvidia/llama-3.3-nemotron-super-49b-v1.5',

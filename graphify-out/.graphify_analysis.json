@@ -1,0 +1,981 @@
+{
+  "communities": {
+    "0": [
+      "app_http_controllers_api_analyticscontroller",
+      "app_http_controllers_api_analyticscontroller_analyticscontroller",
+      "app_http_controllers_api_analyticscontroller_analyticscontroller_faqgaps",
+      "app_http_controllers_api_analyticscontroller_analyticscontroller_run",
+      "app_http_controllers_api_analyticscontroller_analyticscontroller_sessions",
+      "app_http_controllers_api_analyticscontroller_analyticscontroller_summary",
+      "app_http_controllers_api_botconfigcontroller",
+      "app_http_controllers_api_botconfigcontroller_botconfigcontroller",
+      "app_http_controllers_api_botconfigcontroller_botconfigcontroller_index",
+      "app_http_controllers_api_botconfigcontroller_botconfigcontroller_update",
+      "app_http_controllers_api_faqcontroller",
+      "app_http_controllers_api_faqcontroller_faqcontroller",
+      "app_http_controllers_api_faqcontroller_faqcontroller_bulktoggle",
+      "app_http_controllers_api_faqcontroller_faqcontroller_destroy",
+      "app_http_controllers_api_faqcontroller_faqcontroller_index",
+      "app_http_controllers_api_faqcontroller_faqcontroller_reorder",
+      "app_http_controllers_api_faqcontroller_faqcontroller_show",
+      "app_http_controllers_api_faqcontroller_faqcontroller_store",
+      "app_http_controllers_api_faqcontroller_faqcontroller_toggle",
+      "app_http_controllers_api_faqcontroller_faqcontroller_update",
+      "app_http_controllers_api_logcontroller",
+      "app_http_controllers_api_logcontroller_logcontroller",
+      "app_http_controllers_api_logcontroller_logcontroller_export",
+      "app_http_controllers_api_logcontroller_logcontroller_index",
+      "app_http_controllers_api_logcontroller_logcontroller_stats",
+      "app_http_controllers_api_logcontroller_logcontroller_stream",
+      "app_http_controllers_api_notificationlogcontroller",
+      "app_http_controllers_api_notificationlogcontroller_notificationlogcontroller",
+      "app_http_controllers_api_notificationlogcontroller_notificationlogcontroller_index",
+      "app_http_controllers_api_wahacontroller",
+      "app_http_controllers_api_wahacontroller_wahacontroller",
+      "app_http_controllers_api_wahacontroller_wahacontroller_cfg",
+      "app_http_controllers_api_wahacontroller_wahacontroller_reconnect",
+      "app_http_controllers_api_wahacontroller_wahacontroller_send",
+      "app_http_controllers_api_wahacontroller_wahacontroller_status",
+      "app_http_controllers_cms_analyticscontroller",
+      "app_http_controllers_cms_analyticscontroller_analyticscontroller",
+      "app_http_controllers_cms_analyticscontroller_analyticscontroller_index",
+      "app_http_controllers_cms_analyticscontroller_analyticscontroller_run",
+      "app_http_controllers_cms_logcontroller",
+      "app_http_controllers_cms_logcontroller_logcontroller",
+      "app_http_controllers_cms_logcontroller_logcontroller_clear",
+      "app_http_controllers_cms_logcontroller_logcontroller_index",
+      "app_http_controllers_cms_logcontroller_logcontroller_show",
+      "app_http_controllers_cms_notificationlogcontroller",
+      "app_http_controllers_cms_notificationlogcontroller_notificationlogcontroller",
+      "app_http_controllers_cms_notificationlogcontroller_notificationlogcontroller_index",
+      "app_http_controllers_controller",
+      "app_http_controllers_controller_controller",
+      "app_http_middleware_cmsipmiddleware",
+      "app_http_middleware_cmsipmiddleware_cmsipmiddleware",
+      "app_http_middleware_cmsipmiddleware_cmsipmiddleware_handle",
+      "app_http_middleware_internalapiauth",
+      "app_http_middleware_internalapiauth_internalapiauth",
+      "app_http_middleware_internalapiauth_internalapiauth_handle",
+      "app_models_conversationanalysis_conversationanalysis",
+      "app_models_conversationanalysis_conversationanalysis_getintentbadgeattribute",
+      "app_models_conversationanalysis_conversationanalysis_getsegmentcolorattribute",
+      "app_models_conversationanalysis_conversationanalysis_getsegmentlabelattribute",
+      "app_models_whatsapplog_whatsapplog",
+      "app_models_whatsapplog_whatsapplog_getdisplaycontactattribute",
+      "app_models_whatsapplog_whatsapplog_getdisplaynumberattribute",
+      "app_services_analyticsrunner_analyticsrunner",
+      "app_services_analyticsrunner_analyticsrunner_runfordate",
+      "app_traits_apiresponsetrait",
+      "app_traits_apiresponsetrait_error",
+      "app_traits_apiresponsetrait_paginated",
+      "app_traits_apiresponsetrait_success",
+      "closure",
+      "illuminate_http_jsonresponse",
+      "illuminate_http_request",
+      "illuminate_pagination_lengthawarepaginator",
+      "routes_api",
+      "symfony_component_httpfoundation_response",
+      "symfony_component_httpfoundation_streamedresponse"
+    ],
+    "1": [
+      "app_http_controllers_api_whatsappcontroller",
+      "app_http_controllers_cms_dashboardcontroller",
+      "app_http_controllers_cms_humantakeovercontroller",
+      "app_http_controllers_cms_knowledgesuggestioncontroller",
+      "app_http_controllers_cms_konfigurasicontroller",
+      "app_http_controllers_cms_testcontroller",
+      "app_jobs_buildfaqdigestjob",
+      "app_jobs_knowledgesynthesizerjob",
+      "app_jobs_knowledgesynthesizerjob_knowledgesynthesizerjob",
+      "app_jobs_knowledgesynthesizerjob_knowledgesynthesizerjob_handle",
+      "app_jobs_processaireply",
+      "app_jobs_reconfigurewahawebhookjob",
+      "app_jobs_reconfigurewahawebhookjob_reconfigurewahawebhookjob",
+      "app_jobs_reconfigurewahawebhookjob_reconfigurewahawebhookjob_handle",
+      "app_jobs_runanalyticsjob",
+      "app_jobs_runanalyticsjob_runanalyticsjob",
+      "app_jobs_runanalyticsjob_runanalyticsjob_construct",
+      "app_jobs_runanalyticsjob_runanalyticsjob_handle",
+      "app_jobs_sendwhatsappnotificationjob",
+      "app_jobs_sendwhatsappnotificationjob_sendwhatsappnotificationjob",
+      "app_jobs_sendwhatsappnotificationjob_sendwhatsappnotificationjob_construct",
+      "app_models_botconfig",
+      "app_models_faqmenu",
+      "app_models_pausedcontact",
+      "app_models_whatsapplog",
+      "app_providers_appserviceprovider",
+      "app_services_contracts_aiserviceinterface",
+      "app_services_contracts_aiserviceinterface_chat",
+      "app_services_geminiservice",
+      "app_services_geminiservice_geminiservice",
+      "app_services_geminiservice_geminiservice_chat",
+      "app_services_geminiservice_geminiservice_withmodel",
+      "app_services_geminiservice_php_static",
+      "app_services_groqservice",
+      "app_services_groqservice_groqservice",
+      "app_services_nvidiaservice",
+      "app_services_nvidiaservice_nvidiaservice",
+      "app_services_nvidiaservice_nvidiaservice_construct",
+      "app_services_nvidiaservice_nvidiaservice_httpclient",
+      "app_services_nvidiaservice_nvidiaservice_withtimeout",
+      "app_services_nvidiaservice_php_static",
+      "app_services_openaicompatibleservice",
+      "app_services_openaicompatibleservice_openaicompatibleservice",
+      "app_services_openaicompatibleservice_openaicompatibleservice_chat",
+      "app_services_openaicompatibleservice_openaicompatibleservice_httpclient",
+      "app_services_openaicompatibleservice_openaicompatibleservice_withmodel",
+      "app_services_openaicompatibleservice_php_static",
+      "app_services_openrouterservice",
+      "app_services_openrouterservice_openrouterservice",
+      "app_services_openrouterservice_openrouterservice_httpclient",
+      "app_services_whatsappsendthrottle",
+      "app_services_whatsappservice",
+      "artisan",
+      "config_cache",
+      "config_queue",
+      "database_migrations_2026_06_30_000003_fix_deutsch_lernen_in_bot_configs",
+      "database_migrations_2026_06_30_000003_fix_deutsch_lernen_in_bot_configs_down",
+      "database_migrations_2026_06_30_000003_fix_deutsch_lernen_in_bot_configs_up",
+      "database_migrations_2026_07_05_000001_update_checkout_cta_content",
+      "database_migrations_2026_07_05_000001_update_checkout_cta_content_down",
+      "illuminate_contracts_queue_shouldqueue",
+      "illuminate_foundation_queue_queueable",
+      "illuminate_foundation_testing_refreshdatabase",
+      "illuminate_http_client_pendingrequest",
+      "routes_console",
+      "routes_web",
+      "tests_feature_processaireplyverificationtest",
+      "tests_feature_whatsappwebhookverificationtest",
+      "tests_unit_whatsappsendthrottletest"
+    ],
+    "2": [
+      "app_http_controllers_api_whatsappcontroller_whatsappcontroller",
+      "app_http_controllers_api_whatsappcontroller_whatsappcontroller_construct",
+      "app_http_controllers_api_whatsappcontroller_whatsappcontroller_faqreply",
+      "app_http_controllers_api_whatsappcontroller_whatsappcontroller_handleownerreply",
+      "app_http_controllers_api_whatsappcontroller_whatsappcontroller_webhook",
+      "app_http_controllers_cms_dashboardcontroller_dashboardcontroller",
+      "app_http_controllers_cms_dashboardcontroller_dashboardcontroller_getwahastatus",
+      "app_http_controllers_cms_dashboardcontroller_dashboardcontroller_index",
+      "app_http_controllers_cms_dashboardcontroller_dashboardcontroller_wahastatus",
+      "app_http_controllers_cms_dashboardcontroller_php_jsonresponse",
+      "app_http_controllers_cms_humantakeovercontroller_humantakeovercontroller",
+      "app_http_controllers_cms_humantakeovercontroller_humantakeovercontroller_index",
+      "app_http_controllers_cms_humantakeovercontroller_humantakeovercontroller_manualpause",
+      "app_http_controllers_cms_humantakeovercontroller_humantakeovercontroller_resume",
+      "app_http_controllers_cms_konfigurasicontroller_konfigurasicontroller",
+      "app_http_controllers_cms_konfigurasicontroller_konfigurasicontroller_index",
+      "app_http_controllers_cms_konfigurasicontroller_konfigurasicontroller_update",
+      "app_jobs_processaireply_php_throwable",
+      "app_jobs_processaireply_processaireply",
+      "app_jobs_processaireply_processaireply_construct",
+      "app_jobs_processaireply_processaireply_failed",
+      "app_jobs_processaireply_processaireply_handle",
+      "app_jobs_processaireply_processaireply_providerhaskey",
+      "app_jobs_processaireply_processaireply_sanitizewhatsapptext",
+      "app_models_botconfig_botconfig",
+      "app_models_botconfig_botconfig_get",
+      "app_models_botconfig_botconfig_getbool",
+      "app_models_botconfig_botconfig_getfloat",
+      "app_models_botconfig_botconfig_getint",
+      "app_models_botconfig_botconfig_set",
+      "app_models_pausedcontact_pausedcontact",
+      "app_models_pausedcontact_pausedcontact_ispaused",
+      "app_models_pausedcontact_pausedcontact_pausecontact",
+      "app_providers_appserviceprovider_appserviceprovider",
+      "app_providers_appserviceprovider_appserviceprovider_boot",
+      "app_providers_appserviceprovider_appserviceprovider_register",
+      "app_services_geminiservice_geminiservice_construct",
+      "app_services_groqservice_groqservice_construct",
+      "app_services_openrouterservice_openrouterservice_construct",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_calculatedelayseconds",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_calculatevolumebonus",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_incrementsendcount",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_reservesendslot",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_resolvedelaybounds",
+      "app_services_whatsappsendthrottle_whatsappsendthrottle_waitbeforesend",
+      "illuminate_http_response",
+      "illuminate_support_serviceprovider",
+      "tests_feature_processaireplyverificationtest_php_mockinterface",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_mockwhatsapp",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_setup",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_test_all_providers_exhausted_sends_fallback_message",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_test_falls_back_to_secondary_model_on_same_provider_when_primary_model_fails",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_test_generative_ai_answers_and_faq_digest_is_grounded_in_prompt",
+      "tests_feature_processaireplyverificationtest_processaireplyverificationtest_test_human_takeover_blocks_ai_reply_entirely"
+    ],
+    "3": [
+      "composer",
+      "composer_allow_plugins_pestphp_pest_plugin",
+      "composer_allow_plugins_php_http_discovery",
+      "composer_autoload",
+      "composer_autoload_dev",
+      "composer_autoload_dev_psr_4",
+      "composer_autoload_psr_4",
+      "composer_config",
+      "composer_config_allow_plugins",
+      "composer_config_optimize_autoloader",
+      "composer_config_preferred_install",
+      "composer_config_sort_packages",
+      "composer_description",
+      "composer_extra",
+      "composer_extra_laravel",
+      "composer_keywords",
+      "composer_laravel_dont_discover",
+      "composer_license",
+      "composer_minimum_stability",
+      "composer_name",
+      "composer_prefer_stable",
+      "composer_psr_4_app",
+      "composer_psr_4_database_factories",
+      "composer_psr_4_database_seeders",
+      "composer_psr_4_tests",
+      "composer_require",
+      "composer_require_darkaonline_l5_swagger",
+      "composer_require_dev",
+      "composer_require_dev_fakerphp_faker",
+      "composer_require_dev_laravel_pail",
+      "composer_require_dev_laravel_pao",
+      "composer_require_dev_laravel_pint",
+      "composer_require_dev_mockery_mockery",
+      "composer_require_dev_nunomaduro_collision",
+      "composer_require_dev_phpunit_phpunit",
+      "composer_require_doctrine_annotations",
+      "composer_require_laravel_framework",
+      "composer_require_laravel_telescope",
+      "composer_require_laravel_tinker",
+      "composer_require_php",
+      "composer_schema",
+      "composer_type",
+      "ref_framework",
+      "ref_laravel"
+    ],
+    "4": [
+      "app_console_commands_analyseconversations",
+      "app_console_commands_analyseconversations_analyseconversations",
+      "app_console_commands_analyseconversations_analyseconversations_construct",
+      "app_console_commands_analyseconversations_analyseconversations_fallbackresult",
+      "app_console_commands_analyseconversations_analyseconversations_handle",
+      "app_console_commands_analyseconversations_analyseconversations_processdate",
+      "app_http_controllers_cms_faqsuggestioncontroller",
+      "app_http_controllers_cms_faqsuggestioncontroller_faqsuggestioncontroller",
+      "app_http_controllers_cms_faqsuggestioncontroller_faqsuggestioncontroller_approve",
+      "app_http_controllers_cms_faqsuggestioncontroller_faqsuggestioncontroller_index",
+      "app_http_controllers_cms_faqsuggestioncontroller_faqsuggestioncontroller_reject",
+      "app_jobs_faqgapaggregatorjob",
+      "app_jobs_faqgapaggregatorjob_faqgapaggregatorjob",
+      "app_jobs_faqgapaggregatorjob_faqgapaggregatorjob_construct",
+      "app_jobs_faqgapaggregatorjob_faqgapaggregatorjob_handle",
+      "app_jobs_faqgapaggregatorjob_faqgapaggregatorjob_issimilar",
+      "app_jobs_faqgapaggregatorjob_faqgapaggregatorjob_tokenize",
+      "app_models_analyticsdailysummary",
+      "app_models_analyticsdailysummary_analyticsdailysummary",
+      "app_models_conversationanalysis",
+      "app_models_conversationanalysis_conversationanalysis_scopefordate",
+      "app_models_conversationanalysis_conversationanalysis_scopeforperiod",
+      "app_models_faqmenu_faqmenu_scopeactive",
+      "app_models_faqsuggestion",
+      "app_models_faqsuggestion_faqsuggestion",
+      "app_models_faqsuggestion_faqsuggestion_scopepending",
+      "app_models_notificationtarget",
+      "app_models_notificationtarget_notificationtarget_logs",
+      "app_models_notificationtemplate",
+      "app_models_notificationtemplate_notificationtemplate_logs",
+      "app_services_analyticsrunner",
+      "app_services_conversationanalysisservice",
+      "app_services_conversationanalysisservice_conversationanalysisservice",
+      "app_services_conversationanalysisservice_conversationanalysisservice_analysesession",
+      "app_services_conversationanalysisservice_conversationanalysisservice_buildtranscript",
+      "app_services_conversationanalysisservice_conversationanalysisservice_generatedailysummary",
+      "app_services_conversationanalysisservice_conversationanalysisservice_parsejson",
+      "illuminate_database_eloquent_builder",
+      "illuminate_database_eloquent_model",
+      "illuminate_database_eloquent_relations_hasmany",
+      "illuminate_support_collection"
+    ],
+    "5": [
+      "app_http_controllers_api_internalnotificationcontroller",
+      "app_http_controllers_api_internalnotificationcontroller_internalnotificationcontroller",
+      "app_http_controllers_api_internalnotificationcontroller_internalnotificationcontroller_construct",
+      "app_http_controllers_api_internalnotificationcontroller_internalnotificationcontroller_send",
+      "app_http_controllers_api_notificationlogcontroller_notificationlogcontroller_show",
+      "app_http_controllers_cms_notificationtemplatecontroller",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_create",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_destroy",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_edit",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_index",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_store",
+      "app_http_controllers_cms_notificationtemplatecontroller_notificationtemplatecontroller_update",
+      "app_http_requests_api_internalnotifyrequest",
+      "app_http_requests_api_internalnotifyrequest_internalnotifyrequest",
+      "app_http_requests_api_internalnotifyrequest_internalnotifyrequest_authorize",
+      "app_http_requests_api_internalnotifyrequest_internalnotifyrequest_messages",
+      "app_http_requests_api_internalnotifyrequest_internalnotifyrequest_rules",
+      "app_http_requests_cms_storenotificationtemplaterequest",
+      "app_http_requests_cms_storenotificationtemplaterequest_storenotificationtemplaterequest",
+      "app_http_requests_cms_storenotificationtemplaterequest_storenotificationtemplaterequest_authorize",
+      "app_http_requests_cms_storenotificationtemplaterequest_storenotificationtemplaterequest_messages",
+      "app_http_requests_cms_storenotificationtemplaterequest_storenotificationtemplaterequest_rules",
+      "app_jobs_sendwhatsappnotificationjob_php_throwable",
+      "app_jobs_sendwhatsappnotificationjob_sendwhatsappnotificationjob_failed",
+      "app_jobs_sendwhatsappnotificationjob_sendwhatsappnotificationjob_handle",
+      "app_models_notificationlog",
+      "app_models_notificationlog_notificationlog",
+      "app_models_notificationlog_notificationlog_target",
+      "app_models_notificationlog_notificationlog_template",
+      "app_models_notificationtemplate_notificationtemplate",
+      "app_models_notificationtemplate_notificationtemplate_scopeactive",
+      "app_services_notificationtemplateservice",
+      "app_services_notificationtemplateservice_notificationtemplateservice",
+      "app_services_notificationtemplateservice_notificationtemplateservice_render",
+      "app_services_notificationtemplateservice_notificationtemplateservice_renderpreview",
+      "illuminate_database_eloquent_relations_belongsto",
+      "illuminate_foundation_http_formrequest"
+    ],
+    "6": [
+      "app_console_commands_ensurewahawebhook",
+      "app_console_commands_ensurewahawebhook_ensurewahawebhook",
+      "app_console_commands_ensurewahawebhook_ensurewahawebhook_handle",
+      "app_console_commands_swaggerservecommand",
+      "app_console_commands_swaggerservecommand_swaggerservecommand",
+      "app_console_commands_swaggerservecommand_swaggerservecommand_buildindexhtml",
+      "app_console_commands_swaggerservecommand_swaggerservecommand_ensureindexhtml",
+      "app_console_commands_swaggerservecommand_swaggerservecommand_handle",
+      "app_console_commands_wahaensuresessioncommand",
+      "app_console_commands_wahaensuresessioncommand_wahaensuresessioncommand",
+      "app_console_commands_wahaensuresessioncommand_wahaensuresessioncommand_handle",
+      "app_http_controllers_cms_testcontroller_testcontroller",
+      "app_http_controllers_cms_testcontroller_testcontroller_construct",
+      "app_http_controllers_cms_testcontroller_testcontroller_index",
+      "app_http_controllers_cms_testcontroller_testcontroller_send",
+      "app_services_whatsappservice_whatsappservice",
+      "app_services_whatsappservice_whatsappservice_buildmainmenu",
+      "app_services_whatsappservice_whatsappservice_construct",
+      "app_services_whatsappservice_whatsappservice_dopresence",
+      "app_services_whatsappservice_whatsappservice_dosend",
+      "app_services_whatsappservice_whatsappservice_hasownerrepliedrecently",
+      "app_services_whatsappservice_whatsappservice_issessionworking",
+      "app_services_whatsappservice_whatsappservice_logoutsession",
+      "app_services_whatsappservice_whatsappservice_recoversession",
+      "app_services_whatsappservice_whatsappservice_restartsession",
+      "app_services_whatsappservice_whatsappservice_sendmessage",
+      "app_services_whatsappservice_whatsappservice_sessionstatus",
+      "app_services_whatsappservice_whatsappservice_startsession",
+      "app_services_whatsappservice_whatsappservice_starttyping",
+      "app_services_whatsappservice_whatsappservice_stoptyping",
+      "illuminate_console_command"
+    ],
+    "7": [
+      "composer_scripts",
+      "composer_scripts_dev",
+      "composer_scripts_post_autoload_dump",
+      "composer_scripts_post_create_project_cmd",
+      "composer_scripts_post_root_package_install",
+      "composer_scripts_post_update_cmd",
+      "composer_scripts_pre_package_uninstall",
+      "composer_scripts_setup",
+      "composer_scripts_test",
+      "ref_composer_config_disableprocesstimeout",
+      "ref_composer_install",
+      "ref_illuminate_foundation_composerscripts_postautoloaddump",
+      "ref_illuminate_foundation_composerscripts_prepackageuninstall",
+      "ref_npm_install_ignore_scripts",
+      "ref_npm_run_build",
+      "ref_npx_concurrently_c_93c5fd_c4b5fd_fb7185_fdba74_php_artisan_serve_php_artisan_queue_listen_tries_1_timeout_0_php_artisan_pail_timeout_0_npm_run_dev_names_server_queue_logs_vite_kill_others",
+      "ref_php_artisan_config_clear_ansi_no_additional_args",
+      "ref_php_artisan_key_generate",
+      "ref_php_artisan_key_generate_ansi",
+      "ref_php_artisan_migrate_force",
+      "ref_php_artisan_migrate_graceful_ansi",
+      "ref_php_artisan_package_discover_ansi",
+      "ref_php_artisan_test",
+      "ref_php_artisan_vendor_publish_tag_laravel_assets_ansi_force",
+      "ref_php_r_file_exists_database_database_sqlite_touch_database_database_sqlite",
+      "ref_php_r_file_exists_env_copy_env_example_env"
+    ],
+    "8": [
+      "illuminate_foundation_testing_testcase",
+      "tests_feature_exampletest",
+      "tests_feature_exampletest_exampletest",
+      "tests_feature_exampletest_exampletest_test_the_application_returns_a_successful_response",
+      "tests_feature_whatsappwebhookverificationtest_php_mockinterface",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest_mockwhatsapp",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest_setup",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest_test_faq_command_answers_directly_without_dispatching_ai",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest_test_free_text_message_dispatches_generative_ai_job",
+      "tests_feature_whatsappwebhookverificationtest_whatsappwebhookverificationtest_test_owner_reply_sets_takeover_pause_for_configured_duration_and_schedules_resume",
+      "tests_testcase",
+      "tests_testcase_testcase",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_setup",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_calculate_delay_high_volume_includes_bonus_range",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_calculate_delay_low_volume_is_within_base_range",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_sequential_reservations_push_next_send_slot_forward",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_volume_bonus_applies_for_high_count",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_volume_bonus_is_zero_for_low_count_with_default_tiers",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_wait_before_send_when_disabled_does_not_write_cache",
+      "tests_unit_whatsappsendthrottletest_whatsappsendthrottletest_test_wait_before_send_when_enabled_writes_next_slot_and_count"
+    ],
+    "9": [
+      "app_models_user",
+      "app_models_user_user",
+      "app_models_user_user_casts",
+      "app_providers_telescopeserviceprovider",
+      "app_providers_telescopeserviceprovider_telescopeserviceprovider",
+      "app_providers_telescopeserviceprovider_telescopeserviceprovider_gate",
+      "app_providers_telescopeserviceprovider_telescopeserviceprovider_hidesensitiverequestdetails",
+      "app_providers_telescopeserviceprovider_telescopeserviceprovider_register",
+      "config_auth",
+      "config_telescope",
+      "database_factories_userfactory",
+      "database_factories_userfactory_php_static",
+      "database_factories_userfactory_userfactory",
+      "database_factories_userfactory_userfactory_definition",
+      "database_factories_userfactory_userfactory_unverified",
+      "illuminate_database_eloquent_factories_factory",
+      "illuminate_database_eloquent_factories_hasfactory",
+      "illuminate_foundation_auth_user",
+      "illuminate_notifications_notifiable",
+      "laravel_telescope_telescopeapplicationserviceprovider"
+    ],
+    "10": [
+      "app_http_controllers_cms_faqcontroller",
+      "app_http_controllers_cms_faqcontroller_faqcontroller",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_create",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_destroy",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_edit",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_index",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_reorder",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_store",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_toggle",
+      "app_http_controllers_cms_faqcontroller_faqcontroller_update",
+      "app_http_requests_cms_faqrequest",
+      "app_http_requests_cms_faqrequest_faqrequest",
+      "app_http_requests_cms_faqrequest_faqrequest_authorize",
+      "app_http_requests_cms_faqrequest_faqrequest_messages",
+      "app_http_requests_cms_faqrequest_faqrequest_rules",
+      "app_jobs_buildfaqdigestjob_buildfaqdigestjob",
+      "app_jobs_buildfaqdigestjob_buildfaqdigestjob_handle",
+      "app_models_faqmenu_faqmenu",
+      "database_migrations_2026_07_05_000001_update_checkout_cta_content_up"
+    ],
+    "11": [
+      "app_http_controllers_cms_notificationtargetcontroller",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_create",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_destroy",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_edit",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_index",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_store",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_toggle",
+      "app_http_controllers_cms_notificationtargetcontroller_notificationtargetcontroller_update",
+      "app_http_requests_cms_storenotificationtargetrequest",
+      "app_http_requests_cms_storenotificationtargetrequest_storenotificationtargetrequest",
+      "app_http_requests_cms_storenotificationtargetrequest_storenotificationtargetrequest_authorize",
+      "app_http_requests_cms_storenotificationtargetrequest_storenotificationtargetrequest_messages",
+      "app_http_requests_cms_storenotificationtargetrequest_storenotificationtargetrequest_rules",
+      "app_models_notificationtarget_notificationtarget",
+      "app_models_notificationtarget_notificationtarget_getmaskedphoneattribute",
+      "app_models_notificationtarget_notificationtarget_normalizephone",
+      "app_models_notificationtarget_notificationtarget_scopeactive"
+    ],
+    "12": [
+      "concurrently",
+      "laravel_vite_plugin",
+      "package",
+      "package_devdependencies",
+      "package_devdependencies_concurrently",
+      "package_devdependencies_laravel_vite_plugin",
+      "package_devdependencies_tailwindcss",
+      "package_devdependencies_tailwindcss_vite",
+      "package_devdependencies_vite",
+      "package_private",
+      "package_schema",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_type",
+      "tailwindcss",
+      "tailwindcss_vite",
+      "vite"
+    ],
+    "13": [
+      "database_seeders_botconfigseeder",
+      "database_seeders_botconfigseeder_botconfigseeder",
+      "database_seeders_botconfigseeder_botconfigseeder_run",
+      "database_seeders_databaseseeder",
+      "database_seeders_databaseseeder_databaseseeder",
+      "database_seeders_databaseseeder_databaseseeder_run",
+      "database_seeders_faqmenuseeder",
+      "database_seeders_faqmenuseeder_faqmenuseeder",
+      "database_seeders_faqmenuseeder_faqmenuseeder_run",
+      "database_seeders_notificationtemplateseeder",
+      "database_seeders_notificationtemplateseeder_notificationtemplateseeder",
+      "database_seeders_notificationtemplateseeder_notificationtemplateseeder_run",
+      "illuminate_database_console_seeds_withoutmodelevents",
+      "illuminate_database_seeder"
+    ],
+    "14": [
+      "app_http_controllers_cms_knowledgesuggestioncontroller_knowledgesuggestioncontroller",
+      "app_http_controllers_cms_knowledgesuggestioncontroller_knowledgesuggestioncontroller_approve",
+      "app_http_controllers_cms_knowledgesuggestioncontroller_knowledgesuggestioncontroller_index",
+      "app_http_controllers_cms_knowledgesuggestioncontroller_knowledgesuggestioncontroller_rebuilddynamicknowledge",
+      "app_http_controllers_cms_knowledgesuggestioncontroller_knowledgesuggestioncontroller_reject",
+      "app_models_knowledgesuggestion",
+      "app_models_knowledgesuggestion_knowledgesuggestion",
+      "app_models_knowledgesuggestion_knowledgesuggestion_scopepending"
+    ],
+    "15": [
+      "database_migrations_2026_05_12_105401_create_telescope_entries_table",
+      "database_migrations_2026_05_12_105401_create_telescope_entries_table_down",
+      "database_migrations_2026_05_12_105401_create_telescope_entries_table_getconnection",
+      "database_migrations_2026_05_12_105401_create_telescope_entries_table_up"
+    ],
+    "16": [
+      "phpunit_framework_testcase",
+      "tests_unit_exampletest",
+      "tests_unit_exampletest_exampletest",
+      "tests_unit_exampletest_exampletest_test_that_true_is_true"
+    ],
+    "17": [
+      "database_migrations_0001_01_01_000000_create_users_table",
+      "database_migrations_0001_01_01_000000_create_users_table_down",
+      "database_migrations_0001_01_01_000000_create_users_table_up"
+    ],
+    "18": [
+      "database_migrations_0001_01_01_000001_create_cache_table",
+      "database_migrations_0001_01_01_000001_create_cache_table_down",
+      "database_migrations_0001_01_01_000001_create_cache_table_up"
+    ],
+    "19": [
+      "database_migrations_0001_01_01_000002_create_jobs_table",
+      "database_migrations_0001_01_01_000002_create_jobs_table_down",
+      "database_migrations_0001_01_01_000002_create_jobs_table_up"
+    ],
+    "20": [
+      "database_migrations_2026_05_09_000001_create_faq_menus_table",
+      "database_migrations_2026_05_09_000001_create_faq_menus_table_down",
+      "database_migrations_2026_05_09_000001_create_faq_menus_table_up"
+    ],
+    "21": [
+      "database_migrations_2026_05_09_000002_create_whatsapp_logs_table",
+      "database_migrations_2026_05_09_000002_create_whatsapp_logs_table_down",
+      "database_migrations_2026_05_09_000002_create_whatsapp_logs_table_up"
+    ],
+    "22": [
+      "database_migrations_2026_05_09_000003_add_indexes_to_whatsapp_logs",
+      "database_migrations_2026_05_09_000003_add_indexes_to_whatsapp_logs_down",
+      "database_migrations_2026_05_09_000003_add_indexes_to_whatsapp_logs_up"
+    ],
+    "23": [
+      "database_migrations_2026_05_10_000000_add_end_chat_mode_to_whatsapp_logs",
+      "database_migrations_2026_05_10_000000_add_end_chat_mode_to_whatsapp_logs_down",
+      "database_migrations_2026_05_10_000000_add_end_chat_mode_to_whatsapp_logs_up"
+    ],
+    "24": [
+      "database_migrations_2026_05_10_000001_create_bot_configs_table",
+      "database_migrations_2026_05_10_000001_create_bot_configs_table_down",
+      "database_migrations_2026_05_10_000001_create_bot_configs_table_up"
+    ],
+    "25": [
+      "database_migrations_2026_05_10_000002_add_password_type_to_bot_configs",
+      "database_migrations_2026_05_10_000002_add_password_type_to_bot_configs_down",
+      "database_migrations_2026_05_10_000002_add_password_type_to_bot_configs_up"
+    ],
+    "26": [
+      "database_migrations_2026_05_10_000003_add_contact_info_to_whatsapp_logs",
+      "database_migrations_2026_05_10_000003_add_contact_info_to_whatsapp_logs_down",
+      "database_migrations_2026_05_10_000003_add_contact_info_to_whatsapp_logs_up"
+    ],
+    "27": [
+      "database_migrations_2026_06_12_000001_create_notification_templates_table",
+      "database_migrations_2026_06_12_000001_create_notification_templates_table_down",
+      "database_migrations_2026_06_12_000001_create_notification_templates_table_up"
+    ],
+    "28": [
+      "database_migrations_2026_06_12_000002_create_notification_targets_table",
+      "database_migrations_2026_06_12_000002_create_notification_targets_table_down",
+      "database_migrations_2026_06_12_000002_create_notification_targets_table_up"
+    ],
+    "29": [
+      "database_migrations_2026_06_12_000003_create_notification_logs_table",
+      "database_migrations_2026_06_12_000003_create_notification_logs_table_down",
+      "database_migrations_2026_06_12_000003_create_notification_logs_table_up"
+    ],
+    "30": [
+      "database_migrations_2026_06_13_000001_create_conversation_analyses_table",
+      "database_migrations_2026_06_13_000001_create_conversation_analyses_table_down",
+      "database_migrations_2026_06_13_000001_create_conversation_analyses_table_up"
+    ],
+    "31": [
+      "database_migrations_2026_06_13_000002_create_analytics_daily_summaries_table",
+      "database_migrations_2026_06_13_000002_create_analytics_daily_summaries_table_down",
+      "database_migrations_2026_06_13_000002_create_analytics_daily_summaries_table_up"
+    ],
+    "32": [
+      "database_migrations_2026_06_17_044330_fix_bot_configs_label_default",
+      "database_migrations_2026_06_17_044330_fix_bot_configs_label_default_down",
+      "database_migrations_2026_06_17_044330_fix_bot_configs_label_default_up"
+    ],
+    "33": [
+      "database_migrations_2026_06_20_000001_rename_cms_url_to_product_url_in_notification_templates",
+      "database_migrations_2026_06_20_000001_rename_cms_url_to_product_url_in_notification_templates_down",
+      "database_migrations_2026_06_20_000001_rename_cms_url_to_product_url_in_notification_templates_up"
+    ],
+    "34": [
+      "database_migrations_2026_06_21_000001_add_email_variable_to_notification_templates",
+      "database_migrations_2026_06_21_000001_add_email_variable_to_notification_templates_down",
+      "database_migrations_2026_06_21_000001_add_email_variable_to_notification_templates_up"
+    ],
+    "35": [
+      "database_migrations_2026_06_30_000001_create_paused_contacts_table",
+      "database_migrations_2026_06_30_000001_create_paused_contacts_table_down",
+      "database_migrations_2026_06_30_000001_create_paused_contacts_table_up"
+    ],
+    "36": [
+      "database_migrations_2026_06_30_000002_create_faq_suggestions_table",
+      "database_migrations_2026_06_30_000002_create_faq_suggestions_table_down",
+      "database_migrations_2026_06_30_000002_create_faq_suggestions_table_up"
+    ],
+    "37": [
+      "database_migrations_2026_07_02_000001_create_knowledge_suggestions_table",
+      "database_migrations_2026_07_02_000001_create_knowledge_suggestions_table_down",
+      "database_migrations_2026_07_02_000001_create_knowledge_suggestions_table_up"
+    ],
+    "38": [
+      "docker_entrypoint",
+      "docker_entrypoint_sh__entry"
+    ],
+    "39": [
+      "bootstrap_app"
+    ],
+    "40": [
+      "bootstrap_providers"
+    ],
+    "41": [
+      "config_ai_models"
+    ],
+    "42": [
+      "config_app"
+    ],
+    "43": [
+      "config_cors"
+    ],
+    "44": [
+      "config_database"
+    ],
+    "45": [
+      "config_filesystems"
+    ],
+    "46": [
+      "config_l5_swagger"
+    ],
+    "47": [
+      "config_logging"
+    ],
+    "48": [
+      "config_mail"
+    ],
+    "49": [
+      "config_services"
+    ],
+    "50": [
+      "config_session"
+    ],
+    "51": [
+      "config_whatsapp"
+    ],
+    "52": [
+      "public_index"
+    ],
+    "53": [
+      "resources_js_app"
+    ],
+    "54": [
+      "resources_views_cms_analytics_dashboard_blade"
+    ],
+    "55": [
+      "resources_views_cms_dashboard_blade"
+    ],
+    "56": [
+      "resources_views_cms_faq_form_blade"
+    ],
+    "57": [
+      "resources_views_cms_faq_index_blade"
+    ],
+    "58": [
+      "resources_views_cms_faq_suggestions_index_blade"
+    ],
+    "59": [
+      "resources_views_cms_human_takeover_index_blade"
+    ],
+    "60": [
+      "resources_views_cms_knowledge_suggestions_index_blade"
+    ],
+    "61": [
+      "resources_views_cms_konfigurasi_index_blade"
+    ],
+    "62": [
+      "resources_views_cms_layouts_app_blade"
+    ],
+    "63": [
+      "resources_views_cms_log_index_blade"
+    ],
+    "64": [
+      "resources_views_cms_log_show_blade"
+    ],
+    "65": [
+      "resources_views_cms_notification_logs_index_blade"
+    ],
+    "66": [
+      "resources_views_cms_notification_targets_form_blade"
+    ],
+    "67": [
+      "resources_views_cms_notification_targets_index_blade"
+    ],
+    "68": [
+      "resources_views_cms_notification_templates_form_blade"
+    ],
+    "69": [
+      "resources_views_cms_notification_templates_index_blade"
+    ],
+    "70": [
+      "resources_views_cms_test_index_blade"
+    ],
+    "71": [
+      "resources_views_vendor_l5_swagger_index_blade"
+    ],
+    "72": [
+      "resources_views_welcome_blade"
+    ],
+    "73": [
+      "vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.06198198198198198,
+    "1": 0.06308610400682012,
+    "2": 0.05714285714285714,
+    "3": 0.045454545454545456,
+    "4": 0.07682926829268293,
+    "5": 0.08108108108108109,
+    "6": 0.0967741935483871,
+    "7": 0.08,
+    "8": 0.10822510822510822,
+    "9": 0.13157894736842105,
+    "10": 0.2046783625730994,
+    "11": 0.16993464052287582,
+    "12": 0.1111111111111111,
+    "13": 0.1978021978021978,
+    "14": 0.39285714285714285,
+    "15": 0.8333333333333334,
+    "16": 0.6666666666666666,
+    "17": 0.6666666666666666,
+    "18": 0.6666666666666666,
+    "19": 0.6666666666666666,
+    "20": 0.6666666666666666,
+    "21": 0.6666666666666666,
+    "22": 0.6666666666666666,
+    "23": 0.6666666666666666,
+    "24": 0.6666666666666666,
+    "25": 0.6666666666666666,
+    "26": 0.6666666666666666,
+    "27": 0.6666666666666666,
+    "28": 0.6666666666666666,
+    "29": 0.6666666666666666,
+    "30": 0.6666666666666666,
+    "31": 0.6666666666666666,
+    "32": 0.6666666666666666,
+    "33": 0.6666666666666666,
+    "34": 0.6666666666666666,
+    "35": 0.6666666666666666,
+    "36": 0.6666666666666666,
+    "37": 0.6666666666666666,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0
+  },
+  "gods": [
+    {
+      "id": "app_http_controllers_controller_controller",
+      "label": "Controller",
+      "degree": 41
+    },
+    {
+      "id": "app_models_botconfig_botconfig",
+      "label": "BotConfig",
+      "degree": 40
+    },
+    {
+      "id": "app_models_faqmenu_faqmenu",
+      "label": "FaqMenu",
+      "degree": 32
+    },
+    {
+      "id": "app_services_whatsappservice_whatsappservice",
+      "label": "WhatsAppService",
+      "degree": 30
+    },
+    {
+      "id": "app_models_whatsapplog_whatsapplog",
+      "label": "WhatsappLog",
+      "degree": 19
+    },
+    {
+      "id": "app_models_conversationanalysis_conversationanalysis",
+      "label": "ConversationAnalysis",
+      "degree": 16
+    },
+    {
+      "id": "app_models_notificationtemplate_notificationtemplate",
+      "label": "NotificationTemplate",
+      "degree": 16
+    },
+    {
+      "id": "app_models_notificationtarget_notificationtarget",
+      "label": "NotificationTarget",
+      "degree": 15
+    },
+    {
+      "id": "app_jobs_processaireply_processaireply",
+      "label": "ProcessAiReply",
+      "degree": 14
+    },
+    {
+      "id": "app_models_pausedcontact_pausedcontact",
+      "label": "PausedContact",
+      "degree": 11
+    }
+  ],
+  "surprises": [
+    {
+      "source": "up()",
+      "target": "BotConfig",
+      "source_files": [
+        "database/migrations/2026_07_05_000001_update_checkout_cta_content.php",
+        "app/Models/BotConfig.php"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "up()",
+      "target": "BuildFaqDigestJob",
+      "source_files": [
+        "database/migrations/2026_07_05_000001_update_checkout_cta_content.php",
+        "app/Jobs/BuildFaqDigestJob.php"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "up()",
+      "target": "FaqMenu",
+      "source_files": [
+        "database/migrations/2026_07_05_000001_update_checkout_cta_content.php",
+        "app/Models/FaqMenu.php"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "InternalNotificationController",
+      "target": "Controller",
+      "source_files": [
+        "app/Http/Controllers/Api/InternalNotificationController.php",
+        "app/Http/Controllers/Controller.php"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "inherits",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "WhatsAppController",
+      "target": "Controller",
+      "source_files": [
+        "app/Http/Controllers/Api/WhatsAppController.php",
+        "app/Http/Controllers/Controller.php"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "inherits",
+      "why": "bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `BotConfig` connect `Community 2` to `Community 0`, `Community 1`, `Community 4`, `Community 5`, `Community 6`, `Community 8`, `Community 10`, `Community 13`, `Community 14`?",
+      "why": "High betweenness centrality (0.078) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Controller` connect `Community 0` to `Community 1`, `Community 2`, `Community 4`, `Community 5`, `Community 6`, `Community 10`, `Community 11`, `Community 14`?",
+      "why": "High betweenness centrality (0.050) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `WhatsAppService` connect `Community 6` to `Community 0`, `Community 1`, `Community 2`, `Community 5`?",
+      "why": "High betweenness centrality (0.040) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 33 inferred relationships involving `BotConfig` (e.g. with `.handle()` and `.index()`) actually correct?",
+      "why": "`BotConfig` has 33 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 8 inferred relationships involving `FaqMenu` (e.g. with `.index()` and `.index()`) actually correct?",
+      "why": "`FaqMenu` has 8 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `$schema`, `name`, `type` to the rest of the system?",
+      "why": "59 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.06198198198198198 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

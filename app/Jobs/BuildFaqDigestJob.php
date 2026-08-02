@@ -62,7 +62,6 @@ class BuildFaqDigestJob implements ShouldQueue
         );
 
         Cache::forget('bot_config_faq_digest');
-        Cache::forget('faq_ai_context');
 
         Log::info('BuildFaqDigestJob: done', ['chars' => mb_strlen($digest), 'entries' => count($lines) - 2]);
     }

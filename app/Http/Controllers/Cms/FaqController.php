@@ -7,7 +7,6 @@ use App\Http\Requests\Cms\FaqRequest;
 use App\Jobs\BuildFaqDigestJob;
 use App\Models\FaqMenu;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class FaqController extends Controller
 {
@@ -55,7 +54,6 @@ class FaqController extends Controller
             'is_active'      => $request->has('is_active'),
         ]);
 
-        Cache::forget('faq_ai_context');
         BuildFaqDigestJob::dispatch();
 
         return redirect()->route('cms.faq.index')
@@ -82,7 +80,6 @@ class FaqController extends Controller
             'is_active'      => $request->has('is_active'),
         ]);
 
-        Cache::forget('faq_ai_context');
         BuildFaqDigestJob::dispatch();
 
         return redirect()->route('cms.faq.index')
@@ -92,7 +89,6 @@ class FaqController extends Controller
     public function destroy(FaqMenu $faq)
     {
         $faq->delete();
-        Cache::forget('faq_ai_context');
         BuildFaqDigestJob::dispatch();
         return response()->json(['success' => true, 'message' => 'Menu FAQ berhasil dihapus.']);
     }
@@ -100,7 +96,6 @@ class FaqController extends Controller
     public function toggle(FaqMenu $faq)
     {
         $faq->update(['is_active' => !$faq->is_active]);
-        Cache::forget('faq_ai_context');
         BuildFaqDigestJob::dispatch();
         return response()->json([
             'success'   => true,
