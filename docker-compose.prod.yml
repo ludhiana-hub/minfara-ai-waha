@@ -137,6 +137,7 @@ services:
 
   waha:
     image: devlikeapro/waha
+    pull_policy: always
     restart: unless-stopped
     expose:
       - "3000"

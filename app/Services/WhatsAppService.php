@@ -297,9 +297,9 @@ class WhatsAppService
 
     /**
      * Pulihkan sesi berdasarkan status saat ini.
-     * FAILED/STARTING → restart; STOPPED → start; streak tinggi + FAILED → logout lalu start.
+     * FAILED/STARTING → restart; STOPPED → start.
      */
-    public function recoverSession(bool $forceLogout = false): bool
+    public function recoverSession(): bool
     {
         $status = $this->sessionStatus();
 
@@ -311,13 +311,6 @@ class WhatsAppService
 
         if ($status === 'SCAN_QR_CODE') {
             return false;
-        }
-
-        if ($forceLogout) {
-            $this->logoutSession();
-            sleep(3);
-
-            return $this->startSession();
         }
 
         if ($status === 'STOPPED') {

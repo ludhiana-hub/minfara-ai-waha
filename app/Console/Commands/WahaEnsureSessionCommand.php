@@ -49,18 +49,17 @@ class WahaEnsureSessionCommand extends Command
             return self::SUCCESS;
         }
 
-        // FAILED berulang: restart biasa tidak cukup — logout lalu start ulang (mungkin perlu scan QR).
-        $forceLogout = $status === 'FAILED' && $streak >= 5;
-
+        // Logout paksa dimatikan: session credentials tersimpan di volume waha_data dan biasanya
+        // pulih sendiri lewat restart biasa. Logout otomatis justru menghancurkan sesi valid yang
+        // sedang FAILED sementara (mis. gangguan jaringan), memaksa scan QR ulang tanpa perlu.
         Log::warning('waha:ensure-session — session not WORKING, attempting recovery', [
-            'status'       => $status,
-            'streak'       => $streak,
-            'force_logout' => $forceLogout,
+            'status' => $status,
+            'streak' => $streak,
         ]);
-        $action = $forceLogout ? 'logout + start' : ($status === 'STOPPED' ? 'start' : 'restart');
+        $action = $status === 'STOPPED' ? 'start' : 'restart';
         $this->warn("Session status: {$status} — triggering {$action}...");
 
-        if ($whatsapp->recoverSession($forceLogout)) {
+        if ($whatsapp->recoverSession()) {
             Log::info('waha:ensure-session — session recovery triggered successfully', [
                 'action' => $action,
             ]);

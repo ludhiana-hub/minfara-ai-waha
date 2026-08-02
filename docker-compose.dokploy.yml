@@ -141,6 +141,7 @@ services:
 
   waha:
     image: devlikeapro/waha
+    pull_policy: always
     restart: unless-stopped
     ports:
       - "3001:3000"
