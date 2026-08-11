@@ -91,7 +91,7 @@ class KnowledgeSuggestionController extends Controller
 
         BotConfig::updateOrCreate(
             ['key' => 'sales_coaching_notes'],
-            ['key' => 'sales_coaching_notes', 'value' => mb_substr($notes, 0, 1500), 'type' => 'textarea', 'label' => 'Catatan Coaching Sales (Auto-generated)', 'group' => 'ai']
+            ['key' => 'sales_coaching_notes', 'value' => mb_substr($notes, 0, 2500), 'type' => 'textarea', 'label' => 'Catatan Coaching Sales (Auto-generated)', 'group' => 'ai']
         );
 
         Cache::forget('bot_config_sales_coaching_notes');

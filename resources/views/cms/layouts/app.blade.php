@@ -90,7 +90,7 @@
             </a>
             <a href="{{ route('cms.faq-suggestions.index') }}" class="nav-link {{ request()->routeIs('cms.faq-suggestions.*') ? 'active' : '' }}">
                 <i class="bi bi-lightbulb"></i> Saran FAQ
-                @php $pendingSuggestions = \App\Models\FaqSuggestion::where('status','pending')->where('high_priority', true)->count(); @endphp
+                @php $pendingSuggestions = \App\Models\FaqSuggestion::where('status','pending')->count(); @endphp
                 @if($pendingSuggestions > 0)
                     <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingSuggestions }}</span>
                 @endif
@@ -101,6 +101,9 @@
                 @if($pendingKnowledge > 0)
                     <span class="badge bg-danger ms-auto" style="font-size:.65rem">{{ $pendingKnowledge }}</span>
                 @endif
+            </a>
+            <a href="{{ route('cms.training-materials.index') }}" class="nav-link {{ request()->routeIs('cms.training-materials.*') ? 'active' : '' }}">
+                <i class="bi bi-journal-plus"></i> Materi Latihan
             </a>
             <a href="{{ route('cms.human-takeover.index') }}" class="nav-link {{ request()->routeIs('cms.human-takeover.*') ? 'active' : '' }}">
                 <i class="bi bi-person-raised-hand"></i> Jeda Percakapan

@@ -61,7 +61,8 @@ class BuildFaqDigestJob implements ShouldQueue
         if ($coaching) {
             $lines[] = '';
             $lines[] = '=== CATATAN GAYA & TEKNIK SALES ===';
-            $lines[] = mb_substr($coaching, 0, 1500);
+            $lines[] = '(Catatan: ini panduan teknik, BUKAN skrip wajib. Tetap ikuti format & batas panjang balasan WA di system prompt utama — jawaban singkat untuk pertanyaan singkat, jangan otomatis dibuat panjang.)';
+            $lines[] = mb_substr($coaching, 0, 2500);
             $lines[] = '=== END CATATAN GAYA & TEKNIK SALES ===';
         }
 

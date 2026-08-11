@@ -13,6 +13,7 @@ use App\Http\Controllers\Cms\NotificationLogController;
 use App\Http\Controllers\Cms\NotificationTargetController;
 use App\Http\Controllers\Cms\NotificationTemplateController;
 use App\Http\Controllers\Cms\TestController;
+use App\Http\Controllers\Cms\TrainingMaterialController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -70,6 +71,12 @@ Route::prefix('cms-minfara')->name('cms.')->middleware(['localhost', 'auth'])->g
     Route::get('knowledge-suggestions',                             [KnowledgeSuggestionController::class, 'index'])->name('knowledge-suggestions.index');
     Route::patch('knowledge-suggestions/{knowledgeSuggestion}/approve', [KnowledgeSuggestionController::class, 'approve'])->name('knowledge-suggestions.approve');
     Route::patch('knowledge-suggestions/{knowledgeSuggestion}/reject',  [KnowledgeSuggestionController::class, 'reject'])->name('knowledge-suggestions.reject');
+
+    // ── Training Materials ───────────────────────────────────────────────────
+    Route::get('training-materials',                          [TrainingMaterialController::class, 'index'])->name('training-materials.index');
+    Route::post('training-materials',                          [TrainingMaterialController::class, 'store'])->name('training-materials.store');
+    Route::patch('training-materials/{trainingMaterial}/toggle', [TrainingMaterialController::class, 'toggle'])->name('training-materials.toggle');
+    Route::delete('training-materials/{trainingMaterial}',      [TrainingMaterialController::class, 'destroy'])->name('training-materials.destroy');
 
     // ── Human Takeover ────────────────────────────────────────────────────────
     Route::get('human-takeover',                    [HumanTakeoverController::class, 'index'])->name('human-takeover.index');
