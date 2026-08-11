@@ -104,7 +104,8 @@ PROMPT;
             ['key' => 'nvidia_model',         'value' => 'qwen/qwen3.5-397b-a17b',                         'type' => 'text',     'label' => 'NVIDIA NIM Model (Analytics)',      'description' => 'Model NVIDIA NIM utama untuk analitik percakapan', 'group' => 'api'],
             ['key' => 'human_takeover_minutes','value' => '10',                                               'type' => 'number',   'label' => 'Durasi Human Takeover (menit)',     'description' => 'Berapa menit bot diam setelah owner balas manual dari WA', 'group' => 'general'],
             ['key' => 'faq_digest',            'value' => '',                                                 'type' => 'textarea', 'label' => 'FAQ Digest (Auto-generated)',       'description' => 'Dibangun otomatis dari FAQ aktif. Jangan edit manual.', 'group' => 'ai'],
-            ['key' => 'dynamic_knowledge',     'value' => '',                                                 'type' => 'textarea', 'label' => 'Dynamic Knowledge (Auto-generated)','description' => 'Dibangun mingguan dari percakapan sukses. Jangan edit manual.', 'group' => 'ai'],
+            ['key' => 'dynamic_knowledge',     'value' => '',                                                 'type' => 'textarea', 'label' => 'Dynamic Knowledge (Auto-generated)','description' => 'Dibangun harian dari percakapan sukses. Jangan edit manual.', 'group' => 'ai'],
+            ['key' => 'sales_coaching_notes',   'value' => '',                                                 'type' => 'textarea', 'label' => 'Catatan Coaching Sales (Auto-generated)','description' => 'Dibangun harian dari review admin atas saran coaching. Jangan edit manual.', 'group' => 'ai'],
         ];
 
         // Key yang selalu di-update agar perubahan seeder langsung berlaku di production

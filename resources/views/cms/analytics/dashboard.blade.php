@@ -428,7 +428,7 @@
         {{-- Phase 1 — Processing --}}
         <div id="phaseProcessing">
             <h5 class="fw-bold mb-1">AI Sedang Menganalisis</h5>
-            <p class="text-muted mb-0" style="font-size:.83rem">Sedang menganalisis percakapan — mohon tunggu</p>
+            <p class="text-muted mb-0" style="font-size:.83rem">Sedang menganalisis percakapan mohon tunggu</p>
             <div class="ai-progress"><div class="ai-progress-fill" id="loaderBar"></div></div>
             <p class="fw-semibold mb-2" style="color:#0d6efd;font-size:.9rem" id="loaderMsg">Memulai analisis...</p>
             <div class="thinking-dots"><span></span><span></span><span></span></div>

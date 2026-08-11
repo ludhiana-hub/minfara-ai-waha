@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="mb-1 fw-bold">Saran Pengetahuan Otomatis</h4>
-        <p class="text-muted small mb-0">Q&A hasil ekstraksi AI dari percakapan sukses minggu ini. Review dulu sebelum masuk ke knowledge base bot.</p>
+        <p class="text-muted small mb-0">Q&A pengetahuan & rekomendasi coaching sales hasil analisis AI dari percakapan kemarin. Review dulu sebelum masuk ke bot.</p>
     </div>
     <div class="d-flex gap-2">
         <span class="badge bg-warning text-dark fs-6">{{ $pendingCount }} pending</span>
@@ -25,6 +25,11 @@
                 <option value="rejected" {{ request('status')==='rejected'?'selected':'' }}>Ditolak</option>
                 <option value="all" {{ request('status')==='all'?'selected':'' }}>Semua</option>
             </select>
+            <select name="type" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="all" {{ request('type','all')==='all'?'selected':'' }}>Semua Tipe</option>
+                <option value="knowledge" {{ request('type')==='knowledge'?'selected':'' }}>Pengetahuan</option>
+                <option value="coaching" {{ request('type')==='coaching'?'selected':'' }}>Coaching Sales</option>
+            </select>
         </form>
     </div>
 </div>
@@ -33,8 +38,8 @@
 <div class="card">
     <div class="card-body text-center py-5 text-muted">
         <i class="bi bi-book-half fs-1 mb-3 d-block opacity-25"></i>
-        <div>Belum ada saran pengetahuan untuk status ini.</div>
-        <small>Saran akan muncul setelah job sintesis pengetahuan mingguan berjalan (tiap Senin pukul 03:00).</small>
+        <div>Belum ada saran untuk status/tipe ini.</div>
+        <small>Saran akan muncul setelah job sintesis harian berjalan (tiap hari pukul 03:00).</small>
     </div>
 </div>
 @else
@@ -45,8 +50,9 @@
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
-                        <th>Pertanyaan</th>
-                        <th>Jawaban</th>
+                        <th>Tipe</th>
+                        <th>Pertanyaan / Temuan</th>
+                        <th>Jawaban / Rekomendasi</th>
                         <th>Sumber</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -56,8 +62,27 @@
                     @foreach($suggestions as $item)
                     <tr>
                         <td class="text-muted">{{ $item->id }}</td>
-                        <td style="max-width:280px">{{ $item->question }}</td>
-                        <td style="max-width:320px">{{ $item->answer }}</td>
+                        <td>
+                            @if($item->type === 'coaching')
+                                <span class="badge bg-info text-dark">Coaching Sales</span>
+                            @else
+                                <span class="badge bg-primary">Pengetahuan</span>
+                            @endif
+                        </td>
+                        <td style="max-width:280px">
+                            @if($item->status === 'pending')
+                                <textarea class="form-control form-control-sm field-question" rows="2">{{ $item->question }}</textarea>
+                            @else
+                                {{ $item->question }}
+                            @endif
+                        </td>
+                        <td style="max-width:320px">
+                            @if($item->status === 'pending')
+                                <textarea class="form-control form-control-sm field-answer" rows="2">{{ $item->answer }}</textarea>
+                            @else
+                                {{ $item->answer }}
+                            @endif
+                        </td>
                         <td class="text-muted small" style="max-width:220px">
                             @if($item->period_start || $item->period_end)
                                 <div>{{ $item->period_start?->format('d/m') }}&ndash;{{ $item->period_end?->format('d/m') }}</div>
@@ -84,7 +109,7 @@
                             @if($item->status === 'pending')
                                 <button class="btn btn-sm btn-primary btn-approve"
                                         data-id="{{ $item->id }}"
-                                        title="Setujui dan tambahkan ke knowledge base">
+                                        title="Setujui (simpan editan bila ada) dan tambahkan ke bot">
                                     <i class="bi bi-check-lg me-1"></i>Setujui
                                 </button>
                                 <button class="btn btn-sm btn-outline-secondary btn-reject"
@@ -113,15 +138,19 @@
 <script>
 document.querySelectorAll('.btn-approve').forEach(btn => {
     btn.addEventListener('click', async function () {
-        if (!confirm('Setujui saran ini? Akan langsung ditambahkan ke knowledge base bot.')) return;
+        if (!confirm('Setujui saran ini? Akan langsung ditambahkan ke bot.')) return;
         const id  = this.dataset.id;
+        const row = this.closest('tr');
+        const question = row.querySelector('.field-question')?.value ?? '';
+        const answer   = row.querySelector('.field-answer')?.value ?? '';
         const res = await fetch(`/cms-minfara/knowledge-suggestions/${id}/approve`, {
             method: 'PATCH',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, answer })
         });
         const data = await res.json();
         if (data.success) {
-            this.closest('tr').remove();
+            row.remove();
             showToast(data.message);
         }
     });
@@ -129,7 +158,7 @@ document.querySelectorAll('.btn-approve').forEach(btn => {
 
 document.querySelectorAll('.btn-reject').forEach(btn => {
     btn.addEventListener('click', async function () {
-        if (!confirm('Tolak saran pengetahuan ini?')) return;
+        if (!confirm('Tolak saran ini?')) return;
         const id  = this.dataset.id;
         const res = await fetch(`/cms-minfara/knowledge-suggestions/${id}/reject`, {
             method: 'PATCH',

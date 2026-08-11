@@ -45,7 +45,7 @@ class BuildFaqDigestJob implements ShouldQueue
             $totalLen += mb_strlen($snippet);
         }
 
-        // Append dynamic knowledge snippets from successful conversations (weekly synthesized)
+        // Append dynamic knowledge snippets from successful conversations (daily synthesized)
         $dynamic = BotConfig::get('dynamic_knowledge', '');
         if ($dynamic) {
             $lines[] = '';
@@ -53,8 +53,19 @@ class BuildFaqDigestJob implements ShouldQueue
             $lines[] = mb_substr($dynamic, 0, 2000);
         }
 
-        $lines[]  = '=== END KNOWLEDGE BASE ===';
-        $digest   = implode("\n", $lines);
+        $lines[] = '=== END KNOWLEDGE BASE ===';
+
+        // Catatan coaching sales (gaya/teknik) — dipisah dari blok KNOWLEDGE BASE di atas
+        // supaya jelas ini instruksi cara penyampaian, bukan fakta produk.
+        $coaching = BotConfig::get('sales_coaching_notes', '');
+        if ($coaching) {
+            $lines[] = '';
+            $lines[] = '=== CATATAN GAYA & TEKNIK SALES ===';
+            $lines[] = mb_substr($coaching, 0, 1500);
+            $lines[] = '=== END CATATAN GAYA & TEKNIK SALES ===';
+        }
+
+        $digest = implode("\n", $lines);
 
         BotConfig::updateOrCreate(
             ['key' => 'faq_digest'],

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class KnowledgeSuggestion extends Model
 {
-    protected $fillable = ['question', 'answer', 'example_phones', 'period_start', 'period_end', 'status'];
+    protected $fillable = ['question', 'answer', 'type', 'example_phones', 'period_start', 'period_end', 'status'];
 
     protected $casts = [
         'example_phones' => 'array',

@@ -16,9 +16,10 @@ Schedule::command('waha:ensure-session')->everyMinute();
 // Memproses percakapan kemarin — klasifikasi topik, sentiment, perilaku customer
 Schedule::command('analytics:analyse')->dailyAt('02:00');
 
-// Sintesis knowledge dari percakapan sukses — setiap Senin pukul 03:00
-// Mengekstrak Q&A terbaik dari percakapan minggu lalu → update dynamic_knowledge
-Schedule::job(new KnowledgeSynthesizerJob())->weeklyOn(1, '03:00');
+// Sintesis knowledge & coaching sales dari percakapan kemarin — setiap hari pukul 03:00
+// (1 jam setelah analytics:analyse selesai). Mengekstrak Q&A dari percakapan sukses
+// + rekomendasi coaching dari percakapan objector/minat rendah → saran pending untuk direview admin.
+Schedule::job(new KnowledgeSynthesizerJob())->dailyAt('03:00');
 
 // Buang baris ai_request_traces lama — hot path chat sudah minim tulisan (mode on_retry),
 // tapi profil batch/eval nulis 'always', jadi tetap perlu retensi.
