@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="mb-1 fw-bold">Materi Latihan AI Sales Agent</h4>
-        <p class="text-muted small mb-0">Tempel materi tambahan (export chat admin manual, riset kompetitor, referensi teknik sales) — dibaca otomatis oleh job sintesis harian sebagai konteks tambahan, di luar log percakapan WA.</p>
+        <p class="text-muted small mb-0">Tempel teks atau upload dokumen (export chat admin manual, riset kompetitor, referensi teknik sales) — dibaca otomatis oleh job sintesis harian sebagai konteks tambahan, di luar log percakapan WA.</p>
     </div>
     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
         <i class="bi bi-plus-lg me-1"></i>Tambah Materi
@@ -57,7 +57,12 @@
                     @foreach($materials as $item)
                     <tr>
                         <td class="text-muted">{{ $item->id }}</td>
-                        <td style="max-width:200px">{{ $item->title }}</td>
+                        <td style="max-width:200px">
+                            {{ $item->title }}
+                            @if($item->original_filename)
+                                <div class="text-muted small"><i class="bi bi-paperclip"></i> {{ $item->original_filename }}</div>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge bg-secondary">
                                 @switch($item->category)
@@ -100,7 +105,7 @@
 <div class="modal fade" id="addMaterialModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" action="{{ route('cms.training-materials.store') }}">
+            <form method="POST" action="{{ route('cms.training-materials.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Materi Latihan</h5>
@@ -108,8 +113,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Judul</label>
-                        <input type="text" name="title" class="form-control" required maxlength="255">
+                        <label class="form-label">Judul <span class="text-muted small">(opsional kalau upload file — default pakai nama file)</span></label>
+                        <input type="text" name="title" class="form-control" maxlength="255">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori</label>
@@ -121,8 +126,13 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Isi Materi</label>
-                        <textarea name="content" class="form-control" rows="10" required placeholder="Tempel isi export chat, catatan riset kompetitor, atau referensi teknik sales di sini..."></textarea>
+                        <label class="form-label">Upload File <span class="text-muted small">(boleh pilih beberapa sekaligus — PDF, DOCX, TXT, CSV, atau gambar/screenshot)</span></label>
+                        <input type="file" name="files[]" class="form-control" multiple accept=".pdf,.docx,.txt,.csv,.jpg,.jpeg,.png,.webp">
+                        <small class="text-muted">Maks 10MB per file. Isi teks otomatis diekstrak (gambar lewat OCR) — tiap file jadi 1 materi terpisah.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Atau Tempel Teks Langsung</label>
+                        <textarea name="content" class="form-control" rows="8" placeholder="Kalau tidak upload file, tempel isi export chat, catatan riset kompetitor, atau referensi teknik sales di sini..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Catatan Sumber (opsional)</label>
