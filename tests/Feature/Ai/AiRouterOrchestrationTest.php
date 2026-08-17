@@ -41,9 +41,9 @@ class AiRouterOrchestrationTest extends TestCase
             $model = $request->data()['model'] ?? null;
 
             return match ($model) {
-                'primary-model' => Http::response(['error' => ['message' => 'decommissioned']], 400),
-                'gemma2-9b-it'  => Http::response(['choices' => [['message' => ['content' => 'ok']]], 'usage' => ['total_tokens' => 5]], 200),
-                default         => Http::response(['error' => ['message' => 'unexpected model']], 500),
+                'primary-model'      => Http::response(['error' => ['message' => 'decommissioned']], 400),
+                'openai/gpt-oss-20b' => Http::response(['choices' => [['message' => ['content' => 'ok']]], 'usage' => ['total_tokens' => 5]], 200),
+                default              => Http::response(['error' => ['message' => 'unexpected model']], 500),
             };
         });
 
@@ -51,7 +51,7 @@ class AiRouterOrchestrationTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSame('groq', $result->provider);
-        $this->assertSame('gemma2-9b-it', $result->model);
+        $this->assertSame('openai/gpt-oss-20b', $result->model);
         $this->assertSame(2, $result->attempts);
         Http::assertSentCount(2);
     }
@@ -92,7 +92,9 @@ class AiRouterOrchestrationTest extends TestCase
         }
 
         // groq (3 models) + gemini (2 models) + openrouter (1) + nvidia (1) = 7 possible
-        // attempts, but MAX_TOTAL_ATTEMPTS (chat default) = 6 — the 7th must never fire.
+        // attempts — pin the cap locally to 6 (independent of whatever production's default
+        // is) so this test keeps exercising the cap-stops-mid-chain mechanism itself.
+        config(['ai_profiles.defaults.max_total_attempts' => 6]);
         Http::fake(fn () => Http::response(['error' => ['message' => 'down']], 500));
 
         $result = $this->router()->run(AiRequest::make('chat', 'hi'));
@@ -160,6 +162,9 @@ class AiRouterOrchestrationTest extends TestCase
             BotConfig::set("{$p}_api_key", 'k');
         }
 
+        // Pin the cap locally to 6 (independent of production's default) — see the sibling
+        // test above for why.
+        config(['ai_profiles.defaults.max_total_attempts' => 6]);
         Http::fake(fn () => Http::response(['error' => ['message' => 'down']], 500));
 
         $result = $this->router()->run(AiRequest::make('chat', 'hi'));
@@ -247,5 +252,33 @@ class AiRouterOrchestrationTest extends TestCase
         $this->assertSame('gemini', $result->provider);
         $this->assertSame(['ok' => true], $result->json);
         $this->assertSame('json_parse_failed', $result->attemptLog['openrouter'][array_key_first($result->attemptLog['openrouter'])]);
+    }
+
+    public function test_reasoning_effort_is_sent_only_for_gpt_oss_models(): void
+    {
+        BotConfig::set('ai_provider_order', 'groq');
+        BotConfig::set('groq_api_key', 'k');
+        BotConfig::set('groq_model', 'openai/gpt-oss-120b');
+
+        $payloads = [];
+        Http::fake(function ($request) use (&$payloads) {
+            $payloads[] = $request->data();
+            $model = $request->data()['model'] ?? null;
+
+            return match ($model) {
+                'openai/gpt-oss-120b'      => Http::response(['error' => ['message' => 'decommissioned']], 400),
+                'openai/gpt-oss-20b'       => Http::response(['error' => ['message' => 'decommissioned']], 400),
+                'llama-3.3-70b-versatile'  => Http::response(['choices' => [['message' => ['content' => 'ok']]], 'usage' => ['total_tokens' => 5]], 200),
+                default                    => Http::response(['error' => ['message' => 'unexpected model']], 500),
+            };
+        });
+
+        $this->router()->run(AiRequest::make('chat', 'hi'));
+
+        $this->assertCount(3, $payloads);
+        $this->assertArrayHasKey('reasoning_effort', $payloads[0]);
+        $this->assertSame('none', $payloads[0]['reasoning_effort']);
+        $this->assertArrayHasKey('reasoning_effort', $payloads[1]);
+        $this->assertArrayNotHasKey('reasoning_effort', $payloads[2]);
     }
 }

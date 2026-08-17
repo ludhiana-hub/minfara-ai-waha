@@ -21,8 +21,11 @@ class GroqProvider extends OpenAiCompatibleProvider
         return BotConfig::get('groq_api_key') ?: (config('services.groq.key') ?? '');
     }
 
-    protected function extraPayload(): array
+    protected function extraPayload(string $model): array
     {
-        return ['reasoning_effort' => 'none'];
+        // reasoning_effort only applies to Groq's reasoning-capable gpt-oss family — sending it
+        // to a non-gpt-oss fallback (e.g. llama-3.3-70b-versatile) risks a spurious 400 that's
+        // indistinguishable in logs from a genuine decommission error, burning an attempt.
+        return str_starts_with($model, 'openai/gpt-oss') ? ['reasoning_effort' => 'none'] : [];
     }
 }

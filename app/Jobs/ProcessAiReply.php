@@ -8,6 +8,7 @@ use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\Ai\AiRequest;
 use App\Services\Ai\AiRouter;
+use App\Services\Ai\Support\MessageComplexity;
 use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -20,7 +21,11 @@ class ProcessAiReply implements ShouldQueue
 
     public int $tries   = 2;
     public int $backoff = 10;
-    public int $timeout = 150;
+    public int $timeout = 175;
+
+    private const SHORT_REPLY_MAX_TOKENS = 220;
+    private const SHORT_REPLY_HINT = 'CATATAN UNTUK PESAN INI: pertanyaan singkat/faktual — balas SANGAT ringkas (1-3 baris), langsung ke inti, tanpa basa-basi atau penjelasan tambahan yang tidak diminta.';
+    private const LONG_REPLY_HINT  = 'CATATAN UNTUK PESAN INI: pertanyaan ini butuh penjelasan lebih detail — boleh sedikit lebih lengkap dari batas normal (tetap dalam batas token yang tersedia), tapi tetap terstruktur dan jangan bertele-tele.';
 
     public function __construct(
         private readonly string  $chatId,
@@ -80,7 +85,7 @@ class ProcessAiReply implements ShouldQueue
             }
 
             $systemPrompt = BotConfig::get('ai_system_prompt', '');
-            $maxTokens    = BotConfig::getInt('ai_max_tokens', 1024);
+            $maxTokens    = BotConfig::getInt('ai_max_tokens', 500);
             $temperature  = BotConfig::getFloat('ai_temperature', 0.7);
 
             $aiInput = mb_substr($this->userMessage, 0, 600);
@@ -89,6 +94,18 @@ class ProcessAiReply implements ShouldQueue
             $faqDigest = BotConfig::get('faq_digest', '');
             if ($faqDigest) {
                 $systemPrompt .= "\n\n" . $faqDigest;
+            }
+
+            // Per-message complexity heuristic (cheap, no extra AI call) — right-sizes
+            // max_tokens + adds a one-off instruction for THIS turn only. Ambiguous/default
+            // messages fall through unchanged, so this can only make a reply cheaper, never
+            // worse, than before.
+            $complexity = MessageComplexity::classify($aiInput);
+            if ($complexity === MessageComplexity::SHORT) {
+                $maxTokens = min($maxTokens, self::SHORT_REPLY_MAX_TOKENS);
+                $systemPrompt .= "\n\n" . self::SHORT_REPLY_HINT;
+            } elseif ($complexity === MessageComplexity::LONG) {
+                $systemPrompt .= "\n\n" . self::LONG_REPLY_HINT;
             }
 
             $historyKey = 'chat_history_' . md5($this->from);

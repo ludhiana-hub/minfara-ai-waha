@@ -74,16 +74,18 @@ class ProcessAiReplyVerificationTest extends TestCase
             ->with(\Mockery::any(), 'Balasan dari model cadangan')
             ->andReturn(true);
 
+        BotConfig::set('groq_model', 'openai/gpt-oss-120b');
+
         Http::fake(function ($request) {
             $model = $request->data()['model'] ?? null;
 
-            // Primary model (qwen/qwen3-32b, the config default) fails with a terminal (non-timeout) error.
-            if ($model === 'qwen/qwen3-32b') {
+            // Primary model (openai/gpt-oss-120b, the BotConfig value) fails with a terminal (non-timeout) error.
+            if ($model === 'openai/gpt-oss-120b') {
                 return Http::response(['error' => ['message' => 'model decommissioned']], 400);
             }
 
             // First fallback model in FALLBACK_MODELS['groq'] succeeds.
-            if ($model === 'gemma2-9b-it') {
+            if ($model === 'openai/gpt-oss-20b') {
                 return Http::response([
                     'choices' => [['message' => ['content' => 'Balasan dari model cadangan']]],
                     'usage'   => ['total_tokens' => 10],
@@ -131,5 +133,43 @@ class ProcessAiReplyVerificationTest extends TestCase
         ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'halo', 'Budi', '127.0.0.1');
 
         $this->assertStringContainsString('FALLBACK_MESSAGE_MARKER', $sentReply);
+    }
+
+    public function test_short_message_gets_reduced_max_tokens(): void
+    {
+        BotConfig::set('ai_max_tokens', '500');
+        $this->mockWhatsapp()->shouldReceive('sendMessage')->once()->andReturn(true);
+
+        $sentMaxTokens = null;
+        Http::fake(function ($request) use (&$sentMaxTokens) {
+            $sentMaxTokens = $request->data()['max_tokens'] ?? null;
+            return Http::response(['choices' => [['message' => ['content' => 'ok']]], 'usage' => ['total_tokens' => 3]], 200);
+        });
+
+        ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'harga?', 'Budi', '127.0.0.1');
+
+        $this->assertSame(220, $sentMaxTokens);
+    }
+
+    public function test_long_detailed_message_keeps_full_max_tokens(): void
+    {
+        BotConfig::set('ai_max_tokens', '500');
+        $this->mockWhatsapp()->shouldReceive('sendMessage')->once()->andReturn(true);
+
+        $sentMaxTokens = null;
+        Http::fake(function ($request) use (&$sentMaxTokens) {
+            $sentMaxTokens = $request->data()['max_tokens'] ?? null;
+            return Http::response(['choices' => [['message' => ['content' => 'ok']]], 'usage' => ['total_tokens' => 3]], 200);
+        });
+
+        ProcessAiReply::dispatchSync(
+            '6281234567890@c.us',
+            '6281234567890',
+            'jelaskan detail perbedaan paket Lifetime sama bulanan dong, kenapa lifetime lebih baik?',
+            'Budi',
+            '127.0.0.1'
+        );
+
+        $this->assertSame(500, $sentMaxTokens);
     }
 }

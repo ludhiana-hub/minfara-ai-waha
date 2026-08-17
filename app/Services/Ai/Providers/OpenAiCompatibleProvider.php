@@ -23,7 +23,7 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
 
     abstract protected function apiKey(): string;
 
-    protected function extraPayload(): array
+    protected function extraPayload(string $model): array
     {
         return [];
     }
@@ -54,7 +54,7 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
             'messages'    => $call->messages,
             'max_tokens'  => $call->maxTokens,
             'temperature' => $call->temperature,
-        ], $this->extraPayload());
+        ], $this->extraPayload($call->model));
 
         if ($call->jsonMode) {
             $payload['response_format'] = ['type' => 'json_object'];

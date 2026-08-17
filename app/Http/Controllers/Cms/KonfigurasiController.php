@@ -20,7 +20,7 @@ class KonfigurasiController extends Controller
             'gemini_api_key'      => config('services.gemini.key', ''),
             'gemini_model'        => config('services.gemini.model', 'gemini-2.0-flash'),
             'groq_api_key'        => config('services.groq.key', ''),
-            'groq_model'          => config('services.groq.model', 'llama-3.3-70b-versatile'),
+            'groq_model'          => config('services.groq.model', 'openai/gpt-oss-120b'),
             'openrouter_api_key'  => config('services.openrouter.key', ''),
             'openrouter_model'    => config('services.openrouter.model', 'deepseek/deepseek-chat-v3-0324:free'),
             'nvidia_api_key'      => config('services.nvidia.key', ''),

@@ -16,7 +16,11 @@
 return [
 
     'defaults' => [
-        'max_total_attempts' => 6,
+        // Chat's default_order sums to exactly 6 distinct model attempts (groq 3 + gemini 2 +
+        // openrouter 1). 8 gives 2 full retry-slots of slack so a single "Connection timeout"
+        // retry doesn't starve the last provider in the chain of ever being tried. See
+        // ProcessAiReply::$timeout (8 attempts x 20s timeout = 160s worst case + headroom).
+        'max_total_attempts' => 8,
         'cooldown_seconds'   => 300,
         'timeout'            => 20,
         'retry_on'           => ['Connection timeout'],
@@ -36,7 +40,9 @@ return [
             'order_config_key' => 'ai_provider_order',
             'default_order'    => ['groq', 'gemini', 'openrouter'],
             'primary_model'    => [
-                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'llama-3.3-70b-versatile'],
+                // Groq decommissioned qwen/qwen3-32b (2026-07-17), gemma2-9b-it (2025-10-08),
+                // and llama-3.1-8b-instant (2026-08-16) — see openai/gpt-oss-* chain below.
+                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'openai/gpt-oss-120b'],
                 'gemini'     => ['bot_config' => 'gemini_model',     'config' => 'services.gemini.model',     'default' => 'gemini-2.0-flash'],
                 'openrouter' => ['bot_config' => 'openrouter_model', 'config' => 'services.openrouter.model', 'default' => 'openrouter/free'],
                 // Deliberately NOT BotConfig 'nvidia_model' — that key is reserved for the
@@ -44,7 +50,7 @@ return [
                 'nvidia'     => ['bot_config' => null,               'config' => 'services.nvidia.model',     'default' => 'meta/llama-3.1-8b-instruct'],
             ],
             'fallback_models' => [
-                'groq'       => ['gemma2-9b-it', 'llama-3.1-8b-instant'],
+                'groq'       => ['openai/gpt-oss-20b', 'llama-3.3-70b-versatile'],
                 'gemini'     => ['gemini-1.5-flash-8b'],
                 'openrouter' => [], // openrouter/free already routes across ~24+ free models internally
                 'nvidia'     => [],
@@ -72,12 +78,12 @@ return [
             'order_config_key' => 'ai_provider_order_synthesis',
             'default_order'    => ['groq', 'gemini', 'openrouter'],
             'primary_model'    => [
-                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'llama-3.3-70b-versatile'],
+                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'openai/gpt-oss-120b'],
                 'gemini'     => ['bot_config' => 'gemini_model',     'config' => 'services.gemini.model',     'default' => 'gemini-2.0-flash'],
                 'openrouter' => ['bot_config' => 'openrouter_model', 'config' => 'services.openrouter.model', 'default' => 'openrouter/free'],
             ],
             'fallback_models' => [
-                'groq'       => ['gemma2-9b-it', 'llama-3.1-8b-instant'],
+                'groq'       => ['openai/gpt-oss-20b', 'llama-3.3-70b-versatile'],
                 'gemini'     => ['gemini-1.5-flash-8b'],
                 'openrouter' => [],
             ],
@@ -107,7 +113,7 @@ return [
             'order_config_key' => 'ai_provider_order',
             'default_order'    => ['groq', 'gemini', 'openrouter'],
             'primary_model'    => [
-                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'llama-3.3-70b-versatile'],
+                'groq'       => ['bot_config' => 'groq_model',       'config' => 'services.groq.model',       'default' => 'openai/gpt-oss-120b'],
                 'gemini'     => ['bot_config' => 'gemini_model',     'config' => 'services.gemini.model',     'default' => 'gemini-2.0-flash'],
                 'openrouter' => ['bot_config' => 'openrouter_model', 'config' => 'services.openrouter.model', 'default' => 'openrouter/free'],
             ],

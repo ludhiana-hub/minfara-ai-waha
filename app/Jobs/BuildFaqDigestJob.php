@@ -19,7 +19,7 @@ class BuildFaqDigestJob implements ShouldQueue
     public function handle(): void
     {
         $perItemCap = 300;
-        $totalCap   = 4000;
+        $totalCap   = 2800;
         $lines      = ['=== KNOWLEDGE BASE ==='];
         $totalLen   = 0;
 
@@ -50,7 +50,7 @@ class BuildFaqDigestJob implements ShouldQueue
         if ($dynamic) {
             $lines[] = '';
             $lines[] = '=== PENGETAHUAN TAMBAHAN ===';
-            $lines[] = mb_substr($dynamic, 0, 2000);
+            $lines[] = mb_substr($dynamic, 0, 1200);
         }
 
         $lines[] = '=== END KNOWLEDGE BASE ===';
@@ -62,7 +62,7 @@ class BuildFaqDigestJob implements ShouldQueue
             $lines[] = '';
             $lines[] = '=== CATATAN GAYA & TEKNIK SALES ===';
             $lines[] = '(Catatan: ini panduan teknik, BUKAN skrip wajib. Tetap ikuti format & batas panjang balasan WA di system prompt utama — jawaban singkat untuk pertanyaan singkat, jangan otomatis dibuat panjang.)';
-            $lines[] = mb_substr($coaching, 0, 2500);
+            $lines[] = mb_substr($coaching, 0, 1500);
             $lines[] = '=== END CATATAN GAYA & TEKNIK SALES ===';
         }
 

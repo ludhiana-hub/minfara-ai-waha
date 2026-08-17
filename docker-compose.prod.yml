@@ -31,7 +31,7 @@ x-php-env: &php-env
   INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
   CMS_BASE_URL: "${CMS_BASE_URL:-http://187.77.116.47:8080/cms-minfara}"
   GROQ_API_KEY: "${GROQ_API_KEY:-}"
-  GROQ_MODEL: "${GROQ_MODEL:-qwen/qwen3-32b}"
+  GROQ_MODEL: "${GROQ_MODEL:-openai/gpt-oss-120b}"
   OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
   OPENROUTER_MODEL: "${OPENROUTER_MODEL:-deepseek/deepseek-v4-flash:free}"
   GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
@@ -100,7 +100,7 @@ services:
     image: minfara-bot-app
     restart: unless-stopped
     working_dir: /var/www
-    # --timeout HARUS lebih besar dari job timeout terbesar (ProcessAiReply::$timeout=150s) —
+    # --timeout HARUS lebih besar dari job timeout terbesar (ProcessAiReply::$timeout=175s) —
     # kalau lebih kecil, worker SIGKILL job sebelum job sempat timeout & jalankan failed()
     # sendiri, jadi customer tidak dapat balasan fallback sama sekali.
     command: php artisan queue:work --queue=default --sleep=1 --tries=3 --timeout=200 --max-jobs=500
@@ -166,6 +166,32 @@ services:
       - "traefik.http.services.waha.loadbalancer.server.port=3000"
       # SSE fix: flush response langsung tanpa buffer — wajib untuk WAHA dashboard
       - "traefik.http.services.waha.loadbalancer.responseforwarding.flushinterval=-1ms"
+
+  # Adminer — akses database MySQL production lewat browser. WAJIB dilindungi HTTP Basic
+  # Auth (via Traefik middleware) karena ini akses mentah ke database, bukan cuma app.
+  #
+  # Setup:
+  #   1. Generate hash password: docker run --rm httpd:alpine htpasswd -nbB admin 'PASSWORD_KUAT_ANDA'
+  #      (output contoh: admin:$2y$05$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+  #   2. Set ADMINER_BASIC_AUTH_USER dan ADMINER_BASIC_AUTH_HASH di environment Coolify
+  #      (ADMINER_BASIC_AUTH_HASH = bagian setelah "admin:" di output langkah 1)
+  #   3. Assign domain untuk service "adminer" ini di Coolify UI (sama seperti app/nginx)
+  #   4. Jangan skip langkah 1-2 — tanpa basic auth, siapa pun yang tahu domainnya bisa akses DB.
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - minfara-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.adminer-auth.basicauth.users=${ADMINER_BASIC_AUTH_USER:-admin}:${ADMINER_BASIC_AUTH_HASH:?ADMINER_BASIC_AUTH_HASH belum di-set — lihat komentar di atas}"
+      - "traefik.http.routers.adminer.middlewares=adminer-auth"
 
 volumes:
   mysql_data:

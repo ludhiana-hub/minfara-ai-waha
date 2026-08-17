@@ -21,7 +21,7 @@ class LogController extends Controller
         parameters: [
             new OA\Parameter(name: 'mode', in: 'query', required: false,
                 description: 'Filter berdasarkan mode respons bot',
-                schema: new OA\Schema(type: 'string', enum: ['all', 'ai', 'faq', 'end_chat', 'error'])),
+                schema: new OA\Schema(type: 'string', enum: ['all', 'ai', 'faq', 'end_chat', 'error', 'human_takeover'])),
             new OA\Parameter(name: 'search', in: 'query', required: false,
                 description: 'Cari berdasarkan nomor WA, nama kontak, atau pesan masuk',
                 schema: new OA\Schema(type: 'string')),
@@ -201,7 +201,7 @@ class LogController extends Controller
         tags: ['Log'],
         parameters: [
             new OA\Parameter(name: 'mode', in: 'query', required: false,
-                schema: new OA\Schema(type: 'string', enum: ['all', 'ai', 'faq', 'end_chat', 'error'])),
+                schema: new OA\Schema(type: 'string', enum: ['all', 'ai', 'faq', 'end_chat', 'error', 'human_takeover'])),
             new OA\Parameter(name: 'search', in: 'query', required: false,
                 schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'date_from', in: 'query', required: false,

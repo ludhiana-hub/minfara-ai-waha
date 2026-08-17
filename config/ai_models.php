@@ -10,11 +10,12 @@
 return [
 
     'groq' => [
-        ['id' => 'qwen/qwen3-32b',          'label' => 'Qwen3 32B',               'desc' => 'Cepat, multilingual ID+DE — direkomendasikan'],
+        // qwen/qwen3-32b (2026-07-17), gemma2-9b-it (2025-10-08), and llama-3.1-8b-instant
+        // (2026-08-16) were removed here — all decommissioned by Groq.
+        ['id' => 'openai/gpt-oss-120b',     'label' => 'GPT OSS 120B',            'desc' => 'OpenAI open-weight, ~500 tok/s — direkomendasikan'],
+        ['id' => 'openai/gpt-oss-20b',      'label' => 'GPT OSS 20B',             'desc' => 'OpenAI open-weight, lebih cepat & lebih murah dari 120B'],
         ['id' => 'llama-3.3-70b-versatile', 'label' => 'Llama 3.3 70B Versatile', 'desc' => 'Meta, sangat capable, versatile'],
-        ['id' => 'llama-3.1-8b-instant',    'label' => 'Llama 3.1 8B Instant',    'desc' => 'Meta, super cepat, ringan'],
         ['id' => 'qwen/qwen3-8b',           'label' => 'Qwen3 8B',                'desc' => 'Alibaba, ringan dan cepat'],
-        ['id' => 'gemma2-9b-it',            'label' => 'Gemma 2 9B',              'desc' => 'Google, cepat dan ringan'],
         ['id' => 'mixtral-8x7b-32768',      'label' => 'Mixtral 8x7B 32K',        'desc' => 'Mistral MoE, konteks panjang 32K token'],
     ],
 

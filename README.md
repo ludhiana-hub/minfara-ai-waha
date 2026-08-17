@@ -1,3 +1,15 @@
+## Local Development — Database Admin (Adminer)
+
+Browse the local MySQL database in a web UI:
+
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
+
+Then open http://localhost:8081 — see comments in [`docker-compose.local.yml`](docker-compose.local.yml) for login values.
+
+Adminer is also available in production/staging (`docker-compose.prod.yml` / `docker-compose.dokploy.yml`), protected by a required HTTP Basic Auth layer in front of Traefik — see the `adminer` service comments in those files for the one-time setup (`ADMINER_BASIC_AUTH_USER` / `ADMINER_BASIC_AUTH_HASH`). The service refuses to start until those are set.
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
