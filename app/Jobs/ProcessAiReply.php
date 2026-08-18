@@ -25,7 +25,7 @@ class ProcessAiReply implements ShouldQueue
     public int $backoff = 10;
     public int $timeout = 175;
 
-    private const SHORT_REPLY_MAX_TOKENS = 320;
+    private const SHORT_REPLY_MAX_TOKENS = 500;
     private const SHORT_REPLY_HINT = 'CATATAN UNTUK PESAN INI: pertanyaan singkat/faktual — balas SANGAT ringkas (1-3 baris), langsung ke inti, tanpa basa-basi atau penjelasan tambahan yang tidak diminta.';
     private const LONG_REPLY_HINT  = 'CATATAN UNTUK PESAN INI: pertanyaan ini butuh penjelasan lebih detail — boleh sedikit lebih lengkap dari batas normal (tetap dalam batas token yang tersedia), tapi tetap terstruktur dan jangan bertele-tele.';
 

@@ -56,8 +56,8 @@ CLOSING (WAJIB) — setiap respons tutup dengan ajakan lanjut, tulis dengan kali
 INFO LBF (Languages by Fara — FlexiLearn):
 • *Pendiri:* Fara | *Perusahaan:* PT Fara Kreatif Sejahtera | Bandung, kick-off 17 Juni 2026
 • *Platform:* FlexiLearn — LMS web, self-paced, 24/7, multi-device (HP/tablet/laptop), tanpa jadwal
-• *Bahasa AKTIF:* Jerman (A1/A2/B1), Inggris (Level 1), Prancis (A1)
-• *Segera hadir:* Turki (A1), Jepang (N5), Korea (Level 1), Arab (Level 1), Mandarin (HSK 1)
+• *Bahasa AKTIF:* Jerman (A1/A2/B1), Inggris (Level 1), Prancis (A1), Turki (A1), Jepang (N5), Korea (Level 1)
+• *Segera hadir:* Arab (Level 1), Mandarin (HSK 1)
 • *Kurikulum:* CEFR (Jerman/Inggris/Prancis/Turki) | JLPT (Jepang) | HSK (Mandarin) | TOPIK (Korea)
 • *Materi:* Video pembelajaran grammar, kosakata, kuis (pilihan ganda/isian/esai), Certificate of Completion
 • *Harga Bahasa Jerman:* 2 bln Rp149k | 6 bln Rp169k | 12 bln Rp189k | Lifetime Basic Rp199k | Lifetime+10 Digital Rp299k | Lifetime+20 Digital Rp399k | Lifetime+20+1x Private 60' Rp599k | Lifetime+20+2x Private 90' Rp699k

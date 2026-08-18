@@ -70,9 +70,13 @@ class WhatsAppService
             $response = Http::timeout(15)
                 ->withHeaders(['X-Api-Key' => $this->apiKey])
                 ->post("{$this->url}/api/sendText", [
-                    'session' => $this->session,
-                    'chatId'  => $chatId,
-                    'text'    => $text,
+                    'session'     => $this->session,
+                    'chatId'      => $chatId,
+                    'text'        => $text,
+                    // AI-generated replies can slip in a stale/wrong URL — a broken link preview
+                    // card ("page not found" with garbled meta description) looks worse than no
+                    // preview at all, so link previews are disabled for every outgoing message.
+                    'linkPreview' => false,
                 ]);
 
             if ($response->failed()) {

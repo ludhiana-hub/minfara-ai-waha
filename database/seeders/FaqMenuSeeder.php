@@ -340,7 +340,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '1.27',
                 'title'          => 'Apakah semua bahasa sudah tersedia sekarang?',
-                'content'        => "Saat ini yang tersedia saat launching adalah:\n- Bahasa Jerman (A1, A2, B1)\n- Bahasa Inggris (Level A1)\n- Bahasa Prancis (A1)\n\nSedangkan program berikut masih dalam tahap pengembangan dan akan segera hadir:\n- Bahasa Turki (A1)\n- Bahasa Jepang (N5)\n- Bahasa Korea (Level 1)\n- Bahasa Arab (Level 1)\n- Bahasa Mandarin (HSK 1)\n\nStay tuned ya kak!\n{$f1}",
+                'content'        => "Saat ini yang sudah tersedia adalah:\n- Bahasa Jerman (A1, A2, B1)\n- Bahasa Inggris (Level A1)\n- Bahasa Prancis (A1)\n- Bahasa Turki (A1)\n- Bahasa Jepang (N5)\n- Bahasa Korea (Level 1)\n\nSedangkan program berikut masih dalam tahap pengembangan dan akan segera hadir:\n- Bahasa Arab (Level 1)\n- Bahasa Mandarin (HSK 1)\n\nStay tuned ya kak!\n{$f1}",
                 'parent_command' => '1',
                 'is_active'      => true,
                 'sort_order'     => 127,
@@ -1035,7 +1035,7 @@ class FaqMenuSeeder extends Seeder
             [
                 'command'        => '6.9',
                 'title'          => 'Apa saja bahasa yang tersedia di Languages by Fara?',
-                'content'        => "Saat ini Languages by Fara mengembangkan pembelajaran untuk:\n- Bahasa Jerman\n- Bahasa Inggris\n- Bahasa Prancis\n- Bahasa Turki\n- Bahasa Jepang\n- Bahasa Korea\n- Bahasa Arab\n- Bahasa Mandarin\n\nProgram akan terus dikembangkan secara bertahap sesuai kebutuhan pembelajar\n{$f6}",
+                'content'        => "Saat ini Languages by Fara sudah menyediakan pembelajaran untuk:\n- Bahasa Jerman\n- Bahasa Inggris\n- Bahasa Prancis\n- Bahasa Turki\n- Bahasa Jepang\n- Bahasa Korea\n\nSedangkan Bahasa Arab dan Bahasa Mandarin masih dalam tahap pengembangan dan akan segera hadir\n{$f6}",
                 'parent_command' => '6',
                 'is_active'      => true,
                 'sort_order'     => 609,
