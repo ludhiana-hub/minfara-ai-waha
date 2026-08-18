@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RebuildKnowledgeIndexJob;
 use App\Models\TrainingMaterial;
 use App\Services\DocumentExtractionService;
 use Illuminate\Http\Request;
@@ -79,6 +80,10 @@ class TrainingMaterialController extends Controller
             $created++;
         }
 
+        if ($created > 0) {
+            RebuildKnowledgeIndexJob::dispatch();
+        }
+
         $message = "{$created} materi latihan ditambahkan.";
         if (!empty($errors)) {
             $message .= ' Gagal: ' . implode(' | ', $errors);
@@ -91,6 +96,7 @@ class TrainingMaterialController extends Controller
     public function toggle(TrainingMaterial $trainingMaterial)
     {
         $trainingMaterial->update(['is_active' => !$trainingMaterial->is_active]);
+        RebuildKnowledgeIndexJob::dispatch();
 
         return response()->json(['success' => true, 'is_active' => $trainingMaterial->is_active]);
     }
@@ -102,6 +108,7 @@ class TrainingMaterialController extends Controller
         }
 
         $trainingMaterial->delete();
+        RebuildKnowledgeIndexJob::dispatch();
 
         return redirect()->route('cms.training-materials.index')->with('success', 'Materi latihan dihapus.');
     }

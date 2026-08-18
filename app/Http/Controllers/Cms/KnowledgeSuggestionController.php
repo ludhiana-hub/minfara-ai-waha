@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\BuildFaqDigestJob;
+use App\Jobs\RebuildKnowledgeIndexJob;
 use App\Models\BotConfig;
 use App\Models\KnowledgeSuggestion;
 use Illuminate\Http\Request;
@@ -48,6 +49,7 @@ class KnowledgeSuggestionController extends Controller
             $message = 'Coaching disetujui dan ditambahkan ke catatan gaya & teknik sales bot.';
         } else {
             $this->rebuildDynamicKnowledge();
+            RebuildKnowledgeIndexJob::dispatch();
             $message = 'Pengetahuan disetujui dan ditambahkan ke knowledge base.';
         }
 

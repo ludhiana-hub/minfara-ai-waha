@@ -8,6 +8,7 @@ use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\Ai\AiRequest;
 use App\Services\Ai\AiRouter;
+use App\Services\Ai\KnowledgeRetrievalService;
 use App\Services\Ai\Support\ErrorNormalizer;
 use App\Services\Ai\Support\MessageComplexity;
 use App\Services\WhatsAppService;
@@ -91,10 +92,24 @@ class ProcessAiReply implements ShouldQueue
 
             $aiInput = mb_substr($this->userMessage, 0, 600);
 
-            // Inject pre-computed FAQ digest — built by BuildFaqDigestJob, always up-to-date
-            $faqDigest = BotConfig::get('faq_digest', '');
-            if ($faqDigest) {
-                $systemPrompt .= "\n\n" . $faqDigest;
+            // RAG: inject only the top-K knowledge chunks relevant to THIS question,
+            // instead of the full static digest — saves tokens for the actual answer and
+            // scales as the knowledge base grows. Falls back to the full faq_digest
+            // (pre-computed by BuildFaqDigestJob) whenever embeddings are unavailable or
+            // the index is empty, so the bot never regresses below today's behavior.
+            $factsBlock = app(KnowledgeRetrievalService::class)->retrieve($aiInput);
+            if ($factsBlock === '') {
+                $factsBlock = BotConfig::get('faq_digest', '');
+            }
+            if ($factsBlock) {
+                $systemPrompt .= "\n\n" . $factsBlock;
+            }
+
+            // Sales coaching notes apply to every reply regardless of topic — always
+            // appended in full (small, style/technique guidance, not a retrievable fact).
+            $coachingNotes = BotConfig::get('sales_coaching_notes', '');
+            if ($coachingNotes) {
+                $systemPrompt .= "\n\n=== CATATAN GAYA & TEKNIK SALES ===\n" . $coachingNotes;
             }
 
             // Per-message complexity heuristic (cheap, no extra AI call) — right-sizes

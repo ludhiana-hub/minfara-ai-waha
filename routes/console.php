@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\KnowledgeSynthesizerJob;
+use App\Jobs\RebuildKnowledgeIndexJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -20,6 +21,10 @@ Schedule::command('analytics:analyse')->dailyAt('02:00');
 // (1 jam setelah analytics:analyse selesai). Mengekstrak Q&A dari percakapan sukses
 // + rekomendasi coaching dari percakapan objector/minat rendah → saran pending untuk direview admin.
 Schedule::job(new KnowledgeSynthesizerJob())->dailyAt('03:00');
+
+// Jaring pengaman: rebuild index embedding knowledge_chunks tiap malam, jaga-jaga kalau
+// ada drift dari perubahan yang gak lewat CMS (misal seed manual di DB).
+Schedule::job(new RebuildKnowledgeIndexJob())->dailyAt('03:30');
 
 // Buang baris ai_request_traces lama — hot path chat sudah minim tulisan (mode on_retry),
 // tapi profil batch/eval nulis 'always', jadi tetap perlu retensi.
