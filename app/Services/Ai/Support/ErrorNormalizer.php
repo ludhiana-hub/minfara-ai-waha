@@ -26,10 +26,15 @@ final class ErrorNormalizer
     }
 
     /** <think>...</think> stripping — now applied uniformly to every provider (including Gemini,
-     * which the pre-AiRouter GeminiService never stripped — a latent bug fixed here). */
+     * which the pre-AiRouter GeminiService never stripped — a latent bug fixed here).
+     * Also handles an unterminated <think> (max_tokens hit mid-reasoning): everything from
+     * <think> onward is dropped rather than leaking raw chain-of-thought to the customer. */
     public static function stripThink(string $text): string
     {
-        return trim(preg_replace('/<think>.*?<\/think>/si', '', $text));
+        $text = preg_replace('/<think>.*?<\/think>/si', '', $text);
+        $text = preg_replace('/<think>.*$/si', '', $text);
+
+        return trim($text);
     }
 
     public static function looksLikeUnsupportedJsonMode(string $error): bool
