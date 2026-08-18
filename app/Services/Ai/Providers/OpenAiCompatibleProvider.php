@@ -91,6 +91,12 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
                 return AiRawResult::fail(ErrorNormalizer::EMPTY_RESPONSE);
             }
 
+            if (ErrorNormalizer::looksLikeRawReasoning($text)) {
+                Log::warning("{$this->name()} returned raw reasoning instead of a reply", ['model' => $call->model]);
+
+                return AiRawResult::fail(ErrorNormalizer::REASONING_LEAK);
+            }
+
             return AiRawResult::ok($text, $tokens);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error("{$this->name()} connection timeout", ['message' => $e->getMessage()]);
