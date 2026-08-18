@@ -15,6 +15,7 @@ final class ErrorNormalizer
     public const EMPTY_RESPONSE     = 'Empty response';
     public const JSON_PARSE_FAILED  = 'json_parse_failed';
     public const TOOL_LOOP_EXHAUSTED = 'tool_loop_exhausted';
+    public const REASONING_LEAK      = 'reasoning_leak';
 
     public static function fromHttpFailure(int $status, ?string $message): string
     {
@@ -35,6 +36,23 @@ final class ErrorNormalizer
         $text = preg_replace('/<think>.*$/si', '', $text);
 
         return trim($text);
+    }
+
+    /**
+     * Some free/reasoning-style models (esp. via openrouter/free's rotating pool) narrate
+     * their chain-of-thought as plain English prose instead of wrapping it in <think> tags —
+     * stripThink() can't touch that, since there's no tag to find. The bot only ever answers
+     * in Indonesian, so an English response opening with a meta-cognition phrase like
+     * "We need to respond..." or "The user says..." is never a legitimate customer-facing
+     * reply — it's the model thinking out loud. Caught here and treated as a failed attempt
+     * so AiRouter falls through to the next model/provider instead of relaying it.
+     */
+    public static function looksLikeRawReasoning(string $text): bool
+    {
+        return (bool) preg_match(
+            '/^(we need to|we should|we must|let\'s|let me|the user (says|asks|wants)|according to (the )?(instruction|guideline)|i (should|need to|will)|first,? (i|we)|okay,? (so|let))/i',
+            trim($text)
+        );
     }
 
     public static function looksLikeUnsupportedJsonMode(string $error): bool
