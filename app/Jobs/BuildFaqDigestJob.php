@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Models\BotConfig;
 use App\Models\FaqMenu;
+use App\Services\Ai\Support\TextCleaner;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class BuildFaqDigestJob implements ShouldQueue
@@ -29,11 +29,7 @@ class BuildFaqDigestJob implements ShouldQueue
             ->orderBy('sort_order')
             ->get(['title', 'content']) as $item)
         {
-            $text = preg_replace('/Ketik \*[^*]+\*[^\n]*/iu', '', $item->content);
-            $text = preg_replace('/[─]+/u', '', $text);
-            $text = preg_replace('/\*([^*\n]+)\*/u', '$1', $text);
-            $text = preg_replace('/\n+/', ' ', trim($text));
-            $text = trim(preg_replace('/\s{2,}/', ' ', $text));
+            $text = TextCleaner::cleanFaqContent($item->content);
 
             $snippet = '[' . $item->title . '] ' . mb_substr($text, 0, $perItemCap);
 
@@ -73,7 +69,7 @@ class BuildFaqDigestJob implements ShouldQueue
             ['key' => 'faq_digest', 'value' => $digest, 'type' => 'textarea', 'label' => 'FAQ Digest (Auto-generated)', 'group' => 'ai']
         );
 
-        Cache::forget('bot_config_faq_digest');
+        BotConfig::forget('faq_digest');
 
         Log::info('BuildFaqDigestJob: done', ['chars' => mb_strlen($digest), 'entries' => count($lines) - 2]);
     }

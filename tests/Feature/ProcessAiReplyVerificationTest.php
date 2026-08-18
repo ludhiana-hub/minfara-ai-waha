@@ -172,4 +172,18 @@ class ProcessAiReplyVerificationTest extends TestCase
 
         $this->assertSame(500, $sentMaxTokens);
     }
+
+    public function test_failed_does_not_send_fallback_when_human_takeover_active(): void
+    {
+        $from = '6281234567890';
+        Cache::put('human_takeover_' . md5($from), true, 600);
+
+        $job = new ProcessAiReply($from . '@c.us', $from, 'halo min', 'Budi', '127.0.0.1');
+
+        $this->mock(WhatsAppService::class, function ($mock) {
+            $mock->shouldNotReceive('sendMessage');
+        });
+
+        $job->failed(new \RuntimeException('simulated permanent failure'));
+    }
 }

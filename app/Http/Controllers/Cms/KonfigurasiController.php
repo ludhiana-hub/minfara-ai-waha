@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class KonfigurasiController extends Controller
 {
+    private const VALID_AI_PROVIDERS = ['groq', 'gemini', 'openrouter', 'nvidia'];
+
     public function index()
     {
         $configs = BotConfig::all()->keyBy('key');
@@ -37,6 +39,22 @@ class KonfigurasiController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'ai_max_tokens'     => ['nullable', 'integer', 'min:100', 'max:2000'],
+            'ai_temperature'    => ['nullable', 'numeric', 'min:0', 'max:2'],
+            'ai_provider_order' => ['nullable', 'string'],
+        ]);
+
+        if ($request->has('ai_provider_order')) {
+            $order = array_filter(array_map('trim', explode(',', (string) $request->input('ai_provider_order'))));
+            $unknown = array_diff($order, self::VALID_AI_PROVIDERS);
+            if (!empty($unknown) || empty($order)) {
+                return redirect()->route('cms.konfigurasi.index')
+                    ->withErrors(['ai_provider_order' => 'Urutan provider tidak valid: ' . implode(', ', $unknown ?: ['(kosong)']) . '. Provider yang tersedia: ' . implode(', ', self::VALID_AI_PROVIDERS) . '.'])
+                    ->withInput();
+            }
+        }
+
         $keys = [
             'bot_name', 'bot_greeting',
             'ai_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',

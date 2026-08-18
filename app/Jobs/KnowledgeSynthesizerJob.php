@@ -263,8 +263,13 @@ PROMPT;
                 continue;
             }
 
+            $question = mb_substr($q, 0, 900);
+            if ($this->suggestionAlreadyExists('knowledge', $question)) {
+                continue;
+            }
+
             KnowledgeSuggestion::create([
-                'question'       => mb_substr($q, 0, 900),
+                'question'       => $question,
                 'answer'         => mb_substr($a, 0, 900),
                 'type'           => 'knowledge',
                 'example_phones' => $usedPhones,
@@ -298,8 +303,13 @@ PROMPT;
                 $answer .= "\n\nContoh kalimat: " . $exampleRewrite;
             }
 
+            $question = mb_substr($finding, 0, 900);
+            if ($this->suggestionAlreadyExists('coaching', $question)) {
+                continue;
+            }
+
             KnowledgeSuggestion::create([
-                'question'       => mb_substr($finding, 0, 900),
+                'question'       => $question,
                 'answer'         => mb_substr($answer, 0, 900),
                 'type'           => 'coaching',
                 'example_phones' => $usedPhones,
@@ -311,5 +321,16 @@ PROMPT;
         }
 
         return $created;
+    }
+
+    // Same topic flagged on consecutive days would otherwise pile up as separate 'pending'
+    // rows forever — an exact-match check on the still-actionable statuses (pending/approved)
+    // is cheap and catches the common case without needing fuzzy matching.
+    private function suggestionAlreadyExists(string $type, string $question): bool
+    {
+        return KnowledgeSuggestion::where('type', $type)
+            ->where('question', $question)
+            ->whereIn('status', ['pending', 'approved'])
+            ->exists();
     }
 }

@@ -58,6 +58,18 @@ class ProcessAiReply implements ShouldQueue
 
         $whatsapp->startTyping($this->chatId);
 
+        // Wraps everything from here to send in try/finally so stopTyping is guaranteed even
+        // if the AI call throws — it used to only be guaranteed around the send block, leaving
+        // the chat stuck showing "typing…" for up to the full job timeout on an exception.
+        try {
+            $this->handleInner($whatsapp, $router, $fromHash);
+        } finally {
+            $whatsapp->stopTyping($this->chatId);
+        }
+    }
+
+    private function handleInner(WhatsAppService $whatsapp, AiRouter $router, string $fromHash): void
+    {
         $aiEnabled   = BotConfig::getBool('ai_enabled', true);
         $aiAvailable = $aiEnabled && $router->hasAnyUsableProvider('chat');
 
@@ -72,7 +84,6 @@ class ProcessAiReply implements ShouldQueue
                     $whatsapp->sendMessage($this->chatId, "Hallo! 👋 Ketik *0* untuk melihat menu atau *99* untuk cara checkout.");
                 }
 
-                $whatsapp->stopTyping($this->chatId);
                 return;
             }
             $reply  = BotConfig::get('fallback_message', "Hallo! 👋 Perintah tidak dikenali.\n\nKetik *0* untuk melihat menu lengkap atau *99* untuk cara checkout di website.");
@@ -81,14 +92,15 @@ class ProcessAiReply implements ShouldQueue
         } else {
             $cooldownKey = 'ai_cooldown_' . md5($this->from);
             if (!Cache::add($cooldownKey, true, 5)) {
-                $whatsapp->stopTyping($this->chatId);
                 $whatsapp->sendMessage($this->chatId, BotConfig::get('rate_limit_message', 'Mohon tunggu sebentar sebelum mengirim pesan lagi 🙏'));
                 return;
             }
 
             $systemPrompt = BotConfig::get('ai_system_prompt', '');
-            $maxTokens    = BotConfig::getInt('ai_max_tokens', 500);
-            $temperature  = BotConfig::getFloat('ai_temperature', 0.7);
+            // Defense-in-depth clamp — CMS validates on save, but this also protects values
+            // that were already out of range in the DB before validation existed.
+            $maxTokens    = max(100, min(2000, BotConfig::getInt('ai_max_tokens', 500)));
+            $temperature  = max(0.0, min(2.0, BotConfig::getFloat('ai_temperature', 0.7)));
 
             $aiInput = mb_substr($this->userMessage, 0, 600);
 
@@ -166,12 +178,26 @@ class ProcessAiReply implements ShouldQueue
                     // default 4 (= 2 pertukaran) mempertahankan perilaku sebelum AiRouter persis.
                     $historyTurns = BotConfig::getInt('ai_history_turns', 4);
 
-                    $history[] = ['role' => 'user',      'content' => mb_substr($this->userMessage, 0, 300)];
-                    $history[] = ['role' => 'assistant',  'content' => mb_substr($result->reply, 0, 250)];
-                    if (count($history) > $historyTurns) {
-                        $history = array_slice($history, -$historyTurns);
+                    // Lock + re-read the LATEST history right before writing (not the snapshot
+                    // taken before the AI call, which can be many seconds stale) — otherwise two
+                    // messages from the same user in quick succession can race: both read the
+                    // same starting history, and whichever writes last silently drops the other's
+                    // turn. Losing this write only means the next turn has one message less of
+                    // context — not worth failing (and retrying/losing) the whole reply over, so
+                    // a lock timeout is caught and swallowed rather than left to bubble up.
+                    try {
+                        Cache::lock('lock_' . $historyKey, 10)->block(5, function () use ($historyKey, $historyTurns, $result) {
+                            $latestHistory   = Cache::get($historyKey, []);
+                            $latestHistory[] = ['role' => 'user',      'content' => mb_substr($this->userMessage, 0, 300)];
+                            $latestHistory[] = ['role' => 'assistant', 'content' => mb_substr($result->reply, 0, 250)];
+                            if (count($latestHistory) > $historyTurns) {
+                                $latestHistory = array_slice($latestHistory, -$historyTurns);
+                            }
+                            Cache::put($historyKey, $latestHistory, 1800);
+                        });
+                    } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+                        Log::warning('ProcessAiReply: history lock timed out, skipping history write', ['from' => $this->from]);
                     }
-                    Cache::put($historyKey, $history, 1800);
                 } else {
                     $mode   = 'error';
                     $tokens = null;
@@ -195,7 +221,6 @@ class ProcessAiReply implements ShouldQueue
         }
 
         if (empty($reply)) {
-            $whatsapp->stopTyping($this->chatId);
             return;
         }
 
@@ -219,35 +244,29 @@ class ProcessAiReply implements ShouldQueue
             ->exists();
 
         if ($recentDuplicate) {
-            $whatsapp->stopTyping($this->chatId);
             return;
         }
 
         if (Cache::has('human_takeover_' . $fromHash) || PausedContact::isPaused($this->from)) {
             Log::info('ProcessAiReply: aborted before send — human takeover active', ['from' => $this->from]);
-            $whatsapp->stopTyping($this->chatId);
             return;
         }
 
-        try {
-            if ($whatsapp->sendMessage($this->chatId, $reply)) {
-                try {
-                    WhatsappLog::create([
-                        'from_number'    => $this->from,
-                        'contact_name'   => $this->contactName,
-                        'ip_address'     => $this->ipAddress,
-                        'message_in'     => substr($this->userMessage, 0, 1000),
-                        'message_out'    => substr($reply, 0, 60000),
-                        'mode'           => $mode,
-                        'ai_tokens_used' => $tokens ?? null,
-                        'responded_at'   => now(),
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
-                }
+        if ($whatsapp->sendMessage($this->chatId, $reply)) {
+            try {
+                WhatsappLog::create([
+                    'from_number'    => $this->from,
+                    'contact_name'   => $this->contactName,
+                    'ip_address'     => $this->ipAddress,
+                    'message_in'     => substr($this->userMessage, 0, 1000),
+                    'message_out'    => substr($reply, 0, 60000),
+                    'mode'           => $mode,
+                    'ai_tokens_used' => $tokens ?? null,
+                    'responded_at'   => now(),
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create WhatsappLog', ['error' => $e->getMessage()]);
             }
-        } finally {
-            $whatsapp->stopTyping($this->chatId);
         }
     }
 
@@ -260,6 +279,11 @@ class ProcessAiReply implements ShouldQueue
         ]);
 
         try {
+            if (Cache::has('human_takeover_' . md5($this->from)) || PausedContact::isPaused($this->from)) {
+                Log::info('ProcessAiReply::failed — skip fallback, human takeover active', ['from' => $this->from]);
+                return;
+            }
+
             $whatsapp = app(WhatsAppService::class);
             $fallback = BotConfig::get('fallback_message', "Entschuldigung! 🙏 Coba lagi nanti atau ketik *99*.");
             $whatsapp->sendMessage($this->chatId, $fallback);

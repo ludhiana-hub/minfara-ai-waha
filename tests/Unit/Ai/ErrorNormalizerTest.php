@@ -38,4 +38,21 @@ class ErrorNormalizerTest extends TestCase
         $this->assertTrue(ErrorNormalizer::looksLikeUnsupportedJsonMode('json_object mode is unsupported'));
         $this->assertFalse(ErrorNormalizer::looksLikeUnsupportedJsonMode('model decommissioned'));
     }
+
+    public function test_401_maps_to_auth_error(): void
+    {
+        $this->assertSame('auth_error', ErrorNormalizer::fromHttpFailure(401, 'invalid api key'));
+    }
+
+    public function test_403_maps_to_auth_error(): void
+    {
+        $this->assertSame('auth_error', ErrorNormalizer::fromHttpFailure(403, 'forbidden'));
+    }
+
+    public function test_looks_like_raw_reasoning_catches_indonesian_openers(): void
+    {
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning('Saya perlu menjawab pertanyaan ini dengan hati-hati.'));
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning('Pengguna bertanya soal harga, jadi saya harus jelaskan.'));
+        $this->assertFalse(ErrorNormalizer::looksLikeRawReasoning('Untuk program Bahasa Korea, harganya mulai Rp189k.'));
+    }
 }

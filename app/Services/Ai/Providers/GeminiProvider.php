@@ -63,8 +63,12 @@ class GeminiProvider implements AiProviderContract
         }
 
         try {
+            // Key goes in a header, not the URL — a query-string key can leak through any
+            // request-logging/debug middleware (Telescope, query loggers) that captures URLs,
+            // unlike the other providers which already send their key via Authorization header.
             $response = Http::timeout($call->timeoutSeconds)
-                ->post("{$endpoint}?key={$this->apiKey()}", $payload);
+                ->withHeaders(['x-goog-api-key' => $this->apiKey()])
+                ->post($endpoint, $payload);
 
             if ($response->status() === 429) {
                 return AiRawResult::fail(ErrorNormalizer::QUOTA_EXCEEDED);
@@ -74,7 +78,11 @@ class GeminiProvider implements AiProviderContract
                 $status  = $response->status();
                 $message = $response->json('error.message') ?? 'Unknown error';
 
-                Log::error('Gemini API failed', ['status' => $status, 'error' => $message]);
+                if ($status === 401 || $status === 403) {
+                    Log::critical('Gemini API key rejected — needs manual rotation', ['status' => $status, 'error' => $message]);
+                } else {
+                    Log::error('Gemini API failed', ['status' => $status, 'error' => $message]);
+                }
 
                 return AiRawResult::fail(ErrorNormalizer::fromHttpFailure($status, $message));
             }
@@ -101,7 +109,7 @@ class GeminiProvider implements AiProviderContract
             }
 
             return AiRawResult::ok($text, $tokens);
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        } catch (\Illuminate\Http\Client\ConnectionException|\GuzzleHttp\Exception\ConnectException $e) {
             Log::error('Gemini connection timeout', ['message' => $e->getMessage()]);
 
             return AiRawResult::fail(ErrorNormalizer::CONNECTION_TIMEOUT);

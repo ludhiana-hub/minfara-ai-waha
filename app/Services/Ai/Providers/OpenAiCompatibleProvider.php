@@ -71,7 +71,13 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
                 $status  = $response->status();
                 $message = $response->json('error.message') ?? 'Unknown error';
 
-                Log::error("{$this->name()} API failed", ['status' => $status, 'error' => $message]);
+                // 401/403 = dead/revoked key, needs a human to fix — logged at critical so it's
+                // distinguishable from a transient provider outage, which self-heals.
+                if ($status === 401 || $status === 403) {
+                    Log::critical("{$this->name()} API key rejected — needs manual rotation", ['status' => $status, 'error' => $message]);
+                } else {
+                    Log::error("{$this->name()} API failed", ['status' => $status, 'error' => $message]);
+                }
 
                 return AiRawResult::fail(ErrorNormalizer::fromHttpFailure($status, $message));
             }
@@ -98,7 +104,11 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
             }
 
             return AiRawResult::ok($text, $tokens);
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        } catch (\Illuminate\Http\Client\ConnectionException|\GuzzleHttp\Exception\ConnectException $e) {
+            // Guzzle can throw ConnectException directly (not wrapped as Laravel's
+            // ConnectionException) for some transient failures — e.g. DNS blip or connection
+            // reset before the timeout window closes. Both are treated as retryable so
+            // AiRouter's retry_on match actually fires instead of silently giving up.
             Log::error("{$this->name()} connection timeout", ['message' => $e->getMessage()]);
 
             return AiRawResult::fail(ErrorNormalizer::CONNECTION_TIMEOUT);

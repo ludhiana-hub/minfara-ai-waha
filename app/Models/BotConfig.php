@@ -42,6 +42,15 @@ class BotConfig extends Model
         unset(static::$requestMemo[$key]);
     }
 
+    // Encapsulates the 'bot_config_' cache-key prefix so callers that need to invalidate a
+    // key written outside set() (e.g. a background job writing straight to the DB) don't have
+    // to hardcode the prefix themselves and risk drifting from it.
+    public static function forget(string $key): void
+    {
+        Cache::forget('bot_config_' . $key);
+        unset(static::$requestMemo[$key]);
+    }
+
     // Called between queue jobs (see AppServiceProvider::boot()) — a long-lived queue:work
     // process must not keep serving one job's memo to the next job.
     public static function clearRequestMemo(): void

@@ -16,11 +16,20 @@ final class ErrorNormalizer
     public const JSON_PARSE_FAILED  = 'json_parse_failed';
     public const TOOL_LOOP_EXHAUSTED = 'tool_loop_exhausted';
     public const REASONING_LEAK      = 'reasoning_leak';
+    public const AUTH_ERROR          = 'auth_error';
 
     public static function fromHttpFailure(int $status, ?string $message): string
     {
         if ($status === 429) {
             return self::QUOTA_EXCEEDED;
+        }
+
+        // 401/403 means the API key is dead/revoked, not a transient outage — the circuit
+        // breaker still applies the same cooldown either way, but callers can use this constant
+        // to log/alert distinctly so a dead key gets human attention instead of being mistaken
+        // for a self-healing provider blip.
+        if ($status === 401 || $status === 403) {
+            return self::AUTH_ERROR;
         }
 
         return $message ?? 'Unknown error';
@@ -49,9 +58,21 @@ final class ErrorNormalizer
      */
     public static function looksLikeRawReasoning(string $text): bool
     {
-        return (bool) preg_match(
+        $text = trim($text);
+
+        if (preg_match(
             '/^(we need to|we should|we must|let\'s|let me|the user (says|asks|wants)|according to (the )?(instruction|guideline)|i (should|need to|will)|first,? (i|we)|okay,? (so|let))/i',
-            trim($text)
+            $text
+        )) {
+            return true;
+        }
+
+        // Same class of leak, but the model reasoned in Indonesian instead of English — the
+        // bot only ever answers Indonesian customers directly, so an opener like this is never
+        // a legitimate reply, it's chain-of-thought narration.
+        return (bool) preg_match(
+            '/^(saya (perlu|harus|akan)|pengguna (bertanya|meminta|ingin)|mari saya|baiklah,? (saya|mari)|pertama,? (saya|kita)|berdasarkan (instruksi|pedoman)|oke,? (jadi|mari))/i',
+            $text
         );
     }
 

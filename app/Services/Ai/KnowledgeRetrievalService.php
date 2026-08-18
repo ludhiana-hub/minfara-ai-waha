@@ -5,6 +5,7 @@ namespace App\Services\Ai;
 use App\Models\BotConfig;
 use App\Models\KnowledgeChunk;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class KnowledgeRetrievalService
 {
@@ -73,10 +74,22 @@ class KnowledgeRetrievalService
 
     public static function cosineSimilarity(array $a, array $b): float
     {
+        // A dimension mismatch means the chunk's embedding came from a different embedding
+        // model/version than the query's — truncating to the shorter length silently produces
+        // a meaningless score instead of surfacing the real data-integrity problem.
+        if (count($a) !== count($b)) {
+            Log::warning('KnowledgeRetrievalService: embedding dimension mismatch, skipping chunk', [
+                'query_dims' => count($a),
+                'chunk_dims' => count($b),
+            ]);
+
+            return 0.0;
+        }
+
         $dot = 0.0;
         $normA = 0.0;
         $normB = 0.0;
-        $len = min(count($a), count($b));
+        $len = count($a);
 
         for ($i = 0; $i < $len; $i++) {
             $dot   += $a[$i] * $b[$i];

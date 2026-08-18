@@ -73,7 +73,14 @@ final class AiRouter
             }
 
             $provider = $this->providers->get($providerName);
-            if (!$provider || !$provider->hasKey()) {
+            if (!$provider) {
+                // Admin typo'd/misconfigured ai_provider_order (e.g. "grok" instead of "groq")
+                // — without this, the provider is silently skipped and the only symptom is
+                // "AI sometimes doesn't reply", with nothing in the logs pointing at why.
+                Log::warning("AiRouter: unknown provider '{$providerName}' in provider order — check ai_provider_order config");
+                continue;
+            }
+            if (!$provider->hasKey()) {
                 continue;
             }
 
@@ -153,7 +160,10 @@ final class AiRouter
                 // Only a connection timeout is worth retrying — quota/model/key errors
                 // won't change on an immediate retry.
                 if (in_array($error, $retryOn, true) && $totalAttempts < $maxTotalAttempts) {
-                    $this->sleeper->sleep($retryDelayMs);
+                    // Jitter avoids a thundering herd: a burst of timeouts across many
+                    // concurrent user messages would otherwise all retry at exactly the same
+                    // instant one retry-delay later.
+                    $this->sleeper->sleep($retryDelayMs + random_int(0, 300));
                     [$retryRaw, $retryJson] = $this->attempt($provider, $call, $request->isExpectingJson());
                     $totalAttempts++;
 

@@ -7,6 +7,7 @@ use App\Models\KnowledgeChunk;
 use App\Models\KnowledgeSuggestion;
 use App\Models\TrainingMaterial;
 use App\Services\Ai\EmbeddingService;
+use App\Services\Ai\Support\TextCleaner;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -74,11 +75,7 @@ class RebuildKnowledgeIndexJob implements ShouldQueue
                 ->where('command', '!=', '0')
                 ->get(['id', 'title', 'content']) as $item
         ) {
-            $text = preg_replace('/Ketik \*[^*]+\*[^\n]*/iu', '', $item->content);
-            $text = preg_replace('/[─]+/u', '', $text);
-            $text = preg_replace('/\*([^*\n]+)\*/u', '$1', $text);
-            $text = preg_replace('/\n+/', ' ', trim($text));
-            $text = trim(preg_replace('/\s{2,}/', ' ', $text));
+            $text = TextCleaner::cleanFaqContent($item->content);
 
             $content = '[' . $item->title . '] ' . mb_substr($text, 0, 500);
 
