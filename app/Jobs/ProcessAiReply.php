@@ -278,6 +278,11 @@ class ProcessAiReply implements ShouldQueue
         // __italic__ → _italic_
         $text = preg_replace('/__(.+?)__/s', '_$1_', $text);
 
+        // Tanda pisah panjang (—) gaya artikel/esai → koma, biar kerasa natural kayak chat
+        // WA beneran. Safety net di luar instruksi system prompt — model kadang tetap kepakai
+        // gaya lama walau udah dilarang.
+        $text = str_replace([' — ', '—'], [', ', ','], $text);
+
         return $text;
     }
 }
