@@ -8,6 +8,7 @@ use App\Models\PausedContact;
 use App\Models\WhatsappLog;
 use App\Services\Ai\AiRequest;
 use App\Services\Ai\AiRouter;
+use App\Services\Ai\Support\ErrorNormalizer;
 use App\Services\Ai\Support\MessageComplexity;
 use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -181,6 +182,17 @@ class ProcessAiReply implements ShouldQueue
         if (empty($reply)) {
             $whatsapp->stopTyping($this->chatId);
             return;
+        }
+
+        // Last-resort net: catches a leaked chain-of-thought reply regardless of which path
+        // produced it (fresh AI call, stale response cache from before this filter existed,
+        // or a code path that bypasses the provider-level check) — never relay raw reasoning
+        // to the customer.
+        if ($mode === 'ai' && ErrorNormalizer::looksLikeRawReasoning($reply)) {
+            Log::warning('Blocked raw reasoning leak at final egress', ['from' => $this->from]);
+            Cache::forget($respCacheKey ?? '');
+            $reply = BotConfig::get('fallback_message', "Maaf kak, boleh diulang pertanyaannya? 🙏 Atau ketik *0* untuk lihat menu FAQ.");
+            $mode  = 'error';
         }
 
         $reply = $this->sanitizeWhatsappText($reply);
