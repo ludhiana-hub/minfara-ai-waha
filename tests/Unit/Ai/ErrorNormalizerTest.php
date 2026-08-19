@@ -55,4 +55,45 @@ class ErrorNormalizerTest extends TestCase
         $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning('Pengguna bertanya soal harga, jadi saya harus jelaskan.'));
         $this->assertFalse(ErrorNormalizer::looksLikeRawReasoning('Untuk program Bahasa Korea, harganya mulai Rp189k.'));
     }
+
+    public function test_looks_like_raw_reasoning_catches_numbered_scratchpad_leak(): void
+    {
+        // Real production leak (2026-08-19): a "pricelist" request got this sent verbatim to
+        // the customer instead of an answer — the model narrated its scratchpad as plain
+        // prose with bold numbered meta-steps, no <think> tag and no opener phrase the old
+        // regex covered.
+        $leak = "Here's a thinking process:\n\n1. **Analyze User Input:** User said \"pricelist\". "
+            . "This is a request for pricing information.\n2. **Identify Intent:** The user wants "
+            . "to see the price list/packages for Languages by Fara.\n3. **Check Constraints & "
+            . "Guidelines:**\n- Must use knowledge base for pricing.";
+
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning($leak));
+    }
+
+    public function test_looks_like_raw_reasoning_catches_mid_text_reasoning_tells(): void
+    {
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning('Wait, the formatting is messy. Let me re-read carefully.'));
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning('Actually, the text says the price is different.'));
+    }
+
+    public function test_looks_like_raw_reasoning_catches_novel_numbered_scratchpad_by_structure(): void
+    {
+        // Vocabulary-agnostic net: any "N. **Verb Noun:**" numbered meta-header is scratchpad
+        // shape regardless of which specific verbs a rotating free model happens to use — this
+        // must catch phrasing NOT in the phrase list above.
+        $leak = "1. **Verify Requirements:** Check the input.\n2. **Draft Response:** Write the answer.";
+        $this->assertTrue(ErrorNormalizer::looksLikeRawReasoning($leak));
+    }
+
+    public function test_looks_like_raw_reasoning_does_not_flag_legit_bold_price_list(): void
+    {
+        $legit = "Ini paket yang tersedia kak:\n1. **Lifetime Basic** - Rp199k\n2. **Lifetime+10** - Rp299k\nMau checkout yang mana?";
+        $this->assertFalse(ErrorNormalizer::looksLikeRawReasoning($legit));
+    }
+
+    public function test_looks_like_raw_reasoning_does_not_flag_legit_plain_numbered_list(): void
+    {
+        $legit = "Untuk Bahasa Korea ada beberapa opsi:\n1. Paket 2 bulan Rp189k\n2. Paket 6 bulan Rp209k\nMau pilih yang mana kak?";
+        $this->assertFalse(ErrorNormalizer::looksLikeRawReasoning($legit));
+    }
 }
