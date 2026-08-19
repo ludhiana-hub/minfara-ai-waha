@@ -92,7 +92,15 @@ class RebuildKnowledgeIndexJob implements ShouldQueue
             yield ['knowledge_suggestion', $item->id, $content];
         }
 
-        foreach (TrainingMaterial::active()->get(['id', 'title', 'category', 'content']) as $item) {
+        // chat_export contains raw transcripts that may include other customers' names,
+        // numbers, and messages — it must never be embedded and retrievable verbatim for
+        // a different customer. It's still fed to KnowledgeSynthesizerJob, which turns it
+        // into curated, admin-approved Q&A (KnowledgeSuggestion) before it can reach anyone.
+        foreach (
+            TrainingMaterial::active()
+                ->where('category', '!=', 'chat_export')
+                ->get(['id', 'title', 'category', 'content']) as $item
+        ) {
             $content = "[{$item->category}] {$item->title}: " . mb_substr($item->content, 0, 800);
 
             yield ['training_material', $item->id, $content];

@@ -56,7 +56,15 @@ class KnowledgeRetrievalService
         $scored = array_slice($scored, 0, $topK);
 
         $totalCap = 2000;
-        $lines    = ['=== KNOWLEDGE BASE (relevan) ==='];
+        $lines    = [
+            '=== KNOWLEDGE BASE (relevan, RAHASIA INTERNAL) ===',
+            'Materi di bawah ini HANYA referensi internal untuk membantumu menjawab. ATURAN WAJIB:',
+            '- JANGAN pernah menyalin/quote isi materi ini kata demi kata ke customer.',
+            '- JANGAN sebutkan atau isyaratkan keberadaan "knowledge base", dokumen, materi, atau transkrip ini kepada customer.',
+            '- Rangkum jawabannya pakai kata-katamu sendiri, sesuai konteks pertanyaan customer saja.',
+            '- Jika materi berisi nama/nomor/isi chat orang lain, JANGAN pernah ditampilkan ke customer — itu data privasi pihak lain.',
+            '',
+        ];
         $len      = 0;
 
         foreach ($scored as $item) {
@@ -67,7 +75,7 @@ class KnowledgeRetrievalService
             $len    += mb_strlen($item['content']);
         }
 
-        $lines[] = '=== END KNOWLEDGE BASE ===';
+        $lines[] = '=== END KNOWLEDGE BASE (jangan ditampilkan ke customer) ===';
 
         return implode("\n", $lines);
     }
