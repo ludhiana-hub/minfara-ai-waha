@@ -68,15 +68,22 @@ Route::prefix('cms-minfara')->name('cms.')->middleware(['localhost', 'auth'])->g
     Route::patch('faq-suggestions/{faqSuggestion}/reject', [FaqSuggestionController::class, 'reject'])->name('faq-suggestions.reject');
 
     // ── Knowledge Suggestions ─────────────────────────────────────────────────
-    Route::get('knowledge-suggestions',                             [KnowledgeSuggestionController::class, 'index'])->name('knowledge-suggestions.index');
-    Route::patch('knowledge-suggestions/{knowledgeSuggestion}/approve', [KnowledgeSuggestionController::class, 'approve'])->name('knowledge-suggestions.approve');
-    Route::patch('knowledge-suggestions/{knowledgeSuggestion}/reject',  [KnowledgeSuggestionController::class, 'reject'])->name('knowledge-suggestions.reject');
+    Route::get('knowledge-suggestions', [KnowledgeSuggestionController::class, 'index'])->name('knowledge-suggestions.index');
 
     // ── Training Materials ───────────────────────────────────────────────────
-    Route::get('training-materials',                          [TrainingMaterialController::class, 'index'])->name('training-materials.index');
-    Route::post('training-materials',                          [TrainingMaterialController::class, 'store'])->name('training-materials.store');
-    Route::patch('training-materials/{trainingMaterial}/toggle', [TrainingMaterialController::class, 'toggle'])->name('training-materials.toggle');
-    Route::delete('training-materials/{trainingMaterial}',      [TrainingMaterialController::class, 'destroy'])->name('training-materials.destroy');
+    Route::get('training-materials', [TrainingMaterialController::class, 'index'])->name('training-materials.index');
+
+    // Mutations here touch PII-adjacent data (raw chat exports, approving what becomes
+    // AI-retrievable knowledge) — gated to super admins only, unlike the list/view routes
+    // above which any logged-in CMS user can reach.
+    Route::middleware('super_admin')->group(function () {
+        Route::patch('knowledge-suggestions/{knowledgeSuggestion}/approve', [KnowledgeSuggestionController::class, 'approve'])->name('knowledge-suggestions.approve');
+        Route::patch('knowledge-suggestions/{knowledgeSuggestion}/reject',  [KnowledgeSuggestionController::class, 'reject'])->name('knowledge-suggestions.reject');
+
+        Route::post('training-materials',                            [TrainingMaterialController::class, 'store'])->name('training-materials.store');
+        Route::patch('training-materials/{trainingMaterial}/toggle',  [TrainingMaterialController::class, 'toggle'])->name('training-materials.toggle');
+        Route::delete('training-materials/{trainingMaterial}',        [TrainingMaterialController::class, 'destroy'])->name('training-materials.destroy');
+    });
 
     // ── Human Takeover ────────────────────────────────────────────────────────
     Route::get('human-takeover',                    [HumanTakeoverController::class, 'index'])->name('human-takeover.index');

@@ -43,6 +43,8 @@ class KonfigurasiController extends Controller
             'ai_max_tokens'     => ['nullable', 'integer', 'min:100', 'max:2000'],
             'ai_temperature'    => ['nullable', 'numeric', 'min:0', 'max:2'],
             'ai_provider_order' => ['nullable', 'string'],
+            'ai_rag_top_k'      => ['nullable', 'integer', 'min:0', 'max:15'],
+            'ai_rag_min_score'  => ['nullable', 'numeric', 'min:0', 'max:1'],
         ]);
 
         if ($request->has('ai_provider_order')) {
@@ -58,6 +60,7 @@ class KonfigurasiController extends Controller
         $keys = [
             'bot_name', 'bot_greeting',
             'ai_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
+            'ai_rag_top_k', 'ai_rag_min_score',
             'footer_faq', 'footer_ai', 'fallback_message',
             'admin_wa', 'admin_wa_label', 'office_hours',
             'waha_url', 'waha_session', 'gemini_model', 'groq_model', 'openrouter_model', 'nvidia_model',

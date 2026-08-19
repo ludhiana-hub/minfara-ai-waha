@@ -8,6 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MySQL-only raw ENUM alter — SQLite (used by the test suite, DB_CONNECTION=sqlite in
+        // phpunit.xml) has no ENUM type and errors on this syntax; `mode` is already a plain
+        // string column there, so there's nothing to alter — skip rather than fail.
+        if (\DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         Schema::table('whatsapp_logs', function (Blueprint $table) {
             // Adds 'human_takeover' — WhatsAppController::handleOwnerReply() (line 371) has
             // always written this value, but it was never in the enum, causing
@@ -20,6 +27,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (\DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         Schema::table('whatsapp_logs', function (Blueprint $table) {
             \DB::statement("ALTER TABLE `whatsapp_logs` MODIFY `mode` ENUM('faq', 'ai', 'error', 'end_chat')");
         });

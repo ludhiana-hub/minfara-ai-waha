@@ -121,7 +121,7 @@ class ProcessAiReply implements ShouldQueue
             // appended in full (small, style/technique guidance, not a retrievable fact).
             $coachingNotes = BotConfig::get('sales_coaching_notes', '');
             if ($coachingNotes) {
-                $systemPrompt .= "\n\n=== CATATAN GAYA & TEKNIK SALES ===\n" . $coachingNotes;
+                $systemPrompt .= "\n\n=== CATATAN GAYA & TEKNIK SALES (internal, jangan disebut ke customer) ===\n" . $coachingNotes;
             }
 
             // Per-message complexity heuristic (cheap, no extra AI call) — right-sizes
@@ -228,8 +228,11 @@ class ProcessAiReply implements ShouldQueue
         // produced it (fresh AI call, stale response cache from before this filter existed,
         // or a code path that bypasses the provider-level check) — never relay raw reasoning
         // to the customer.
-        if ($mode === 'ai' && ErrorNormalizer::looksLikeRawReasoning($reply)) {
-            Log::warning('Blocked raw reasoning leak at final egress', ['from' => $this->from]);
+        if ($mode === 'ai' && (ErrorNormalizer::looksLikeRawReasoning($reply) || ErrorNormalizer::looksLikeDisclosureLeak($reply))) {
+            Log::warning('Blocked reply leak at final egress', [
+                'from' => $this->from,
+                'kind' => ErrorNormalizer::looksLikeDisclosureLeak($reply) ? ErrorNormalizer::DISCLOSURE_LEAK : ErrorNormalizer::REASONING_LEAK,
+            ]);
             Cache::forget($respCacheKey ?? '');
             $reply = BotConfig::get('fallback_message', "Maaf kak, boleh diulang pertanyaannya? 🙏 Atau ketik *0* untuk lihat menu FAQ.");
             $mode  = 'error';

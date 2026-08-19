@@ -84,6 +84,20 @@
                             <div class="d-flex justify-content-between small text-muted"><span>Konsisten</span><span>Kreatif</span></div>
                         </div>
                     </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{{ $configs['ai_rag_top_k']->label ?? 'RAG Top-K' }}</label>
+                            <input type="number" name="ai_rag_top_k" class="form-control"
+                                value="{{ $configs['ai_rag_top_k']->value ?? 5 }}" min="0" max="15">
+                            <div class="form-text">Jumlah maksimal potongan knowledge base per pesan. 0 = nonaktifkan RAG (fallback ke FAQ Digest statis).</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">{{ $configs['ai_rag_min_score']->label ?? 'RAG Min Score' }}</label>
+                            <input type="number" name="ai_rag_min_score" class="form-control"
+                                value="{{ $configs['ai_rag_min_score']->value ?? 0.55 }}" min="0" max="1" step="0.05">
+                            <div class="form-text">Ambang skor kemiripan (0.0-1.0). Nilai terlalu tinggi (misal &gt;0.9) bisa membuat RAG selalu kosong.</div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-semibold mb-0">System Prompt AI</label>

@@ -118,12 +118,18 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori</label>
-                        <select name="category" class="form-select" required>
+                        <select name="category" id="materialCategory" class="form-select" required onchange="document.getElementById('chatExportWarning').classList.toggle('d-none', this.value !== 'chat_export')">
                             <option value="chat_export">Export Chat Admin (manual, bukan AI)</option>
                             <option value="competitor_research">Riset Kompetitor</option>
                             <option value="sales_technique">Teknik Sales</option>
                             <option value="other">Lainnya</option>
                         </select>
+                    </div>
+                    <div id="chatExportWarning" class="alert alert-warning py-2 small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>Wajib redaksi sebelum upload:</strong> hapus/samarkan nama asli dan nomor WhatsApp pelanggan LAIN
+                        di dalam export chat. Materi ini tidak langsung dipakai AI (butuh approval manual di menu
+                        <em>Knowledge Suggestions</em>), tapi tetap dibaca AI saat proses sintesis harian — jadi redaksi PII tetap wajib.
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Upload File <span class="text-muted small">(boleh pilih beberapa sekaligus — PDF, DOCX, TXT, CSV, atau gambar/screenshot)</span></label>

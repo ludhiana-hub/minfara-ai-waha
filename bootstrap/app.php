@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'localhost'    => \App\Http\Middleware\CmsIpMiddleware::class,
             'auth.internal' => \App\Http\Middleware\InternalApiAuth::class,
+            'super_admin'  => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
 
         // Named 'cms.login'/'cms.dashboard' (not the framework defaults 'login'/'dashboard')

@@ -21,9 +21,19 @@ class KnowledgeRetrievalService
      */
     public function retrieve(string $query): string
     {
-        $queryEmbedding = $this->embedder->embed($query);
+        // Cache the query embedding itself, not just the chunk index — repeated/near-identical
+        // questions ("harga?" asked by many different customers) otherwise re-hit the Gemini
+        // embed API on every single message. Keyed on normalized text, only helps exact
+        // repeats, which is fine — this is a cost optimization, not a correctness requirement.
+        // Cache::get/put (not remember) so a failed embed() is never cached as a false negative.
+        $embeddingCacheKey = 'query_embedding_' . md5(mb_strtolower(trim($query)));
+        $queryEmbedding = Cache::get($embeddingCacheKey);
         if ($queryEmbedding === null) {
-            return '';
+            $queryEmbedding = $this->embedder->embed($query);
+            if ($queryEmbedding === null) {
+                return '';
+            }
+            Cache::put($embeddingCacheKey, $queryEmbedding, 3600);
         }
 
         $chunks = Cache::remember('knowledge_chunks_index', 300, function () {
@@ -37,8 +47,10 @@ class KnowledgeRetrievalService
             return '';
         }
 
-        $topK    = BotConfig::getInt('ai_rag_top_k', 5);
-        $minScore = BotConfig::getFloat('ai_rag_min_score', 0.55);
+        // Defense-in-depth clamp — CMS validates on save, but this also protects values that
+        // were already out of range in the DB before validation existed for these two keys.
+        $topK     = max(0, min(15, BotConfig::getInt('ai_rag_top_k', 5)));
+        $minScore = max(0.0, min(1.0, BotConfig::getFloat('ai_rag_min_score', 0.55)));
 
         $scored = [];
         foreach ($chunks as $chunk) {
@@ -54,6 +66,10 @@ class KnowledgeRetrievalService
 
         usort($scored, fn ($a, $b) => $b['score'] <=> $a['score']);
         $scored = array_slice($scored, 0, $topK);
+
+        if (empty($scored)) {
+            return '';
+        }
 
         $totalCap = 2000;
         $lines    = [

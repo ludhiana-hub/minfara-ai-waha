@@ -74,4 +74,26 @@ class KonfigurasiValidationTest extends TestCase
         $this->assertSame('0.9', BotConfig::get('ai_temperature'));
         $this->assertSame('groq,gemini,openrouter', BotConfig::get('ai_provider_order'));
     }
+
+    public function test_ai_rag_top_k_above_bound_is_rejected(): void
+    {
+        $this->actingAsAdmin();
+        BotConfig::set('ai_rag_top_k', '5');
+
+        $response = $this->post(route('cms.konfigurasi.update'), ['ai_rag_top_k' => 999]);
+
+        $response->assertSessionHasErrors('ai_rag_top_k');
+        $this->assertSame('5', BotConfig::get('ai_rag_top_k'));
+    }
+
+    public function test_ai_rag_min_score_above_bound_is_rejected(): void
+    {
+        $this->actingAsAdmin();
+        BotConfig::set('ai_rag_min_score', '0.55');
+
+        $response = $this->post(route('cms.konfigurasi.update'), ['ai_rag_min_score' => 5.0]);
+
+        $response->assertSessionHasErrors('ai_rag_min_score');
+        $this->assertSame('0.55', BotConfig::get('ai_rag_min_score'));
+    }
 }

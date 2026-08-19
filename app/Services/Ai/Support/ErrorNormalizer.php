@@ -17,6 +17,7 @@ final class ErrorNormalizer
     public const TOOL_LOOP_EXHAUSTED = 'tool_loop_exhausted';
     public const REASONING_LEAK      = 'reasoning_leak';
     public const AUTH_ERROR          = 'auth_error';
+    public const DISCLOSURE_LEAK     = 'disclosure_leak';
 
     public static function fromHttpFailure(int $status, ?string $message): string
     {
@@ -98,6 +99,32 @@ final class ErrorNormalizer
         // reply never has a numbered step with a bolded "Verb Noun:" label — FAQ-style numbered
         // lists in this bot's replies use plain text, not this scratchpad shape.
         return (bool) preg_match('/^\s{0,3}\d+\.\s*\*\*[^*\n]{3,60}:\*\*/mu', $text);
+    }
+
+    /**
+     * Last-resort net for the two leak modes the RAG anti-verbatim wrapper and the
+     * system-prompt security clause are meant to prevent, in case a model ignores them
+     * anyway: (1) the literal KB/coaching delimiter markers surfacing in a reply, and
+     * (2) the model explicitly admitting/describing a system prompt, instructions, or
+     * knowledge base to the customer.
+     */
+    public static function looksLikeDisclosureLeak(string $text): bool
+    {
+        if (preg_match(
+            '/===\s*(KNOWLEDGE BASE|END KNOWLEDGE BASE|CATATAN GAYA (?:&|DAN) TEKNIK SALES|END CATATAN GAYA)|RAHASIA INTERNAL/i',
+            $text
+        )) {
+            return true;
+        }
+
+        if (preg_match(
+            '/\b(my (system )?(prompt|instructions?)|i (was|am) instructed to|according to my (instructions?|prompt)|as an ai( language model)?,? i (was|have been)|berikut (adalah )?(instruksi|prompt) (saya|sistem)|(instruksi|prompt) (sistem )?saya (adalah|berisi)|aku (diprogram|diinstruksikan) untuk|sesuai (dokumen|materi) (pelatihan|training) (saya|yang diberikan)|aku punya knowledge base|saya (mempunyai|punya) (basis pengetahuan|knowledge base))\b/i',
+            $text
+        )) {
+            return true;
+        }
+
+        return false;
     }
 
     public static function looksLikeUnsupportedJsonMode(string $error): bool

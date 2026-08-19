@@ -29,4 +29,11 @@ class KnowledgeRetrievalServiceTest extends TestCase
     {
         $this->assertSame(0.0, KnowledgeRetrievalService::cosineSimilarity([0, 0, 0], [1, 1, 1]));
     }
+
+    // NOTE: query-embedding caching (2.2) and the top_k=0 empty-result fix (2.1) are not
+    // covered by an automated test here — both need BotConfig::set()/KnowledgeChunk::create(),
+    // which requires RefreshDatabase, which in this repo's sqlite test DB currently fails on
+    // an unrelated pre-existing issue: bot_configs.label is NOT NULL with no sqlite-compatible
+    // migration path to relax it (would need doctrine/dbal, not installed). Verified manually
+    // by code inspection instead — see KnowledgeRetrievalService::retrieve().
 }
