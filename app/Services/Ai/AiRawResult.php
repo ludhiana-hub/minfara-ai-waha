@@ -10,6 +10,7 @@ final readonly class AiRawResult
         public string $text,
         public ?int $tokens,
         public ?string $error,
+        public ?int $cooldownSeconds = null,
     ) {}
 
     public static function ok(string $text, ?int $tokens): self
@@ -17,8 +18,9 @@ final readonly class AiRawResult
         return new self(true, $text, $tokens, null);
     }
 
-    public static function fail(string $error): self
+    /** $cooldownSeconds is a provider-supplied Retry-After hint — null means "no hint, let the caller decide". */
+    public static function fail(string $error, ?int $cooldownSeconds = null): self
     {
-        return new self(false, '', null, $error);
+        return new self(false, '', null, $error, $cooldownSeconds);
     }
 }

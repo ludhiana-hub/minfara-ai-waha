@@ -10,6 +10,7 @@ namespace App\Services\Ai\Support;
 final class ErrorNormalizer
 {
     public const QUOTA_EXCEEDED     = 'quota_exceeded';
+    public const RATE_LIMITED       = 'rate_limited';
     public const CONNECTION_TIMEOUT = 'Connection timeout';
     public const INVALID_FORMAT     = 'Invalid response format';
     public const EMPTY_RESPONSE     = 'Empty response';
@@ -21,9 +22,9 @@ final class ErrorNormalizer
 
     public static function fromHttpFailure(int $status, ?string $message): string
     {
-        if ($status === 429) {
-            return self::QUOTA_EXCEEDED;
-        }
+        // 429 is NOT handled here — providers classify it themselves via classify429() so
+        // they can pass along the Retry-After/retryDelay hint, which this method has no
+        // access to (it only sees the already-extracted message string).
 
         // 401/403 means the API key is dead/revoked, not a transient outage — the circuit
         // breaker still applies the same cooldown either way, but callers can use this constant
@@ -130,5 +131,32 @@ final class ErrorNormalizer
     public static function looksLikeUnsupportedJsonMode(string $error): bool
     {
         return (bool) preg_match('/response_format|json_object|not supported|unsupported.*format/i', $error);
+    }
+
+    /**
+     * A 429 can mean either a momentary RPM cap (self-heals in seconds) or real quota/billing
+     * exhaustion (self-heals in hours). Both used to collapse into one QUOTA_EXCEEDED constant
+     * with a flat cooldown — this tells the caller which one it more likely is, plus a concrete
+     * cooldown hint (seconds) when the provider told us how long to wait.
+     *
+     * @return array{type: string, cooldownHint: ?int}
+     */
+    public static function classify429(?int $retryAfterSeconds, ?string $message): array
+    {
+        if ($retryAfterSeconds !== null) {
+            // A short wait is a rate-limit; anything over 2 minutes reads more like the
+            // provider is telling us to come back much later (quota/billing reset).
+            return [
+                'type'         => $retryAfterSeconds <= 120 ? self::RATE_LIMITED : self::QUOTA_EXCEEDED,
+                'cooldownHint' => $retryAfterSeconds,
+            ];
+        }
+
+        $quotaKeywords = '/\b(daily|per day|monthly|billing|quota exceeded|exceeded your current quota|insufficient credits?)\b/i';
+
+        return [
+            'type'         => ($message !== null && preg_match($quotaKeywords, $message)) ? self::QUOTA_EXCEEDED : self::RATE_LIMITED,
+            'cooldownHint' => null,
+        ];
     }
 }

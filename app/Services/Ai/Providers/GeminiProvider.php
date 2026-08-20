@@ -71,7 +71,11 @@ class GeminiProvider implements AiProviderContract
                 ->post($endpoint, $payload);
 
             if ($response->status() === 429) {
-                return AiRawResult::fail(ErrorNormalizer::QUOTA_EXCEEDED);
+                $retryAfter = self::parseRetryAfter($response->header('Retry-After'))
+                    ?? self::parseGeminiRetryDelay($response->json('error.details'));
+                $classified = ErrorNormalizer::classify429($retryAfter, $response->json('error.message'));
+
+                return AiRawResult::fail($classified['type'], $classified['cooldownHint']);
             }
 
             if ($response->failed()) {
@@ -147,5 +151,30 @@ class GeminiProvider implements AiProviderContract
     private function apiKey(): string
     {
         return BotConfig::get('gemini_api_key') ?: (config('services.gemini.key') ?? '');
+    }
+
+    /** Same delay-in-seconds-only parsing as the OpenAI-compatible providers — see that class for why. */
+    private static function parseRetryAfter(?string $header): ?int
+    {
+        if ($header === null || !ctype_digit(trim($header))) {
+            return null;
+        }
+
+        return (int) trim($header);
+    }
+
+    /**
+     * Gemini often skips the Retry-After header and instead embeds a RetryInfo entry in
+     * error.details[], e.g. {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": "31s"}.
+     */
+    private static function parseGeminiRetryDelay(?array $details): ?int
+    {
+        foreach ($details ?? [] as $detail) {
+            if (isset($detail['retryDelay']) && preg_match('/^(\d+)s?$/', (string) $detail['retryDelay'], $m)) {
+                return (int) $m[1];
+            }
+        }
+
+        return null;
     }
 }

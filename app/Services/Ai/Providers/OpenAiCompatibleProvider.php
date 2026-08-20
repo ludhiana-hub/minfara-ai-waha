@@ -64,7 +64,10 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
             $response = $this->httpClient($call->timeoutSeconds)->post($this->endpoint(), $payload);
 
             if ($response->status() === 429) {
-                return AiRawResult::fail(ErrorNormalizer::QUOTA_EXCEEDED);
+                $retryAfter = self::parseRetryAfter($response->header('Retry-After'));
+                $classified = ErrorNormalizer::classify429($retryAfter, $response->json('error.message'));
+
+                return AiRawResult::fail($classified['type'], $classified['cooldownHint']);
             }
 
             if ($response->failed()) {
@@ -117,5 +120,19 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
 
             return AiRawResult::fail($e->getMessage());
         }
+    }
+
+    /**
+     * Retry-After per RFC 9110 is either a delay in seconds or an HTTP-date — the API providers
+     * used here (Groq, OpenRouter) only ever send the delay-in-seconds form, so the HTTP-date
+     * case is left as null (caller falls back to sniffing the error message instead).
+     */
+    protected static function parseRetryAfter(?string $header): ?int
+    {
+        if ($header === null || !ctype_digit(trim($header))) {
+            return null;
+        }
+
+        return (int) trim($header);
     }
 }

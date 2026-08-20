@@ -7,9 +7,36 @@ use PHPUnit\Framework\TestCase;
 
 class ErrorNormalizerTest extends TestCase
 {
-    public function test_429_maps_to_quota_exceeded(): void
+    public function test_classify_429_with_short_retry_after_is_rate_limited(): void
     {
-        $this->assertSame('quota_exceeded', ErrorNormalizer::fromHttpFailure(429, 'rate limited'));
+        $result = ErrorNormalizer::classify429(20, 'rate limit reached');
+
+        $this->assertSame(ErrorNormalizer::RATE_LIMITED, $result['type']);
+        $this->assertSame(20, $result['cooldownHint']);
+    }
+
+    public function test_classify_429_with_long_retry_after_is_quota_exceeded(): void
+    {
+        $result = ErrorNormalizer::classify429(7200, 'try again later');
+
+        $this->assertSame(ErrorNormalizer::QUOTA_EXCEEDED, $result['type']);
+        $this->assertSame(7200, $result['cooldownHint']);
+    }
+
+    public function test_classify_429_without_hint_but_quota_keyword_is_quota_exceeded(): void
+    {
+        $result = ErrorNormalizer::classify429(null, 'You have exceeded your current quota, please check your billing details.');
+
+        $this->assertSame(ErrorNormalizer::QUOTA_EXCEEDED, $result['type']);
+        $this->assertNull($result['cooldownHint']);
+    }
+
+    public function test_classify_429_without_hint_and_generic_message_is_rate_limited(): void
+    {
+        $result = ErrorNormalizer::classify429(null, 'rate limited');
+
+        $this->assertSame(ErrorNormalizer::RATE_LIMITED, $result['type']);
+        $this->assertNull($result['cooldownHint']);
     }
 
     public function test_other_status_keeps_provider_message(): void

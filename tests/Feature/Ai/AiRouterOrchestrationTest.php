@@ -116,6 +116,67 @@ class AiRouterOrchestrationTest extends TestCase
         $this->assertTrue(Cache::has('ai_provider_unhealthy_groq'));
     }
 
+    public function test_short_retry_after_gives_a_short_cooldown_not_the_flat_default(): void
+    {
+        BotConfig::set('ai_provider_order', 'openrouter');
+        BotConfig::set('openrouter_api_key', 'k');
+
+        Http::fake(fn () => Http::response(['error' => ['message' => 'rate limit reached']], 429, ['Retry-After' => '20']));
+
+        $this->router()->run(AiRequest::make('chat', 'hi'));
+
+        $this->assertTrue(Cache::has('ai_provider_unhealthy_openrouter'));
+
+        // Old flat default was 300s — a 20s Retry-After hint should have expired well before
+        // that, proving the cooldown actually reflects the hint instead of the flat default.
+        $this->travel(31)->seconds();
+        $this->assertFalse(Cache::has('ai_provider_unhealthy_openrouter'));
+    }
+
+    public function test_long_retry_after_gives_a_longer_cooldown_than_the_flat_default(): void
+    {
+        BotConfig::set('ai_provider_order', 'openrouter');
+        BotConfig::set('openrouter_api_key', 'k');
+
+        Http::fake(fn () => Http::response(['error' => ['message' => 'try again later']], 429, ['Retry-After' => '7200']));
+
+        $this->router()->run(AiRequest::make('chat', 'hi'));
+
+        // Old flat default was 300s (5 min) — a 7200s (2h) hint must survive well past that.
+        $this->travel(301)->seconds();
+        $this->assertTrue(Cache::has('ai_provider_unhealthy_openrouter'));
+    }
+
+    public function test_quota_keyword_without_retry_after_uses_the_quota_cooldown_default(): void
+    {
+        BotConfig::set('ai_provider_order', 'openrouter');
+        BotConfig::set('openrouter_api_key', 'k');
+
+        Http::fake(fn () => Http::response(['error' => ['message' => 'You have exceeded your current quota, please check your billing details.']], 429));
+
+        $this->router()->run(AiRequest::make('chat', 'hi'));
+
+        // Old flat default was 300s — quota_exceeded_cooldown_seconds default is 3600s, so the
+        // provider must still be unhealthy well past the old flat window.
+        $this->travel(301)->seconds();
+        $this->assertTrue(Cache::has('ai_provider_unhealthy_openrouter'));
+    }
+
+    public function test_generic_429_without_retry_after_uses_the_rate_limited_cooldown_default(): void
+    {
+        BotConfig::set('ai_provider_order', 'openrouter');
+        BotConfig::set('openrouter_api_key', 'k');
+
+        Http::fake(fn () => Http::response(['error' => ['message' => 'rate limited']], 429));
+
+        $this->router()->run(AiRequest::make('chat', 'hi'));
+
+        // rate_limited_cooldown_seconds default is 90s — must have expired well before the
+        // old flat 300s default would have.
+        $this->travel(91)->seconds();
+        $this->assertFalse(Cache::has('ai_provider_unhealthy_openrouter'));
+    }
+
     public function test_unhealthy_provider_is_skipped_on_next_call(): void
     {
         Cache::put('ai_provider_unhealthy_groq', true, 300);

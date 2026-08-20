@@ -104,6 +104,11 @@ final class AiRouter
             // unhealthy for something that wasn't really its fault.
             $providerFullyTried = true;
 
+            // Tracks the most recent 429 classification for this provider, so the cooldown
+            // below can reflect an actual rate-limit/quota signal instead of a flat guess.
+            $lastRateLimitType = null;
+            $lastCooldownHint  = null;
+
             foreach ($models as $model) {
                 if ($totalAttempts >= $maxTotalAttempts) {
                     $providerFullyTried = false;
@@ -134,6 +139,7 @@ final class AiRouter
                 }
 
                 $error = $raw->error ?? 'unknown';
+                $this->trackRateLimit($error, $raw->cooldownSeconds, $lastRateLimitType, $lastCooldownHint);
 
                 // Self-heal: a provider that rejected json_mode outright is worth one retry
                 // without the flag, same model, same attempt budget.
@@ -153,6 +159,7 @@ final class AiRouter
 
                     $attemptLog[$providerName][$model] = "{$error} (json mode stripped, still failed: " . ($retryRaw->error ?? 'unknown') . ')';
                     $errors[] = $retryRaw->error ?? $error;
+                    $this->trackRateLimit($retryRaw->error ?? $error, $retryRaw->cooldownSeconds, $lastRateLimitType, $lastCooldownHint);
 
                     continue;
                 }
@@ -179,6 +186,7 @@ final class AiRouter
 
                     $attemptLog[$providerName][$model] = "{$error} (retried, still failed: " . ($retryRaw->error ?? 'unknown') . ')';
                     $errors[] = $retryRaw->error ?? $error;
+                    $this->trackRateLimit($retryRaw->error ?? $error, $retryRaw->cooldownSeconds, $lastRateLimitType, $lastCooldownHint);
                 } else {
                     $attemptLog[$providerName][$model] = $error;
                     $errors[] = $error;
@@ -186,8 +194,10 @@ final class AiRouter
             }
 
             if (!$result && $providerFullyTried && $markUnhealthy) {
-                $breaker->markOpen($providerName, $cooldownSeconds);
-                Log::info("AI provider {$providerName} marked unhealthy for {$cooldownSeconds}s — all models exhausted");
+                $effectiveCooldown = $this->resolveCooldown($lastRateLimitType, $lastCooldownHint, $cfg, $cooldownSeconds);
+                $breaker->markOpen($providerName, $effectiveCooldown);
+                $reason = $lastRateLimitType ?? 'exhausted';
+                Log::info("AI provider {$providerName} marked unhealthy for {$effectiveCooldown}s ({$reason}) — all models exhausted");
             }
 
             if ($result) {
@@ -224,6 +234,33 @@ final class AiRouter
         $this->maybeTrace($request, $aiResult, $cfg, (int) round((microtime(true) - $startedAt) * 1000));
 
         return $aiResult;
+    }
+
+    /** Records the most recent 429 classification/hint seen for the provider currently being tried. */
+    private function trackRateLimit(string $error, ?int $cooldownHint, ?string &$type, ?int &$hint): void
+    {
+        if (in_array($error, [ErrorNormalizer::RATE_LIMITED, ErrorNormalizer::QUOTA_EXCEEDED], true)) {
+            $type = $error;
+            $hint = $cooldownHint;
+        }
+    }
+
+    /**
+     * Picks the circuit-breaker cooldown for a provider that just exhausted all its models.
+     * A concrete Retry-After hint (clamped to a sane range) wins; otherwise falls back to a
+     * per-error-type default; otherwise the generic flat default used for non-429 failures.
+     */
+    private function resolveCooldown(?string $type, ?int $hint, array $cfg, int $default): int
+    {
+        if ($hint !== null) {
+            return max($cfg['cooldown_floor_seconds'] ?? 15, min($hint, $cfg['cooldown_ceiling_seconds'] ?? 21600));
+        }
+
+        return match ($type) {
+            ErrorNormalizer::RATE_LIMITED   => $cfg['rate_limited_cooldown_seconds'] ?? 90,
+            ErrorNormalizer::QUOTA_EXCEEDED => $cfg['quota_exceeded_cooldown_seconds'] ?? 3600,
+            default                         => $default,
+        };
     }
 
     /** @return array{0: AiRawResult, 1: ?array} */

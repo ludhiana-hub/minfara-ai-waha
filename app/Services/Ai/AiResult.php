@@ -2,6 +2,8 @@
 
 namespace App\Services\Ai;
 
+use App\Services\Ai\Support\ErrorNormalizer;
+
 final readonly class AiResult
 {
     /**
@@ -52,6 +54,9 @@ final readonly class AiResult
             return false;
         }
 
-        return count(array_filter($this->errors, fn (string $e) => $e !== 'quota_exceeded')) === 0;
+        return count(array_filter(
+            $this->errors,
+            fn (string $e) => !in_array($e, [ErrorNormalizer::RATE_LIMITED, ErrorNormalizer::QUOTA_EXCEEDED], true)
+        )) === 0;
     }
 }

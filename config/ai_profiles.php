@@ -28,6 +28,13 @@ return [
         'mark_unhealthy'     => true,
         'circuit_scope'      => '',
         'trace'              => 'on_retry', // never | on_retry | always
+
+        // Used when a provider gets marked unhealthy after a 429 — see AiRouter::resolveCooldown().
+        // 'cooldown_seconds' above is now only the fallback for non-429 failures (500s, timeouts, etc).
+        'rate_limited_cooldown_seconds'   => 90,    // no Retry-After hint, but doesn't look like a quota/billing error
+        'quota_exceeded_cooldown_seconds' => 3600,  // no Retry-After hint, message looks like real quota/billing exhaustion
+        'cooldown_floor_seconds'          => 15,    // clamp for a provider-supplied Retry-After hint that's suspiciously short
+        'cooldown_ceiling_seconds'        => 21600, // 6h clamp — never mark a provider down indefinitely
     ],
 
     'profiles' => [
