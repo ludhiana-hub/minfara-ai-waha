@@ -21,6 +21,7 @@ final readonly class AiResult
         public array $errors,
         public ?array $json = null,
         public ?string $correlationId = null,
+        public bool $truncated = false,
     ) {}
 
     /** Drop-in for consumers still expecting the legacy AiServiceInterface::chat() shape. */

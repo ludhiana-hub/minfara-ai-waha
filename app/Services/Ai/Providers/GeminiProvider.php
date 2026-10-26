@@ -49,6 +49,13 @@ class GeminiProvider implements AiProviderContract
             'temperature'     => $call->temperature,
         ];
 
+        // Gemini 2.5 Flash 'thinks' by default and thinking tokens are billed against
+        // maxOutputTokens — with a ~500 cap the visible reply gets whatever is left, or nothing.
+        // A chat reply doesn't need it. (2.5 Pro can't disable thinking, hence 'flash' only.)
+        if (str_starts_with($call->model, 'gemini-2.5') && str_contains($call->model, 'flash')) {
+            $generationConfig['thinkingConfig'] = ['thinkingBudget' => 0];
+        }
+
         if ($call->jsonMode) {
             $generationConfig['responseMimeType'] = 'application/json';
         }
@@ -112,7 +119,12 @@ class GeminiProvider implements AiProviderContract
                 return AiRawResult::fail(ErrorNormalizer::REASONING_LEAK);
             }
 
-            return AiRawResult::ok($text, $tokens);
+            $truncated = ($data['candidates'][0]['finishReason'] ?? null) === 'MAX_TOKENS';
+            if ($truncated) {
+                Log::warning('Gemini reply cut off at max_tokens', ['model' => $call->model, 'max_tokens' => $call->maxTokens, 'tokens' => $tokens]);
+            }
+
+            return AiRawResult::ok($text, $tokens, $truncated);
         } catch (\Illuminate\Http\Client\ConnectionException|\GuzzleHttp\Exception\ConnectException $e) {
             Log::error('Gemini connection timeout', ['message' => $e->getMessage()]);
 

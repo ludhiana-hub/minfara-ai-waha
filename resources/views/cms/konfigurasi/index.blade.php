@@ -58,6 +58,16 @@
                                 {{ ($configs['ai_enabled']->value ?? 'true') === 'true' ? 'checked' : '' }}>
                             <label class="form-check-label fw-semibold" for="aiEnabled">Aktifkan AI Fallback</label>
                         </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="faq_enabled" id="faqEnabled" value="1"
+                                {{ ($configs['faq_enabled']->value ?? 'true') === 'true' ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="faqEnabled">Aktifkan Balasan FAQ</label>
+                        </div>
+                    </div>
+                    <div class="alert alert-info py-2 small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Matikan <strong>keduanya</strong> agar bot diam total ke chat masuk.
+                        Notifikasi WhatsApp ke nomor target <strong>tetap terkirim</strong>.
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Urutan Provider AI</label>

@@ -208,6 +208,16 @@ class WhatsAppController extends Controller
             return response('OK', 200);
         }
 
+        $aiEnabled  = BotConfig::getBool('ai_enabled', true);
+        $faqEnabled = BotConfig::getBool('faq_enabled', true);
+
+        // Chatbot dimatikan total (AI + FAQ) — diam ke chat masuk. Notifikasi keluar
+        // (SendWhatsAppNotificationJob) tidak lewat jalur ini dan tetap berjalan.
+        if (!$aiEnabled && !$faqEnabled) {
+            Log::info('webhook:drop — chatbot disabled (ai & faq off)', ['from' => $from]);
+            return response('OK', 200);
+        }
+
         Log::info('webhook:processing', ['from' => $from, 'input' => substr($rawInput, 0, 40)]);
 
         $command       = strtolower($rawInput);
@@ -224,7 +234,7 @@ class WhatsAppController extends Controller
         Cache::put('pending_resume_body_' . md5($from), $rawInput, now()->addHours(2));
         Cache::put('pending_resume_name_' . md5($from), $contactName, now()->addHours(2));
 
-        $menu = FaqMenu::active()->where('command', $command)->first();
+        $menu = $faqEnabled ? FaqMenu::active()->where('command', $command)->first() : null;
 
         if ($menu) {
             $this->whatsapp->startTyping($chatId);

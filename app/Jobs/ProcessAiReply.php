@@ -10,6 +10,7 @@ use App\Services\Ai\AiRequest;
 use App\Services\Ai\AiRouter;
 use App\Services\Ai\KnowledgeRetrievalService;
 use App\Services\Ai\Support\ErrorNormalizer;
+use App\Services\Ai\Support\ReplyTrimmer;
 use App\Services\Ai\Support\MessageComplexity;
 use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,6 +27,9 @@ class ProcessAiReply implements ShouldQueue
     public int $timeout = 175;
 
     private const SHORT_REPLY_MAX_TOKENS = 500;
+    // LONG_REPLY_HINT tells the model it may write more — the budget has to allow it, or the
+    // extra length just becomes a reply cut off mid-sentence.
+    private const LONG_REPLY_MAX_TOKENS  = 900;
     private const SHORT_REPLY_HINT = 'CATATAN UNTUK PESAN INI: pertanyaan singkat/faktual — balas SANGAT ringkas (1-3 baris), langsung ke inti, tanpa basa-basi atau penjelasan tambahan yang tidak diminta.';
     private const LONG_REPLY_HINT  = 'CATATAN UNTUK PESAN INI: pertanyaan ini butuh penjelasan lebih detail — boleh sedikit lebih lengkap dari batas normal (tetap dalam batas token yang tersedia), tapi tetap terstruktur dan jangan bertele-tele.';
 
@@ -39,6 +43,13 @@ class ProcessAiReply implements ShouldQueue
 
     public function handle(WhatsAppService $whatsapp, AiRouter $router): void
     {
+        // Chatbot dimatikan total setelah job ini diantre (atau ini resume pasca-takeover) —
+        // jangan balas apa pun. Notifikasi keluar tidak lewat job ini.
+        if (!BotConfig::getBool('ai_enabled', true) && !BotConfig::getBool('faq_enabled', true)) {
+            Log::info('ProcessAiReply: skip — chatbot disabled (ai & faq off)', ['from' => $this->from]);
+            return;
+        }
+
         // Cek human takeover — cek cache dulu (instan) lalu DB sebagai fallback.
         // Cache di-set oleh handleOwnerReply() sebelum DB write untuk eliminasi race condition.
         $fromHash = md5($this->from);
@@ -75,7 +86,7 @@ class ProcessAiReply implements ShouldQueue
 
         if (!$aiAvailable) {
             $lowerMessage = strtolower(trim($this->userMessage));
-            if (strlen($lowerMessage) <= 3 && !is_numeric($lowerMessage)) {
+            if (BotConfig::getBool('faq_enabled', true) && strlen($lowerMessage) <= 3 && !is_numeric($lowerMessage)) {
                 $mainMenu = FaqMenu::active()->where('command', '0')->first();
                 if ($mainMenu) {
                     $content = $mainMenu->content ?? $whatsapp->buildMainMenu();
@@ -133,6 +144,7 @@ class ProcessAiReply implements ShouldQueue
                 $maxTokens = min($maxTokens, self::SHORT_REPLY_MAX_TOKENS);
                 $systemPrompt .= "\n\n" . self::SHORT_REPLY_HINT;
             } elseif ($complexity === MessageComplexity::LONG) {
+                $maxTokens = max($maxTokens, self::LONG_REPLY_MAX_TOKENS);
                 $systemPrompt .= "\n\n" . self::LONG_REPLY_HINT;
             }
 
@@ -158,8 +170,14 @@ class ProcessAiReply implements ShouldQueue
                 );
 
                 if ($result->success) {
+                    // Hit max_tokens: cut back to the last complete sentence locally (no extra
+                    // request) instead of relaying a reply that stops mid-word.
+                    $replyText = $result->truncated
+                        ? ReplyTrimmer::toCompleteSentence($result->reply)
+                        : $result->reply;
+
                     $footer = BotConfig::get('footer_ai', '');
-                    $reply  = $result->reply . ($footer ? "\n" . $footer : '');
+                    $reply  = $replyText . ($footer ? "\n" . $footer : '');
                     $mode   = 'ai';
                     $tokens = $result->tokens;
 
@@ -170,7 +188,8 @@ class ProcessAiReply implements ShouldQueue
                         ]);
                     }
 
-                    if (empty($history)) {
+                    // Never cache a truncated reply — it would be replayed for 15 minutes.
+                    if (empty($history) && !$result->truncated) {
                         Cache::put($respCacheKey, $result->reply, 900);
                     }
 
@@ -186,10 +205,10 @@ class ProcessAiReply implements ShouldQueue
                     // context — not worth failing (and retrying/losing) the whole reply over, so
                     // a lock timeout is caught and swallowed rather than left to bubble up.
                     try {
-                        Cache::lock('lock_' . $historyKey, 10)->block(5, function () use ($historyKey, $historyTurns, $result) {
+                        Cache::lock('lock_' . $historyKey, 10)->block(5, function () use ($historyKey, $historyTurns, $result, $replyText) {
                             $latestHistory   = Cache::get($historyKey, []);
                             $latestHistory[] = ['role' => 'user',      'content' => mb_substr($this->userMessage, 0, 300)];
-                            $latestHistory[] = ['role' => 'assistant', 'content' => mb_substr($result->reply, 0, 250)];
+                            $latestHistory[] = ['role' => 'assistant', 'content' => $this->clipAtSentence($replyText, 400)];
                             if (count($latestHistory) > $historyTurns) {
                                 $latestHistory = array_slice($latestHistory, -$historyTurns);
                             }
@@ -292,6 +311,19 @@ class ProcessAiReply implements ShouldQueue
             $whatsapp->sendMessage($this->chatId, $fallback);
             $whatsapp->stopTyping($this->chatId);
         } catch (\Exception) {}
+    }
+
+    /**
+     * History is context for the next turn, not output — but a model that sees its own earlier
+     * replies stop mid-sentence can imitate that. Clip long entries at a sentence boundary.
+     */
+    private function clipAtSentence(string $text, int $limit): string
+    {
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        return ReplyTrimmer::toCompleteSentence(mb_substr($text, 0, $limit));
     }
 
     private function sanitizeWhatsappText(string $text): string

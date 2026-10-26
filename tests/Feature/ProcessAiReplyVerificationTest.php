@@ -170,7 +170,93 @@ class ProcessAiReplyVerificationTest extends TestCase
             '127.0.0.1'
         );
 
-        $this->assertSame(500, $sentMaxTokens);
+        // A detail question gets headroom above the flat ai_max_tokens, matching LONG_REPLY_HINT
+        // which tells the model it may write more.
+        $this->assertSame(900, $sentMaxTokens);
+    }
+
+    private function chatRequestCount(): int
+    {
+        return Http::recorded(fn ($request) => str_contains($request->url(), 'api.groq.com'))->count();
+    }
+
+    public function test_reply_cut_off_at_token_limit_is_trimmed_to_a_complete_sentence(): void
+    {
+        $sentReply = null;
+        $this->mockWhatsapp()
+            ->shouldReceive('sendMessage')
+            ->atLeast()->once() // 2nd send may be skipped by the 3s duplicate guard
+            ->withArgs(function ($_chatId, $text) use (&$sentReply) {
+                $sentReply = $text;
+                return true;
+            })
+            ->andReturn(true);
+
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([], 500), // RAG embeddings: keep the test hermetic
+            'api.groq.com/*' => Http::response([
+                'choices' => [[
+                    'message'       => ['content' => 'Paket A harga 100rb. Paket B harga 200rb dan terma'],
+                    'finish_reason' => 'length',
+                ]],
+                'usage' => ['total_tokens' => 500],
+            ], 200),
+        ]);
+
+        ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'paket apa aja?', 'Budi', '127.0.0.1');
+
+        $this->assertStringContainsString('Paket A harga 100rb.', $sentReply);
+        $this->assertStringNotContainsString('terma', $sentReply);
+        // Trimming is local — it must not spend another provider request (RPM).
+        $this->assertSame(1, $this->chatRequestCount());
+
+        // Same question again with a clean slate: a truncated reply must not have been put in
+        // the response cache, so the provider is asked again instead of replaying the cut-off text.
+        Cache::forget('chat_history_' . md5('6281234567890'));
+        Cache::forget('ai_cooldown_' . md5('6281234567890'));
+        ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'paket apa aja?', 'Budi', '127.0.0.1');
+        $this->assertSame(2, $this->chatRequestCount());
+    }
+
+    public function test_stored_history_never_ends_mid_sentence(): void
+    {
+        $this->mockWhatsapp()->shouldReceive('sendMessage')->once()->andReturn(true);
+
+        $long = str_repeat('Ini kalimat lengkap yang cukup panjang. ', 12);
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([], 500),
+            'api.groq.com/*' => Http::response([
+                'choices' => [['message' => ['content' => $long], 'finish_reason' => 'stop']],
+                'usage'   => ['total_tokens' => 50],
+            ], 200),
+        ]);
+
+        ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'ceritain dong', 'Budi', '127.0.0.1');
+
+        $history = Cache::get('chat_history_' . md5('6281234567890'));
+        $assistant = collect($history)->firstWhere('role', 'assistant')['content'];
+        $this->assertStringEndsWith('.', $assistant);
+    }
+
+    public function test_gemini_25_flash_disables_thinking_so_it_cannot_eat_the_output_budget(): void
+    {
+        BotConfig::set('ai_provider_order', 'gemini');
+        BotConfig::set('gemini_api_key', 'test-gemini-key');
+        BotConfig::set('gemini_model', 'gemini-2.5-flash');
+        $this->mockWhatsapp()->shouldReceive('sendMessage')->once()->andReturn(true);
+
+        $sent = null;
+        Http::fake(function ($request) use (&$sent) {
+            $sent = $request->data()['generationConfig'] ?? null;
+            return Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'ok']]], 'finishReason' => 'STOP']],
+                'usageMetadata' => ['totalTokenCount' => 5],
+            ], 200);
+        });
+
+        ProcessAiReply::dispatchSync('6281234567890@c.us', '6281234567890', 'halo kak apa kabar hari ini', 'Budi', '127.0.0.1');
+
+        $this->assertSame(0, $sent['thinkingConfig']['thinkingBudget'] ?? null);
     }
 
     public function test_failed_does_not_send_fallback_when_human_takeover_active(): void

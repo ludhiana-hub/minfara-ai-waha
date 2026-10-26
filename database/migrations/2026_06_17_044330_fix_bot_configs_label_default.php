@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -12,10 +13,13 @@ return new class extends Migration
     {
         // Make label nullable so BotConfig::set() can INSERT new config keys
         // without crashing when the key was never pre-seeded (label was NOT NULL with no default).
-        // MySQL-only raw ALTER — SQLite (used by the test suite, DB_CONNECTION=sqlite in
-        // phpunit.xml) has no MODIFY COLUMN syntax; the column is already created nullable
-        // there by the original create-table migration, so there's nothing to fix.
+        // MySQL uses a raw ALTER; every other driver (SQLite in the test suite, DB_CONNECTION=sqlite
+        // in phpunit.xml) goes through the schema builder, since the original create-table
+        // migration declares `label` NOT NULL there too.
         if (DB::connection()->getDriverName() !== 'mysql') {
+            Schema::table('bot_configs', function ($table) {
+                $table->string('label')->nullable()->change();
+            });
             return;
         }
 

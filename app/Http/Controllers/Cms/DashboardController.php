@@ -26,12 +26,13 @@ class DashboardController extends Controller
 
         $wahaStatus = $this->getWahaStatus();
 
-        $aiEnabled = BotConfig::getBool('ai_enabled', true);
+        $aiEnabled  = BotConfig::getBool('ai_enabled', true);
+        $faqEnabled = BotConfig::getBool('faq_enabled', true);
 
         return view('cms.dashboard', compact(
             'totalFaq', 'activeFaq', 'inactiveFaq',
             'todayLogs', 'modeCounts', 'recentLogs',
-            'wahaStatus', 'aiEnabled'
+            'wahaStatus', 'aiEnabled', 'faqEnabled'
         ));
     }
 

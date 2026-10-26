@@ -93,6 +93,14 @@
                         <span class="badge bg-secondary">Nonaktif</span>
                     @endif
                 </div>
+                <div class="mt-2">
+                    <div class="small text-muted mb-1">Balasan FAQ</div>
+                    @if($faqEnabled)
+                        <span class="badge bg-success">Aktif</span>
+                    @else
+                        <span class="badge bg-secondary">Nonaktif</span>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

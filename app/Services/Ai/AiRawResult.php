@@ -11,11 +11,13 @@ final readonly class AiRawResult
         public ?int $tokens,
         public ?string $error,
         public ?int $cooldownSeconds = null,
+        // Provider stopped because it hit max_tokens — the text is a usable prefix, not a finished reply.
+        public bool $truncated = false,
     ) {}
 
-    public static function ok(string $text, ?int $tokens): self
+    public static function ok(string $text, ?int $tokens, bool $truncated = false): self
     {
-        return new self(true, $text, $tokens, null);
+        return new self(true, $text, $tokens, null, null, $truncated);
     }
 
     /** $cooldownSeconds is a provider-supplied Retry-After hint — null means "no hint, let the caller decide". */

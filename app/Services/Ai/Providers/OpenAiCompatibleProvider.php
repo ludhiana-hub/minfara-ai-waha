@@ -106,7 +106,12 @@ abstract class OpenAiCompatibleProvider implements AiProviderContract
                 return AiRawResult::fail(ErrorNormalizer::REASONING_LEAK);
             }
 
-            return AiRawResult::ok($text, $tokens);
+            $truncated = ($data['choices'][0]['finish_reason'] ?? null) === 'length';
+            if ($truncated) {
+                Log::warning("{$this->name()} reply cut off at max_tokens", ['model' => $call->model, 'max_tokens' => $call->maxTokens, 'tokens' => $tokens]);
+            }
+
+            return AiRawResult::ok($text, $tokens, $truncated);
         } catch (\Illuminate\Http\Client\ConnectionException|\GuzzleHttp\Exception\ConnectException $e) {
             // Guzzle can throw ConnectException directly (not wrapped as Laravel's
             // ConnectionException) for some transient failures — e.g. DNS blip or connection

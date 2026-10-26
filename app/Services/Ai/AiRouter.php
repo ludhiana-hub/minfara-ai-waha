@@ -219,6 +219,7 @@ final class AiRouter
             errors: $errors,
             json: $json,
             correlationId: $correlationId,
+            truncated: $success && $result->truncated,
         );
 
         if (!$success) {

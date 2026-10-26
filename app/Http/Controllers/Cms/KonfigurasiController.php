@@ -59,7 +59,7 @@ class KonfigurasiController extends Controller
 
         $keys = [
             'bot_name', 'bot_greeting',
-            'ai_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
+            'ai_enabled', 'faq_enabled', 'ai_provider_order', 'ai_max_tokens', 'ai_temperature', 'ai_system_prompt',
             'ai_rag_top_k', 'ai_rag_min_score',
             'footer_faq', 'footer_ai', 'fallback_message',
             'admin_wa', 'admin_wa_label', 'office_hours',
@@ -71,13 +71,14 @@ class KonfigurasiController extends Controller
 
         foreach ($keys as $key) {
             if ($request->has($key)) {
-                $value = $key === 'ai_enabled'
-                    ? ($request->boolean('ai_enabled') ? 'true' : 'false')
+                $value = in_array($key, ['ai_enabled', 'faq_enabled'], true)
+                    ? ($request->boolean($key) ? 'true' : 'false')
                     : $request->input($key);
 
                 BotConfig::set($key, $value);
-            } else if ($key === 'ai_enabled') {
-                BotConfig::set('ai_enabled', 'false');
+            } else if (in_array($key, ['ai_enabled', 'faq_enabled'], true)) {
+                // Unchecked checkbox is absent from the request entirely
+                BotConfig::set($key, 'false');
             }
         }
 
