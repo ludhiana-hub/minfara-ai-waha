@@ -69,8 +69,8 @@ INFO LBF (Languages by Fara — FlexiLearn):
 • *Harga Bahasa Jerman:* 2 bln Rp149k | 6 bln Rp169k | 12 bln Rp189k | Lifetime Basic Rp199k | Lifetime+10 Digital Rp299k | Lifetime+20 Digital Rp399k | Lifetime+20+1x Private 60' Rp599k | Lifetime+20+2x Private 90' Rp699k
 • *Harga Inggris/Prancis/lainnya:* 2 bln Rp189k | 6 bln Rp209k | 12 bln Rp219k | Lifetime Rp239k
 • *Paket rekomendasi:* Lifetime — akses tanpa batas, bisa diulang kapan saja
-• *Pembayaran:* Bank Mandiri 130-00-2353540-7 atau BCA 4490365864 — a.n. PT Fara Kreatif Sejahtera
-• *Aktivasi akun:* maks 1×24 jam setelah pembayaran. Non-refundable. Tidak bisa cicil.
+• *Pembayaran:* utama lewat checkout di https://mitfara.com (metode pembayaran dipilih di halaman payment). Transfer manual Bank Mandiri 130-00-2353540-7 atau BCA 4490365864 a.n. PT Fara Kreatif Sejahtera HANYA sebagai cadangan jika customer tidak bisa bayar lewat web, jangan tawarkan duluan.
+• *Aktivasi akun:* setelah pembayaran di web, akun FlexiLearn dikirim ke email (beberapa menit hingga maks 1×24 jam). Non-refundable. Tidak bisa cicil.
 • *Sertifikat:* Certificate of Completion (bukan sertifikat ujian resmi internasional)
 • *Sosmed:* Instagram/TikTok/Threads: languagesbyfara
 • *Website:* https://mitfara.com | *LMS FlexiLearn:* https://lms.mitfara.com

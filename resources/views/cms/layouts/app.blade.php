@@ -169,7 +169,7 @@
                 </ol>
             </nav>
         </div>
-        <div id="botStatusBadge">
+        <div id="botStatusBadge" data-mode="{{ \App\Models\BotConfig::chatbotMode() }}">
             <span class="badge bg-secondary">Memeriksa...</span>
         </div>
     </div>
@@ -222,6 +222,32 @@ function showToast(message, type = 'success') {
     new bootstrap.Toast(toast, { delay: 3500 }).show();
 }
 
+let wahaConnected = null;
+
+// Header badge = WAHA link state + chatbot mode. Notifications keep flowing in every mode,
+// so "notification_only" is shown as its own state, not as "off".
+function renderBotBadge() {
+    const badge = document.getElementById('botStatusBadge');
+    if (wahaConnected === false) {
+        badge.innerHTML = '<span class="badge bg-danger">🔴 Bot Nonaktif</span>';
+        return;
+    }
+    if (wahaConnected === null) return;
+    const mode = badge.dataset.mode;
+    if (mode === 'notification_only') {
+        badge.innerHTML = '<span class="badge bg-info text-dark">🔔 Hanya Notifikasi</span>';
+    } else if (mode === 'partial') {
+        badge.innerHTML = '<span class="badge bg-warning text-dark">🟡 Bot Sebagian</span>';
+    } else {
+        badge.innerHTML = '<span class="badge" style="background:var(--brand-wa)">🟢 Bot Aktif</span>';
+    }
+}
+
+function setChatbotMode(mode) {
+    document.getElementById('botStatusBadge').dataset.mode = mode;
+    renderBotBadge();
+}
+
 async function checkWahaStatus() {
     try {
         const res  = await fetch('{{ route("cms.api.waha-status") }}');
@@ -232,12 +258,13 @@ async function checkWahaStatus() {
         if (data.connected) {
             dot.classList.add('connected');
             txt.textContent = 'WAHA Connected';
-            badge.innerHTML = '<span class="badge" style="background:var(--brand-wa)">🟢 Bot Aktif</span>';
+            wahaConnected = true;
         } else {
             dot.classList.remove('connected');
             txt.textContent = 'WAHA Disconnected';
-            badge.innerHTML = '<span class="badge bg-danger">🔴 Bot Nonaktif</span>';
+            wahaConnected = false;
         }
+        renderBotBadge();
     } catch(e) {
         document.getElementById('wahaStatusText').textContent = 'Tidak dapat terhubung';
     }

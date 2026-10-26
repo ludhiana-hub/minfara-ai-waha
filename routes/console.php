@@ -34,3 +34,6 @@ Schedule::job(new RebuildKnowledgeIndexJob())->dailyAt('03:30');
 // Buang baris ai_request_traces lama — hot path chat sudah minim tulisan (mode on_retry),
 // tapi profil batch/eval nulis 'always', jadi tetap perlu retensi.
 Schedule::command('ai:prune-traces --days=14')->dailyAt('04:00');
+
+// Ingatan sales per customer: buang profil yang tidak aktif >90 hari (lihat LeadProfile::prunable()).
+Schedule::command('model:prune', ['--model' => [\App\Models\LeadProfile::class]])->dailyAt('04:15');

@@ -29,7 +29,9 @@ class RebuildKnowledgeIndexJob implements ShouldQueue
         foreach ($this->collectSources() as [$sourceType, $sourceId, $content]) {
             $seen[$sourceType][] = $sourceId;
 
-            $hash = md5($content);
+            // Model name is part of the hash: switching embedding models must re-embed every
+            // chunk, otherwise old vectors (different dimensions) would be "unchanged" forever.
+            $hash = md5(EmbeddingService::MODEL . '|' . $content);
 
             $existing = KnowledgeChunk::where('source_type', $sourceType)
                 ->where('source_id', $sourceId)

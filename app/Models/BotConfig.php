@@ -65,6 +65,24 @@ class BotConfig extends Model
         return in_array(strtolower((string) $value), ['true', '1', 'yes']);
     }
 
+    /**
+     * Chatbot reply mode, for the CMS header/dashboard. AI and FAQ are the two things that answer
+     * inbound customer chats; outbound notifications are independent of both.
+     *   full              - AI and FAQ both answer
+     *   partial           - exactly one of them answers
+     *   notification_only - neither answers (notifications still go out)
+     */
+    public static function chatbotMode(): string
+    {
+        $on = (int) static::getBool('ai_enabled', true) + (int) static::getBool('faq_enabled', true);
+
+        return match ($on) {
+            2       => 'full',
+            1       => 'partial',
+            default => 'notification_only',
+        };
+    }
+
     public static function getInt(string $key, int $default = 0): int
     {
         return (int) (static::get($key) ?? $default);

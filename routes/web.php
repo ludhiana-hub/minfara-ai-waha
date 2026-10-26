@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Cms\AnalyticsController;
 use App\Http\Controllers\Cms\AuthController;
+use App\Http\Controllers\Cms\ChatbotControlController;
 use App\Http\Controllers\Cms\DashboardController;
 use App\Http\Controllers\Cms\FaqController;
 use App\Http\Controllers\Cms\FaqSuggestionController;
@@ -32,6 +33,7 @@ Route::prefix('cms-minfara')->name('cms.')->middleware('localhost')->group(funct
 
 Route::prefix('cms-minfara')->name('cms.')->middleware(['localhost', 'auth'])->group(function () {
     Route::get('/',                     [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('chatbot',              [ChatbotControlController::class, 'update'])->name('chatbot.update');
     Route::get('faq',                   [FaqController::class, 'index'])->name('faq.index');
     Route::get('faq/create',            [FaqController::class, 'create'])->name('faq.create');
     Route::post('faq',                  [FaqController::class, 'store'])->name('faq.store');

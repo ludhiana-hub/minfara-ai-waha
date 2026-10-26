@@ -11,6 +11,8 @@ use App\Services\Ai\AiRouter;
 use App\Services\Ai\KnowledgeRetrievalService;
 use App\Services\Ai\Support\ErrorNormalizer;
 use App\Services\Ai\Support\ReplyTrimmer;
+use App\Services\Sales\SalesMemory;
+use App\Services\Sales\SalesPlaybook;
 use App\Services\Ai\Support\MessageComplexity;
 use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -135,6 +137,22 @@ class ProcessAiReply implements ShouldQueue
                 $systemPrompt .= "\n\n=== CATATAN GAYA & TEKNIK SALES (internal, jangan disebut ke customer) ===\n" . $coachingNotes;
             }
 
+            // Sales memory: remembers what this customer already told us and tells the model
+            // which step of the sale this turn is (discover -> recommend -> handle objection ->
+            // close at the web checkout). Best-effort: a failure here must never cost a reply.
+            $leadProfile = null;
+            if (BotConfig::getBool('ai_sales_memory_enabled', true)) {
+                try {
+                    $leadProfile   = app(SalesMemory::class)->observe($this->from, $this->contactName, $aiInput);
+                    $systemPrompt .= "
+
+" . SalesPlaybook::block($leadProfile);
+                } catch (\Throwable $e) {
+                    $leadProfile = null;
+                    Log::warning('ProcessAiReply: sales memory skipped', ['error' => $e->getMessage()]);
+                }
+            }
+
             // Per-message complexity heuristic (cheap, no extra AI call) — right-sizes
             // max_tokens + adds a one-off instruction for THIS turn only. Ambiguous/default
             // messages fall through unchanged, so this can only make a reply cheaper, never
@@ -176,6 +194,14 @@ class ProcessAiReply implements ShouldQueue
                         ? ReplyTrimmer::toCompleteSentence($result->reply)
                         : $result->reply;
 
+                    if ($leadProfile) {
+                        try {
+                            app(SalesMemory::class)->afterReply($leadProfile, $replyText);
+                        } catch (\Throwable $e) {
+                            Log::warning('ProcessAiReply: sales memory afterReply skipped', ['error' => $e->getMessage()]);
+                        }
+                    }
+
                     $footer = BotConfig::get('footer_ai', '');
                     $reply  = $replyText . ($footer ? "\n" . $footer : '');
                     $mode   = 'ai';
@@ -205,7 +231,7 @@ class ProcessAiReply implements ShouldQueue
                     // context — not worth failing (and retrying/losing) the whole reply over, so
                     // a lock timeout is caught and swallowed rather than left to bubble up.
                     try {
-                        Cache::lock('lock_' . $historyKey, 10)->block(5, function () use ($historyKey, $historyTurns, $result, $replyText) {
+                        Cache::lock('lock_' . $historyKey, 10)->block(5, function () use ($historyKey, $historyTurns, $replyText) {
                             $latestHistory   = Cache::get($historyKey, []);
                             $latestHistory[] = ['role' => 'user',      'content' => mb_substr($this->userMessage, 0, 300)];
                             $latestHistory[] = ['role' => 'assistant', 'content' => $this->clipAtSentence($replyText, 400)];

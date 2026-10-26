@@ -17,6 +17,37 @@
     </div>
 </div>
 
+<!-- Kontrol Chatbot -->
+@php $chatbotMode = \App\Models\BotConfig::chatbotMode(); @endphp
+<div class="card mb-4" id="chatbotControl">
+    <div class="card-body d-flex flex-wrap align-items-center gap-4">
+        <div class="flex-grow-1" style="min-width:220px">
+            <div class="fw-semibold"><i class="bi bi-robot me-1"></i>Kontrol Chatbot</div>
+            <div class="small text-muted" id="ctlHint">
+                @if($chatbotMode === 'notification_only')
+                    <strong>Hanya Notifikasi</strong>: bot tidak membalas chat masuk. Notifikasi WA ke nomor target tetap terkirim.
+                @elseif($chatbotMode === 'partial')
+                    Sebagian aktif. Notifikasi WA tetap terkirim.
+                @else
+                    AI dan FAQ aktif. Matikan keduanya agar hanya notifikasi yang berjalan.
+                @endif
+            </div>
+        </div>
+        <div class="form-check form-switch mb-0">
+            <input class="form-check-input ctl-switch" type="checkbox" id="ctlAi" {{ $aiEnabled ? 'checked' : '' }}>
+            <label class="form-check-label fw-semibold" for="ctlAi">AI</label>
+        </div>
+        <div class="form-check form-switch mb-0">
+            <input class="form-check-input ctl-switch" type="checkbox" id="ctlFaq" {{ $faqEnabled ? 'checked' : '' }}>
+            <label class="form-check-label fw-semibold" for="ctlFaq">FAQ</label>
+        </div>
+        <button type="button" class="btn btn-sm {{ $chatbotMode === 'notification_only' ? 'btn-success' : 'btn-outline-secondary' }}" id="ctlPreset"
+                data-mode="{{ $chatbotMode }}">
+            {{ $chatbotMode === 'notification_only' ? 'Aktifkan Chatbot' : 'Hanya Notifikasi' }}
+        </button>
+    </div>
+</div>
+
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
@@ -148,3 +179,59 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const ai = document.getElementById('ctlAi');
+    const faq = document.getElementById('ctlFaq');
+    const preset = document.getElementById('ctlPreset');
+    const hint = document.getElementById('ctlHint');
+    if (!ai || !faq) return;
+
+    const hints = {
+        notification_only: '<strong>Hanya Notifikasi</strong>: bot tidak membalas chat masuk. Notifikasi WA ke nomor target tetap terkirim.',
+        partial: 'Sebagian aktif. Notifikasi WA tetap terkirim.',
+        full: 'AI dan FAQ aktif. Matikan keduanya agar hanya notifikasi yang berjalan.',
+    };
+
+    async function save(payload) {
+        [ai, faq, preset].forEach(el => el.disabled = true);
+        try {
+            const res = await fetch('{{ route("cms.chatbot.update") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            ai.checked = data.ai_enabled;
+            faq.checked = data.faq_enabled;
+            hint.innerHTML = hints[data.mode];
+            preset.dataset.mode = data.mode;
+            const off = data.mode === 'notification_only';
+            preset.textContent = off ? 'Aktifkan Chatbot' : 'Hanya Notifikasi';
+            preset.className = 'btn btn-sm ' + (off ? 'btn-success' : 'btn-outline-secondary');
+            setChatbotMode(data.mode);
+            showToast(off ? 'Chatbot dimatikan. Hanya notifikasi yang berjalan.' : 'Pengaturan chatbot disimpan.');
+            [ai, faq, preset].forEach(el => el.disabled = false);
+        } catch (e) {
+            // Not saved: reload so the switches show what the server actually has.
+            showToast('Gagal menyimpan pengaturan chatbot. Memuat ulang...', 'danger');
+            setTimeout(() => location.reload(), 1200);
+        }
+    }
+
+    ai.addEventListener('change', () => save({ ai_enabled: ai.checked }));
+    faq.addEventListener('change', () => save({ faq_enabled: faq.checked }));
+    preset.addEventListener('click', () => {
+        const turnOn = preset.dataset.mode === 'notification_only';
+        save({ ai_enabled: turnOn, faq_enabled: turnOn });
+    });
+})();
+</script>
+@endpush
